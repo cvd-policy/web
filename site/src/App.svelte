@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { i18n, t } from "./lib/i18n.svelte.js";
+  import { has, i18n, t } from "./lib/i18n.svelte.js";
+  import { applyHead } from "./lib/head.js";
   import { isInternalLink, router, ROUTES } from "./lib/router.svelte.js";
   import LangToggle from "./components/LangToggle.svelte";
   import Home from "./routes/Home.svelte";
@@ -28,6 +29,16 @@
 
   $effect(() => {
     document.documentElement.lang = i18n.lang;
+
+    // Each route gets its own title, description and canonical URL. The lead
+    // sentence of a page doubles as its description where there is one.
+    const slug = router.path.slice(1) || "home";
+    applyHead({
+      page: router.path === "/" ? "" : t(`nav.${slug}`),
+      description: has(`${slug}.lead`) ? t(`${slug}.lead`) : t("home.lead"),
+      path: router.path,
+      lang: i18n.lang,
+    });
   });
 </script>
 

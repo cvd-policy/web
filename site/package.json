@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "prebuild": "node scripts/sync-public.mjs"
+    "prebuild": "node scripts/sync-public.mjs && node scripts/build-icons.mjs && node scripts/build-sitemap.mjs",
+    "build:icons": "node scripts/build-icons.mjs",
+    "build:sitemap": "node scripts/build-sitemap.mjs"
   },
   "dependencies": {
     "@cvd-policy/core": "*",

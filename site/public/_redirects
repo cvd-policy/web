@@ -1,0 +1,3 @@
+# The router uses real paths, so unknown paths must serve index.html.
+# Static files under /.well-known, /schema and /examples are matched first.
+/*    /index.html   200

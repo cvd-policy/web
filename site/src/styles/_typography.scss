@@ -1,0 +1,97 @@
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: clamp(1.7rem, 1.2rem + 1.8vw, 2.4rem);
+}
+
+h2 {
+  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.6rem);
+  margin-top: var(--sp-8);
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-top: var(--sp-6);
+}
+
+p,
+ul,
+ol,
+table {
+  margin-block: var(--sp-4);
+}
+
+ul,
+ol {
+  padding-left: var(--sp-6);
+}
+
+li + li {
+  margin-top: var(--sp-2);
+}
+
+a {
+  color: var(--c-accent);
+  text-underline-offset: 2px;
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--f-mono);
+  font-size: 0.9em;
+}
+
+:not(pre) > code {
+  background: var(--c-surface-mute);
+  border-radius: var(--r-sm);
+  padding: 0.1em 0.35em;
+}
+
+.lead {
+  font-size: 1.15rem;
+  color: var(--c-text-mute);
+}
+
+.mute {
+  color: var(--c-text-mute);
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  // A wide table scrolls inside itself rather than widening the page.
+  display: block;
+  overflow-x: auto;
+
+  @media (min-width: 48rem) {
+    display: table;
+  }
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--c-border);
+  vertical-align: top;
+}
+
+blockquote {
+  margin: var(--sp-4) 0;
+  padding-left: var(--sp-4);
+  border-left: 3px solid var(--c-border);
+  color: var(--c-text-mute);
+}

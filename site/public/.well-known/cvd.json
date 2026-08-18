@@ -1,0 +1,35 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://cvd-policy.eu/.well-known/cvd.json",
+  "expires": "2027-08-18T00:00:00Z",
+  "updated": "2026-08-18",
+  "organization": {
+    "name": "Skalvar Technologies UG (haftungsbeschränkt)",
+    "country": "DE",
+    "role": "operator",
+    "url": "https://cvd-policy.eu"
+  },
+  "contact": {
+    "channels": [{ "type": "email", "value": "security@cvd-policy.eu", "preferred": true }],
+    "languages": ["en", "de"],
+    "response_target": { "acknowledge_within_hours": 72 }
+  },
+  "research": {
+    "posture": "report_only",
+    "statement": "This site is a static page with no backend and no stored data. We do not invite testing, because there is nothing here to test against that is not already public. Reports about the site, the schema or the reference library are welcome."
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [{ "pattern": "cvd-policy.eu", "state": "in" }]
+  },
+  "report_requirements": {
+    "required_fields": ["affected_asset", "description", "reproduction_steps"],
+    "proof_of_exploitation": "prohibited",
+    "formats": ["text", "markdown"]
+  },
+  "disclosure": {
+    "model": "coordinated",
+    "deadline_days": 90,
+    "credit": "offered"
+  }
+}

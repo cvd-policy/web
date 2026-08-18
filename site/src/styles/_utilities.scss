@@ -1,0 +1,54 @@
+// Small utilities so no markup needs a style attribute: the CSP forbids those.
+.u-mt0 {
+  margin-top: 0;
+}
+.u-mt1 {
+  margin-top: var(--sp-1);
+}
+.u-mt6 {
+  margin-top: var(--sp-6);
+}
+.u-mb6 {
+  margin-bottom: var(--sp-6);
+}
+.u-m0 {
+  margin: 0;
+}
+.u-ml2 {
+  margin-left: var(--sp-2);
+}
+.u-block {
+  display: block;
+}
+.u-normal {
+  font-weight: 400;
+}
+.u-indent {
+  padding-left: var(--sp-6);
+}
+.u-grow {
+  flex: 1 1 20rem;
+}
+.u-w-xs {
+  max-width: 6rem;
+}
+.u-w-sm {
+  max-width: 8rem;
+}
+.u-w-md {
+  max-width: 14rem;
+}
+.u-w-lg {
+  max-width: 16rem;
+}
+.u-w-xl {
+  max-width: 22rem;
+}
+.textarea-prose {
+  min-height: 8rem;
+  font-family: var(--f-sans);
+  font-size: 1rem;
+}
+.textarea-short {
+  min-height: 5rem;
+}

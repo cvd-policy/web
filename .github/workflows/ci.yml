@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The conformance corpus lives in the specification repository.
+      - uses: actions/checkout@v4
+        with:
+          repository: cvd-policy/spec
+          path: cvd-policy-spec
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Vendored specification is current
+        run: npm run sync:spec:check
+        env:
+          CVD_SPEC_DIR: ${{ github.workspace }}/cvd-policy-spec
+
+      - name: Library and command line tool
+        run: npm test
+        env:
+          CVD_SPEC_DIR: ${{ github.workspace }}/cvd-policy-spec
+
+      - name: Types
+        run: npm run typecheck -w @cvd-policy/core
+
+      - name: Site
+        run: |
+          npm run check -w site
+          npm run build -w site

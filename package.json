@@ -1,0 +1,22 @@
+{
+  "name": "cvd-policy-web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CVD Policy Format — reference library, command line tool and website.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "site"
+  ],
+  "scripts": {
+    "sync:spec": "node scripts/sync-spec.mjs",
+    "sync:spec:check": "node scripts/sync-spec.mjs --check",
+    "core:build": "npm run build -w @cvd-policy/core",
+    "core:test": "npm run test -w @cvd-policy/core",
+    "cli:test": "npm test -w @cvd-policy/cli",
+    "site:dev": "npm run dev -w site",
+    "site:build": "npm run build -w site",
+    "test": "npm run core:build && npm run core:test && npm run cli:test"
+  }
+}

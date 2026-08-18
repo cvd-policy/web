@@ -1,0 +1,37 @@
+{
+  "name": "@cvd-policy/cli",
+  "version": "0.1.0",
+  "description": "Command line tool for the CVD Policy Format: validate, check and explain policy documents.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "cvd-policy": "./bin/cvd-policy.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@cvd-policy/core": "0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvd-policy/web.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://cvd-policy.eu",
+  "bugs": {
+    "url": "https://github.com/cvd-policy/web/issues"
+  },
+  "keywords": [
+    "security",
+    "vulnerability-disclosure",
+    "cvd",
+    "security-txt",
+    "cvd-policy"
+  ]
+}

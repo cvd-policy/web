@@ -1,0 +1,217 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--w-content);
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+}
+
+.prose {
+  max-width: var(--w-prose);
+}
+
+main {
+  flex: 1;
+  padding-block: var(--sp-8) var(--sp-12);
+}
+
+.site-header {
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface);
+  position: sticky;
+  // Negative offset on phones: the title row scrolls away and the navigation
+  // stays pinned, halving what a sticky header costs.
+  top: calc(-1 * (var(--sp-8) + var(--sp-3)));
+  z-index: 10;
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--sp-2) var(--sp-4);
+    padding-block: var(--sp-2);
+  }
+
+  // Title and language share the first row; navigation gets the second. Without
+  // explicit placement the toggle is pushed onto a third row.
+  .brand {
+    grid-area: 1 / 1;
+  }
+
+  .lang-toggle {
+    grid-area: 1 / 2;
+  }
+
+  .nav {
+    grid-area: 2 / 1 / auto / -1;
+  }
+
+  // From tablet up everything fits on one line.
+  @media (min-width: 52rem) {
+    top: 0;
+
+    .container {
+      grid-template-columns: auto 1fr auto;
+      padding-block: var(--sp-3);
+    }
+
+    .brand,
+    .lang-toggle,
+    .nav {
+      grid-area: auto;
+    }
+  }
+}
+
+.brand {
+  font-weight: 650;
+  text-decoration: none;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+.nav {
+  display: flex;
+  gap: var(--sp-1);
+  align-items: center;
+  grid-column: 1 / -1;
+
+  // One scrollable row beats four wrapped ones on a phone.
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: calc(-1 * var(--sp-4));
+  padding-inline: var(--sp-4);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 52rem) {
+    grid-column: auto;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--c-text-mute);
+    padding: var(--sp-1) var(--sp-2);
+    border-radius: var(--r-sm);
+
+    &:hover {
+      color: var(--c-text);
+      background: var(--c-surface-mute);
+    }
+
+    &[aria-current="page"] {
+      color: var(--c-text);
+      background: var(--c-accent-soft);
+    }
+  }
+}
+
+.site-footer {
+  border-top: 1px solid var(--c-border);
+  background: var(--c-surface);
+  padding-block: var(--sp-6);
+  font-size: 0.9rem;
+  color: var(--c-text-mute);
+
+  .container {
+    display: grid;
+    gap: var(--sp-3);
+  }
+}
+
+// Grid and flex children default to min-width: auto, so one long line of code
+// stretches the whole page. Every track and child here is allowed to shrink.
+.grid-2 {
+  display: grid;
+  gap: var(--sp-6);
+  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+}
+
+.split {
+  display: grid;
+  gap: var(--sp-6);
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+
+  @media (min-width: 62rem) {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+}
+
+// Where the second column carries the example, it explains more than the prose
+// does. On one column it goes first.
+.split-example-first {
+  @media (max-width: 61.99rem) {
+    display: flex;
+    flex-direction: column;
+
+    > :last-child {
+      order: -1;
+    }
+  }
+}
+
+.stack {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.grid-2 > *,
+.split > *,
+.stack > * {
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+
+  > * {
+    min-width: 0;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+
+  &:focus {
+    left: var(--sp-4);
+    top: var(--sp-2);
+    z-index: 20;
+    background: var(--c-surface);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-sm);
+  }
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0;
+  }
+}

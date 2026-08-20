@@ -2,6 +2,7 @@ import type {
   ContactChannel,
   CvdPolicyDocument,
   Disclosure,
+  Intake,
   Posture,
   Precedence,
   ReportField,
@@ -52,6 +53,16 @@ export interface WizardAnswers {
   };
 
   reportRequirements?: Partial<ReportRequirements>;
+
+  /** Machine-readable intake, since 0.2. Empty url means: not offered. */
+  intake?: {
+    url?: string;
+    schema?: string;
+    profile?: string;
+    anonymous?: boolean;
+    maxBytes?: number;
+    attachments?: "accepted" | "after_contact" | "not_accepted";
+  };
   disclosure?: Partial<Disclosure> & { model?: Disclosure["model"] };
 }
 
@@ -73,6 +84,10 @@ export function defaultAnswers(): WizardAnswers {
     scope: { precedence: "out_overrides_in", web: [], products: [] },
     testing: { default: "prohibited", rules: [] },
     reportRequirements: { required_fields: DEFAULT_REQUIRED_FIELDS },
+    // Present but empty: the wizard binds into these, and `generate` only writes
+    // them out once they carry something.
+    disclosure: {},
+    intake: {},
   };
 }
 
@@ -158,6 +173,16 @@ export function generate(answers: WizardAnswers, options: { now?: Date } = {}): 
         formats: answers.reportRequirements?.formats,
         max_attachment_mb: answers.reportRequirements?.max_attachment_mb,
         template: answers.reportRequirements?.template,
+        intake: answers.intake?.url?.trim()
+          ? (compact({
+              url: answers.intake.url.trim(),
+              schema: answers.intake.schema?.trim(),
+              profile: answers.intake.profile,
+              anonymous: answers.intake.anonymous,
+              max_bytes: answers.intake.maxBytes,
+              attachments: answers.intake.attachments,
+            }) as Intake)
+          : undefined,
       }),
     },
   };
@@ -216,6 +241,18 @@ export function answersFrom(doc: Partial<CvdPolicyDocument>): WizardAnswers {
       rules: doc.testing?.rules ?? [],
     },
     reportRequirements: doc.report_requirements ?? answers.reportRequirements,
+    ...(doc.report_requirements?.intake
+      ? {
+          intake: {
+            url: doc.report_requirements.intake.url,
+            schema: doc.report_requirements.intake.schema,
+            profile: doc.report_requirements.intake.profile,
+            anonymous: doc.report_requirements.intake.anonymous,
+            maxBytes: doc.report_requirements.intake.max_bytes,
+            attachments: doc.report_requirements.intake.attachments,
+          },
+        }
+      : {}),
     ...(doc.disclosure ? { disclosure: doc.disclosure } : {}),
   };
 }

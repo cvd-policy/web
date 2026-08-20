@@ -6,7 +6,8 @@
   const cli = `npx @cvd-policy/cli validate cvd.json
 npx @cvd-policy/cli validate -              # from stdin
 npx @cvd-policy/cli check https://example.com
-npx @cvd-policy/cli explain cvd.json`;
+npx @cvd-policy/cli explain cvd.json
+npx @cvd-policy/cli report incoming.json    # against the report profile`;
 
   const action = `- name: Check the CVD policy
   run: npx @cvd-policy/cli validate .well-known/cvd.json`;
@@ -24,7 +25,19 @@ npx @cvd-policy/cli explain cvd.json`;
       <tbody>
         <tr>
           <th scope="row">{t("tools.schema")}</th>
-          <td><a href="/schema/0.1/cvd-policy.schema.json">/schema/0.1/cvd-policy.schema.json</a></td>
+          <td>
+            <a href="/schema/0.2/cvd-policy.schema.json">0.2</a>
+            <span aria-hidden="true"> · </span>
+            <a href="/schema/0.1/cvd-policy.schema.json">0.1</a>
+            <span class="mute small"> — {t("tools.schema_frozen")}</span>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">{t("tools.report_profile")}</th>
+          <td>
+            <a href="/schema/profiles/report-0.1.schema.json">report-0.1</a>
+            <span class="mute small"> — {t("tools.report_profile_note")}</span>
+          </td>
         </tr>
         <tr>
           <th scope="row">{t("tools.library")}</th>

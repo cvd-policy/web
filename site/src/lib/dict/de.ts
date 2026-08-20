@@ -28,7 +28,8 @@ export const de: Dict = {
     "Diese Seite betreibt die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld. Format, Bibliothek und Seite lassen sich ohne unsere Produkte und ohne uns verwenden.",
   "footer.privacy":
     "Kein Tracking, keine Cookies, keine Analyse, keine externen Schriften. Was Sie eingeben, bleibt in Ihrem Browser.",
-  "footer.licence": "Spezifikation und Schema: CC0-1.0. Bibliothek und Seite: Apache-2.0.",
+  "footer.licence":
+    "Spezifikation und Schema: CC0-1.0. Bibliothek und Seite: Apache-2.0.",
 
   "home.title": "Sagen Sie, wie Sie mit Schwachstellenmeldungen umgehen.",
   "home.lead":
@@ -47,23 +48,33 @@ export const de: Dict = {
     "Ein vollständiges Dokument: eine Organisation, die Meldungen annimmt, aber nicht zu Tests einlädt.",
   "home.steps_title": "Drei Schritte",
   "home.step_1": "Ein paar Fragen beantworten und cvd.json herunterladen.",
-  "home.step_2": "Die Datei unter /.well-known/cvd.json auf Ihrer Domain ablegen.",
+  "home.step_2":
+    "Die Datei unter /.well-known/cvd.json auf Ihrer Domain ablegen.",
   "home.step_3": "Eine Zeile in die security.txt eintragen.",
   "home.not_title": "Abgrenzung",
-  "home.not_1": "Kein Ersatz für die security.txt, sondern eine Ergänzung um ein Feld.",
-  "home.not_2": "Kein Nachweis regulatorischer Anforderungen, auch nicht für den CRA.",
-  "home.not_3": "Kein Rechtsschutz. Festgehalten wird eine Erklärung, mehr nicht.",
-  "home.not_4": "Keine Bewertung: keine Punktzahl, kein Reifegrad, kein Vergleich.",
+  "home.not_1":
+    "Kein Ersatz für die security.txt, sondern eine Ergänzung um ein Feld.",
+  "home.not_2":
+    "Kein Nachweis regulatorischer Anforderungen, auch nicht für den CRA.",
+  "home.not_3":
+    "Kein Rechtsschutz. Festgehalten wird eine Erklärung, mehr nicht.",
+  "home.not_4":
+    "Keine Bewertung: keine Punktzahl, kein Reifegrad, kein Vergleich.",
 
   "spec.title": "Spezifikation",
-  "spec.lead": "Version 0.1, Entwurf. Veröffentlicht unter CC0-1.0 — kopieren, zitieren und umsetzen ausdrücklich erlaubt.",
-  "spec.translated_notice": "Diese Übersetzung soll das Verständnis erleichtern. Verbindlich ist die englische Fassung.",
+  "spec.lead":
+    "Version 0.2, Entwurf. Veröffentlicht unter CC0-1.0 — kopieren, zitieren und umsetzen ausdrücklich erlaubt.",
+  "spec.translated_notice":
+    "Diese Übersetzung soll das Verständnis erleichtern. Verbindlich ist die englische Fassung.",
+  "spec.versions_note": "Version 0.1 bleibt veröffentlicht und gültig: Eine veröffentlichte Version ändert sich nie. 0.2 ergänzt ein freiwilliges Feld.",
   "spec.schema": "JSON Schema",
 
   "generate.title": "Policy erzeugen",
-  "generate.lead": "Was sollen Meldende über den Umgang mit Ihrer Organisation wissen?",
+  "generate.lead":
+    "Was sollen Meldende über den Umgang mit Ihrer Organisation wissen?",
   "generate.mode_quick": "Schnell",
-  "generate.mode_quick_help": "Fünf Fragen, in unter zwei Minuten zu einem gültigen Dokument.",
+  "generate.mode_quick_help":
+    "Fünf Fragen, in unter zwei Minuten zu einem gültigen Dokument.",
   "generate.mode_full": "Vollständig",
   "generate.mode_full_help": "Alle Felder, die das Format vorsieht.",
   "generate.preview": "Live-Vorschau",
@@ -86,18 +97,21 @@ export const de: Dict = {
   "generate.role_both": "Beides",
   "generate.role_other": "Anderes",
   "generate.domain": "Ihre Domain",
-  "generate.domain_help": "Die Datei gehört später nach https://<Ihre Domain>/.well-known/cvd.json.",
+  "generate.domain_help":
+    "Die Datei gehört später nach https://<Ihre Domain>/.well-known/cvd.json.",
   "generate.canonical": "Ort der Datei",
   "generate.posture_question": "Wie gehen Sie mit Sicherheitsforschung um?",
   "generate.statement": "In Ihren eigenen Worten",
-  "generate.statement_help": "Richtet sich an Menschen, nicht an Werkzeuge. Höchstens 1000 Zeichen.",
+  "generate.statement_help":
+    "Richtet sich an Menschen, nicht an Werkzeuge. Höchstens 1000 Zeichen.",
   "generate.contact_question": "Wohin sollen Meldungen gehen?",
   "generate.contact_equal_note":
     "Alle vier Möglichkeiten sind gleichwertig. Diese Seite empfiehlt keinen Anbieter und hat keinen voreingetragen.",
   "generate.channel_email": "Eigene E-Mail-Adresse",
   "generate.channel_form": "Eigenes Webformular",
   "generate.channel_service": "Dienstleister",
-  "generate.channel_service_help": "Beliebige URL eintragen. Vorschläge gibt es hier nicht.",
+  "generate.channel_service_help":
+    "Beliebige URL eintragen. Vorschläge gibt es hier nicht.",
   "generate.channel_postal": "Postanschrift",
   "generate.channel_preferred": "bevorzugt",
   "generate.languages": "Sprachen, in denen Sie Meldungen annehmen",
@@ -155,7 +169,8 @@ export const de: Dict = {
     "Der Entwurf steckt hinter dem #-Zeichen der URL. Diesen Teil übertragen Browser grundsätzlich nicht an den Server — der Link bleibt auf Ihrem Gerät, solange Sie ihn nicht selbst weitergeben.",
   "generate.result_no_leak":
     "Kein Datenabfluss: Diese Datei ist vollständig auf Ihrem Gerät entstanden.",
-  "generate.result_invalid": "Das Dokument ist noch nicht gültig. Die Prüfung nennt die Gründe.",
+  "generate.result_invalid":
+    "Das Dokument ist noch nicht gültig. Die Prüfung nennt die Gründe.",
   "generate.result_valid": "Das Dokument ist gültig.",
   "generate.clear_state": "Eingaben aus diesem Browser löschen",
   "generate.clear_state_help":
@@ -164,7 +179,8 @@ export const de: Dict = {
     "Ihre Eingaben werden nirgends gespeichert. Verlassen Sie die Seite, sind sie verloren.",
 
   "validate.title": "Policy prüfen",
-  "validate.lead": "Datei einfügen, hineinziehen oder ein Beispiel laden. Hochgeladen wird nichts.",
+  "validate.lead":
+    "Datei einfügen, hineinziehen oder ein Beispiel laden. Hochgeladen wird nichts.",
   "validate.paste": "Einfügen",
   "validate.examples": "Beispiele",
   "validate.drop_hint": "cvd.json hierher ziehen oder Datei auswählen",
@@ -179,7 +195,8 @@ export const de: Dict = {
   "validate.errors": "Fehler",
   "validate.warnings": "Warnungen",
   "validate.infos": "Hinweise",
-  "validate.no_issues": "Nichts zu beanstanden. Das Dokument entspricht der Spezifikation.",
+  "validate.no_issues":
+    "Nichts zu beanstanden. Das Dokument entspricht der Spezifikation.",
   "validate.fix_in_generator": "Im Generator öffnen",
   "validate.explain_this": "Verständlich darstellen",
   "validate.url_title": "Eine URL prüfen",
@@ -187,8 +204,10 @@ export const de: Dict = {
     "Ein Browser darf die Datei einer fremden Domain nur abrufen, wenn diese es erlaubt. Der Umweg über einen eigenen Server hätte einen Preis: Er würde mitlesen, welche Policies Sie prüfen. Und er wäre ein Backend, das es hier nicht gibt. Nehmen Sie deshalb den Befehl unten.",
 
   "explain.title": "Policy erklären",
-  "explain.lead": "Dieselbe Datei, ausgeschrieben für alle, die kein JSON lesen.",
-  "explain.paste_hint": "Dokument einfügen, Datei hineinziehen oder ein Beispiel laden.",
+  "explain.lead":
+    "Dieselbe Datei, ausgeschrieben für alle, die kein JSON lesen.",
+  "explain.paste_hint":
+    "Dokument einfügen, Datei hineinziehen oder ein Beispiel laden.",
   "explain.show_raw": "Rohdaten anzeigen",
   "explain.hide_raw": "Rohdaten ausblenden",
   "explain.open_in_validator": "Im Validator öffnen",
@@ -231,7 +250,8 @@ export const de: Dict = {
   "posture.open.headline": "TESTS ERWÜNSCHT — im Rahmen der Regeln unten",
   "posture.open.body":
     "Tests an den genannten Systemen sind erwünscht, im Rahmen der Regeln weiter unten. Wählen Sie das nur, wenn Sie eingehende Meldungen auch bearbeiten können.",
-  "posture.limited.headline": "TESTS EINGESCHRÄNKT — nur im festgelegten Rahmen",
+  "posture.limited.headline":
+    "TESTS EINGESCHRÄNKT — nur im festgelegten Rahmen",
   "posture.limited.body":
     "Tests sind nur in einem klar abgesteckten Rahmen erlaubt, etwa gegen eine Sandbox oder mit einem eigenen Testkonto. Alles andere ist untersagt.",
   "posture.report_only.headline": "KEINE TESTEINLADUNG — Meldungen willkommen",
@@ -290,17 +310,23 @@ export const de: Dict = {
   "scope.reason.other": "Sonstiges",
 
   "issue.required_missing": "Das Feld {field} fehlt.",
-  "issue.required_missing.hint": "Ohne dieses Pflichtfeld lässt sich das Dokument nicht auswerten.",
-  "issue.testing_required": "Diese Grundhaltung lädt zu Tests ein, deshalb sind Testregeln erforderlich.",
-  "issue.testing_required.hint": "Ergänzen Sie einen testing-Abschnitt oder wählen Sie report_only.",
+  "issue.required_missing.hint":
+    "Ohne dieses Pflichtfeld lässt sich das Dokument nicht auswerten.",
+  "issue.testing_required":
+    "Diese Grundhaltung lädt zu Tests ein, deshalb sind Testregeln erforderlich.",
+  "issue.testing_required.hint":
+    "Ergänzen Sie einen testing-Abschnitt oder wählen Sie report_only.",
   "issue.version_unsupported": "Unbekannte Version. Erwartet wird {expected}.",
-  "issue.version_unsupported.hint": "Bei unbekannter Version darf ein Werkzeug nicht raten.",
+  "issue.version_unsupported.hint":
+    "Bei unbekannter Version darf ein Werkzeug nicht raten.",
   "issue.enum_invalid": "Dieser Wert ist nicht definiert.",
   "issue.enum_invalid.hint": "Erlaubt sind: {allowed}",
   "issue.posture_unknown": "Diese Grundhaltung ist nicht definiert.",
-  "issue.posture_unknown.hint": "Erlaubt sind: open, limited, report_only, prohibited.",
+  "issue.posture_unknown.hint":
+    "Erlaubt sind: open, limited, report_only, prohibited.",
   "issue.canonical_not_https": "canonical muss eine absolute https-URL sein.",
-  "issue.canonical_not_https.hint": "Beispiel: https://example.com/.well-known/cvd.json",
+  "issue.canonical_not_https.hint":
+    "Beispiel: https://example.com/.well-known/cvd.json",
   "issue.pattern_invalid": "Dieser Wert hat nicht die erwartete Form.",
   "issue.format_invalid": "Dieser Wert ist kein gültiges {format}.",
   "issue.type_invalid": "Hier wird {expected} erwartet.",
@@ -308,40 +334,116 @@ export const de: Dict = {
   "issue.min_items": "Hier ist mindestens ein Eintrag nötig.",
   "issue.schema_invalid": "Dieser Wert verletzt die Regel {keyword}.",
   "issue.json_parse": "Das ist kein gültiges JSON. {detail}",
-  "issue.expires_past": "Das Ablaufdatum liegt in der Vergangenheit ({expires}).",
-  "issue.expires_past.hint": "Werkzeuge behandeln das Dokument dann, als gäbe es keines.",
-  "issue.expires_far": "Das Ablaufdatum liegt mehr als zwölf Monate in der Zukunft ({expires}).",
-  "issue.expires_far.hint": "Bei einem kürzeren Zeitraum schaut eher noch einmal jemand hinein.",
+  "issue.expires_past":
+    "Das Ablaufdatum liegt in der Vergangenheit ({expires}).",
+  "issue.expires_past.hint":
+    "Werkzeuge behandeln das Dokument dann, als gäbe es keines.",
+  "issue.expires_far":
+    "Das Ablaufdatum liegt mehr als zwölf Monate in der Zukunft ({expires}).",
+  "issue.expires_far.hint":
+    "Bei einem kürzeren Zeitraum schaut eher noch einmal jemand hinein.",
   "issue.canonical_mismatch":
     "canonical zeigt auf {canonical}, abgerufen wurde die Datei aber von {retrieved}.",
-  "issue.canonical_mismatch.hint": "Möglicherweise wurde das Dokument von anderswo kopiert.",
-  "issue.scope_foreign_host": "{pattern} liegt nicht auf oder unter {own} — dort ist dieses Dokument veröffentlicht.",
-  "issue.scope_foreign_host.hint": "Ein Dokument gilt für den Host, auf dem es liegt, und für alles darunter. Legen Sie dort ein eigenes Dokument ab, oder lassen Sie den Host in seiner security.txt auf dieses hier verweisen.",
-  "issue.testing_target_foreign": "Die Regel für {activity} nennt {target}; {own} deckt das nicht ab.",
-  "issue.testing_target_foreign.hint": "Solange dieser Host nicht selbst auf das Dokument verweist, übergehen Werkzeuge das Ziel.",
-  "issue.canonical_has_credentials": "canonical enthält einen Benutzernamen oder ein Passwort.",
-  "issue.canonical_has_credentials.hint": "Diese Datei wird veröffentlicht. Entfernen Sie die Zugangsdaten und behandeln Sie sie als kompromittiert.",
-  "issue.scope_pattern_unusable": "{pattern} benennt keinen Host und trifft deshalb auf nichts zu.",
-  "issue.scope_pattern_unusable.hint": "Tragen Sie einen Hostnamen ein, etwa example.com, oder *.example.com für alles darunter.",
-  "issue.testing_ignored": "Bei der Grundhaltung {posture} bleiben Testregeln wirkungslos.",
-  "issue.testing_ignored.hint": "Setzen Sie den Standard auf untersagt, oder wählen Sie eine Grundhaltung, die zu Tests einlädt.",
-  "issue.testing_default_broad": "Alles nicht Genannte ist erlaubt, und nichts ist ausgenommen.",
-  "issue.testing_default_broad.hint": "Damit sind auch Überlastungsangriffe, Social Engineering und physischer Zugang erlaubt. Nehmen Sie aus, was Sie nicht wollen.",
-  "issue.condition_targets_empty": "Die Regel für {activity} hat eine leere Zielliste.",
-  "issue.condition_targets_empty.hint": "Eine leere Liste schränkt nichts ein. Entfernen Sie sie, oder tragen Sie die Ziele ein.",
+  "issue.canonical_mismatch.hint":
+    "Möglicherweise wurde das Dokument von anderswo kopiert.",
+  "issue.scope_foreign_host":
+    "{pattern} liegt nicht auf oder unter {own} — dort ist dieses Dokument veröffentlicht.",
+  "issue.scope_foreign_host.hint":
+    "Ein Dokument gilt für den Host, auf dem es liegt, und für alles darunter. Legen Sie dort ein eigenes Dokument ab, oder lassen Sie den Host in seiner security.txt auf dieses hier verweisen.",
+  "issue.testing_target_foreign":
+    "Die Regel für {activity} nennt {target}; {own} deckt das nicht ab.",
+  "issue.testing_target_foreign.hint":
+    "Solange dieser Host nicht selbst auf das Dokument verweist, übergehen Werkzeuge das Ziel.",
+  "issue.canonical_has_credentials":
+    "canonical enthält einen Benutzernamen oder ein Passwort.",
+  "issue.canonical_has_credentials.hint":
+    "Diese Datei wird veröffentlicht. Entfernen Sie die Zugangsdaten und behandeln Sie sie als kompromittiert.",
+  "issue.scope_pattern_unusable":
+    "{pattern} benennt keinen Host und trifft deshalb auf nichts zu.",
+  "issue.scope_pattern_unusable.hint":
+    "Tragen Sie einen Hostnamen ein, etwa example.com, oder *.example.com für alles darunter.",
+  "issue.testing_ignored":
+    "Bei der Grundhaltung {posture} bleiben Testregeln wirkungslos.",
+  "issue.testing_ignored.hint":
+    "Setzen Sie den Standard auf untersagt, oder wählen Sie eine Grundhaltung, die zu Tests einlädt.",
+  "issue.testing_default_broad":
+    "Alles nicht Genannte ist erlaubt, und nichts ist ausgenommen.",
+  "issue.testing_default_broad.hint":
+    "Damit sind auch Überlastungsangriffe, Social Engineering und physischer Zugang erlaubt. Nehmen Sie aus, was Sie nicht wollen.",
+  "issue.condition_targets_empty":
+    "Die Regel für {activity} hat eine leere Zielliste.",
+  "issue.condition_targets_empty.hint":
+    "Eine leere Liste schränkt nichts ein. Entfernen Sie sie, oder tragen Sie die Ziele ein.",
   "issue.string_too_long": "Dieser Text ist länger als {limit} Zeichen.",
   "issue.string_empty": "Dieser Wert darf nicht leer sein.",
   "issue.number_too_small": "Diese Zahl ist zu klein (Grenze {limit}).",
   "issue.number_too_large": "Diese Zahl ist zu groß (Grenze {limit}).",
-  "issue.scope_private_address": "{pattern} ist eine private oder Loopback-Adresse.",
-  "issue.scope_private_address.hint": "Von außen ist sie nicht erreichbar. Interne Adressen in einer öffentlichen Datei verraten mehr, als sie nützen.",
+  "issue.scope_private_address":
+    "{pattern} ist eine private oder Loopback-Adresse.",
+  "issue.scope_private_address.hint":
+    "Von außen ist sie nicht erreichbar. Interne Adressen in einer öffentlichen Datei verraten mehr, als sie nützen.",
+  "generate.step_intake": "Maschinenlesbarer Meldeweg",
+  "generate.intake_question":
+    "Können Sie strukturierte Meldungen entgegennehmen?",
+  "generate.intake_note":
+    "Freiwillig. Auch ohne diese Angabe ist das Dokument vollständig. Menschen melden weiterhin über die Kontaktwege, die Sie vorher angegeben haben.",
+  "generate.intake_url": "Endpunkt, der Meldungen annimmt",
+  "generate.intake_url_help":
+    "Beliebige https-URL, Ihre eigene oder die eines Dienstleisters. Vorschläge gibt es hier nicht.",
+  "generate.intake_schema": "Schema, das der Endpunkt akzeptiert (URL)",
+  "generate.intake_profile": "Meldeprofil",
+  "generate.intake_anonymous":
+    "Meldungen ohne Kontaktangaben werden angenommen",
+  "generate.intake_max_bytes": "Maximale Größe einer Meldung (Bytes)",
+  "generate.intake_attachments": "Anhänge",
+  "generate.intake_attachments_accepted": "angenommen",
+  "generate.intake_attachments_after_contact": "nach Rückfrage",
+  "generate.intake_attachments_not_accepted": "nicht angenommen",
+  "explain.structured_intake": "Strukturierte Meldung",
+  "explain.intake_offered": "möglich",
+  "explain.anonymous_reports": "Anonyme Meldungen",
+  "common.yes": "ja",
+  "common.no": "nein",
+  "issue.intake_not_https": "Der Endpunkt muss eine absolute https-URL sein.",
+  "issue.intake_not_https.hint":
+    "In einer Meldung stehen die Einzelheiten einer offenen Schwachstelle. Diese Angaben dürfen nicht unverschlüsselt übertragen werden.",
+  "issue.intake_has_credentials":
+    "Der Endpunkt enthält einen Benutzernamen oder ein Passwort.",
+  "issue.intake_has_credentials.hint":
+    "Diese Datei wird veröffentlicht. Entfernen Sie die Zugangsdaten und behandeln Sie sie als kompromittiert.",
+  "issue.intake_third_party":
+    "Meldungen gehen an {host} und damit an einen Host außerhalb von {own}.",
+  "issue.intake_third_party.hint":
+    "Das ist normal, wenn ein Dienstleister Ihre Meldestelle betreibt. Prüfen Sie, ob es der ist, den Sie gewählt haben.",
+  "issue.intake_needs_version":
+    "Das Dokument nutzt intake, gibt aber eine ältere Version an.",
+  "issue.intake_needs_version.hint":
+    "Setzen Sie cvd_policy auf {expected}, damit Werkzeuge den Block auswerten.",
+  "issue.intake_profile_without_schema":
+    "Sie nennen das Profil {profile}, geben aber keine Schema-URL an.",
+  "issue.intake_profile_without_schema.hint":
+    "Ohne Schema-URL muss ein Werkzeug von den Vorgaben des Profils ausgehen.",
+  "issue.report_no_reproduction": "Keine Schritte zur Reproduktion.",
+  "issue.report_no_impact": "Keine Auswirkung angegeben.",
+  "issue.report_no_exploitation":
+    "Keine Angabe, ob die Schwachstelle ausgenutzt wird.",
+  "issue.report_credit_without_name":
+    "Credits gewünscht, aber kein Name angegeben.",
+  "issue.report_share_without_contact":
+    "Weitergabe der Kontaktdaten erlaubt, aber es wurden keine angegeben.",
   "issue.scope_empty": "Der Geltungsbereich nennt weder Domains noch Produkte.",
-  "issue.scope_empty.hint": "Ein Ziel, auf das kein Eintrag zutrifft, gilt als außerhalb des Geltungsbereichs.",
-  "issue.scope_overlap": "{pattern} überschneidet sich mit dem früheren Eintrag {other}.",
-  "issue.scope_overlap.hint": "Prüfen Sie, welcher Eintrag gewinnen soll — das steuert precedence.",
-  "issue.product_support_past": "Die Unterstützung für {name} endete am {date}.",
-  "issue.testing_rule_duplicate": "Eine zweite Regel für {activity} — es gilt nur die erste.",
-  "issue.testing_rule_duplicate.hint": "Fassen Sie die Regeln zusammen. Ein späteres, großzügigeres Duplikat bleibt wirkungslos und führt Lesende in die Irre.",
+  "issue.scope_empty.hint":
+    "Ein Ziel, auf das kein Eintrag zutrifft, gilt als außerhalb des Geltungsbereichs.",
+  "issue.scope_overlap":
+    "{pattern} überschneidet sich mit dem früheren Eintrag {other}.",
+  "issue.scope_overlap.hint":
+    "Prüfen Sie, welcher Eintrag gewinnen soll — das steuert precedence.",
+  "issue.product_support_past":
+    "Die Unterstützung für {name} endete am {date}.",
+  "issue.testing_rule_duplicate":
+    "Eine zweite Regel für {activity} — es gilt nur die erste.",
+  "issue.testing_rule_duplicate.hint":
+    "Fassen Sie die Regeln zusammen. Ein späteres, großzügigeres Duplikat bleibt wirkungslos und führt Lesende in die Irre.",
   "issue.testing_unreachable":
     "Die Regel für {activity} erlaubt Tests, aber {target} liegt außerhalb des Geltungsbereichs.",
   "issue.testing_unreachable.hint": "So kann die Regel nie greifen.",
@@ -350,6 +452,13 @@ export const de: Dict = {
   "issue.contact_missing_encryption.hint":
     "Erwägen Sie einen PGP-Schlüssel oder ein S/MIME-Zertifikat.",
 
+  "tools.schema_frozen": "eine veröffentlichte Version ändert sich nie",
+  "tools.report_profile": "Meldeprofil",
+  "tools.report_profile_note": "wie eine eingehende Meldung aufgebaut ist",
+  "faq.q_machine": "Lassen sich eingehende Meldungen maschinell verarbeiten?",
+  "faq.a_machine": "Seit Version 0.2 ja. Eine Policy kann einen Endpunkt nennen, der strukturierte Meldungen annimmt, dazu das Schema, das dieser Endpunkt erwartet, und ob anonyme Meldungen angenommen werden. Wie eine Meldung aufgebaut ist, steht in einem eigenen Profil namens report-0.1: drei Pflichtfelder — Titel, betroffenes Ziel, Beschreibung — und alles Weitere freiwillig, denn Reproduktion und Auswirkung liegen nicht immer vor, und ein fehlendes Feld darf niemanden davon abhalten, überhaupt zu melden. Was kein Werkzeug darf: eine Meldung von sich aus abschicken. In einer Meldung stehen die Einzelheiten einer offenen Schwachstelle; wohin sie gehen, entscheidet ein Mensch. Die Spezifikation schreibt das ausdrücklich vor.",
+  "faq.q_versions": "Was hat sich in 0.2 geändert, und muss ich meine Datei neu erstellen?",
+  "faq.a_versions": "Nein. Eine veröffentlichte Version ändert sich nie, und 0.1-Dokumente bleiben gültig und lesbar — Werkzeuge, die 0.2 beherrschen, müssen sie weiterhin verstehen. Version 0.2 ergänzt genau ein freiwilliges Feld, für den maschinenlesbaren Meldeweg aus der vorigen Frage. Wer ihn nicht braucht, hat nichts zu tun. Der Generator schreibt 0.2, weil das die aktuelle Version ist; inhaltlich steht in der Datei dasselbe wie vorher, plus dem, was Sie zusätzlich ausgefüllt haben.",
   "tools.title": "Werkzeuge",
   "tools.lead":
     "Alles, was zur Umsetzung des Formats nötig ist — und alles, was nötig ist, um es ohne diese Seite zu nutzen.",
@@ -363,7 +472,8 @@ export const de: Dict = {
   "tools.cli_body":
     "Exit-Codes: 0 gültig, 1 Fehler, 2 nur Warnungen, 3 nicht erreichbar. Damit läuft die Prüfung in jeder CI.",
   "tools.third_party": "Implementierungen Dritter",
-  "tools.third_party_empty": "Diese Liste ist offen. Pull Requests sind willkommen.",
+  "tools.third_party_empty":
+    "Diese Liste ist offen. Pull Requests sind willkommen.",
 
   "faq.title": "Fragen",
   "faq.q_prohibit": "Was, wenn ich Tests verbieten will?",
@@ -381,7 +491,8 @@ export const de: Dict = {
   "faq.q_who": "Wer betreibt diese Seite und wovon?",
   "faq.a_who":
     "Die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld — Produkte, die Sie bei uns kaufen können und für dieses Format nicht brauchen. Im Generator steht ein freies Feld für eine beliebige Meldeadresse, ohne Vorbelegung und ohne Auswahlliste. Sollte sich das je ändern, ist diese Seite nicht mehr neutral, und dann gehört das öffentlich gesagt.",
-  "faq.q_others": "Warum nicht disclose.io, Bugcrowd oder eine Bug-Bounty-Plattform?",
+  "faq.q_others":
+    "Warum nicht disclose.io, Bugcrowd oder eine Bug-Bounty-Plattform?",
   "faq.a_others":
     "Die lösen eine andere Aufgabe, und zwar gut: ein Programm betreiben, Forschende bezahlen, viele Meldungen sichten. Sie setzen voraus, dass Sie ein solches Programm überhaupt wollen. Die meisten Organisationen wollen das nicht und haben deshalb bislang gar nichts Maschinenlesbares anzubieten. Dieses Format setzt eine Ebene darunter an: eine Erklärung Ihrer Bedingungen, von Ihnen selbst abgelegt, ohne Konto lesbar.",
   "faq.q_official": "Ist das offiziell oder standardisiert?",
@@ -402,7 +513,8 @@ export const de: Dict = {
   "imprint.register_court": "Registergericht",
   "imprint.register_number": "Registernummer",
   "imprint.vat_title": "Umsatzsteuer-ID",
-  "imprint.vat_body": "Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz",
+  "imprint.vat_body":
+    "Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz",
   "imprint.rstv": "Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV",
   "imprint.email": "E-Mail",
   "imprint.phone": "Telefon",

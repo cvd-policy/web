@@ -152,6 +152,20 @@ export function explain(doc: CvdPolicyDocument): ExplainSection[] {
               },
             ]
           : []),
+        {
+          labelKey: "explain.structured_intake",
+          value: requirements.intake ? "explain.intake_offered" : "explain.none",
+          valueIsKey: true,
+        },
+        ...(requirements.intake?.anonymous !== undefined
+          ? [
+              {
+                labelKey: "explain.anonymous_reports",
+                value: requirements.intake.anonymous ? "common.yes" : "common.no",
+                valueIsKey: true,
+              },
+            ]
+          : []),
       ],
     });
   }

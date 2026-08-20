@@ -1,7 +1,7 @@
 import { authorityAnchors, isAuthoritativeFor, isHostTarget, scopeStateFor } from "./scope.js";
 import { KNOWN_ACTIVITIES } from "./types.js";
 import type { CvdPolicyDocument, TestingConditions } from "./types.js";
-import { SPEC_VERSION } from "./types.js";
+import { isSupportedVersion } from "./types.js";
 
 export type EvaluationReason =
   | "DOCUMENT_EXPIRED"
@@ -54,7 +54,7 @@ export function evaluate(
     return { allowed: false, reason: "DOCUMENT_EXPIRED" };
   }
 
-  if (doc.cvd_policy !== SPEC_VERSION) {
+  if (!isSupportedVersion(doc.cvd_policy)) {
     return { allowed: false, reason: "VERSION_UNKNOWN" };
   }
 

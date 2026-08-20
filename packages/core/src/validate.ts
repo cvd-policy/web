@@ -1,7 +1,7 @@
 import AjvModule from "ajv/dist/2020.js";
 import type { ErrorObject, ValidateFunction } from "ajv";
 import addFormatsModule from "ajv-formats";
-import { schema } from "./schema.generated.js";
+import { LATEST_VERSION, schemas } from "./schema.generated.js";
 import {
   hostOf,
   isAtOrUnder,
@@ -12,7 +12,7 @@ import {
   scopeStateFor,
 } from "./scope.js";
 import type { CvdPolicyDocument } from "./types.js";
-import { SPEC_VERSION } from "./types.js";
+import { SUPPORTED_VERSIONS } from "./types.js";
 
 const Ajv = (AjvModule as unknown as { default?: typeof AjvModule }).default ?? AjvModule;
 const addFormats =
@@ -46,7 +46,17 @@ export interface ValidateOptions {
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
-const validateSchema: ValidateFunction = ajv.compile(schema);
+
+// Every published version is compiled: a 0.1 document is judged by the rules it
+// was written for, not by the newest ones.
+const compiled: Record<string, ValidateFunction> = Object.fromEntries(
+  Object.entries(schemas).map(([version, definition]) => [version, ajv.compile(definition)]),
+);
+
+/** The schema a document asks for, falling back to the newest. */
+function schemaFor(version: unknown): ValidateFunction {
+  return (typeof version === "string" && compiled[version]) || compiled[LATEST_VERSION]!;
+}
 
 /** Milliseconds in a day. */
 const DAY = 86_400_000;
@@ -80,7 +90,9 @@ function mapSchemaError(error: ErrorObject): ValidationIssue | null {
 
     case "const":
       if (at === "/cvd_policy") {
-        return issue("error", "VERSION_UNSUPPORTED", at, { expected: SPEC_VERSION });
+        return issue("error", "VERSION_UNSUPPORTED", at, {
+          expected: SUPPORTED_VERSIONS.join(", "),
+        });
       }
       return issue("error", "ENUM_INVALID", at);
 
@@ -92,10 +104,16 @@ function mapSchemaError(error: ErrorObject): ValidationIssue | null {
 
     case "pattern":
       if (at === "/canonical") return issue("error", "CANONICAL_NOT_HTTPS", at);
+      if (at.startsWith("/report_requirements/intake/")) {
+        return issue("error", "INTAKE_NOT_HTTPS", at);
+      }
       return issue("error", "PATTERN_INVALID", at);
 
     case "format":
       if (at === "/canonical") return issue("error", "CANONICAL_NOT_HTTPS", at);
+      if (at.startsWith("/report_requirements/intake/")) {
+        return issue("error", "INTAKE_NOT_HTTPS", at);
+      }
       return issue("error", "FORMAT_INVALID", at, { format: String(error.params["format"]) });
 
     case "maxItems":
@@ -223,6 +241,51 @@ function semanticIssues(doc: CvdPolicyDocument, options: ValidateOptions): Valid
     found.push(issue("error", "CANONICAL_HAS_CREDENTIALS", "/canonical"));
   }
 
+  // A published endpoint that needs a secret is a leaked secret.
+  const intake = doc.report_requirements?.intake;
+  if (intake) {
+    const credentials = /^[a-z][a-z0-9+.-]*:\/\/[^/]*@/i;
+    for (const [field, value] of [
+      ["url", intake.url],
+      ["schema", intake.schema],
+    ] as const) {
+      if (typeof value === "string" && credentials.test(value)) {
+        found.push(
+          issue("error", "INTAKE_HAS_CREDENTIALS", `/report_requirements/intake/${field}`),
+        );
+      }
+    }
+
+    // Delegation is the normal case, but the author should see where reports go.
+    if (
+      typeof doc.canonical === "string" &&
+      typeof intake.url === "string" &&
+      hostOf(intake.url) !== "" &&
+      !isAtOrUnder(hostOf(doc.canonical), intake.url)
+    ) {
+      found.push(
+        issue("info", "INTAKE_THIRD_PARTY", "/report_requirements/intake/url", {
+          host: hostOf(intake.url),
+          own: hostOf(doc.canonical),
+        }),
+      );
+    }
+
+    if (doc.cvd_policy === "0.1") {
+      found.push(
+        issue("warning", "INTAKE_NEEDS_VERSION", "/cvd_policy", { expected: "0.2" }),
+      );
+    }
+
+    if (intake.profile !== undefined && intake.schema === undefined) {
+      found.push(
+        issue("info", "INTAKE_PROFILE_WITHOUT_SCHEMA", "/report_requirements/intake", {
+          profile: intake.profile,
+        }),
+      );
+    }
+  }
+
   const posture = doc.research?.posture;
   const rules = doc.testing?.rules ?? [];
 
@@ -327,6 +390,7 @@ export function validate(input: unknown, options: ValidateOptions = {}): Validat
   const doc = input as CvdPolicyDocument;
   const version = typeof doc.cvd_policy === "string" ? doc.cvd_policy : null;
 
+  const validateSchema = schemaFor(doc.cvd_policy);
   if (!validateSchema(doc)) {
     for (const error of validateSchema.errors ?? []) {
       const mapped = mapSchemaError(error);

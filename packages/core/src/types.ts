@@ -95,12 +95,27 @@ export type ReportField =
   | "reporter_contact"
   | "proposed_fix";
 
+export interface Intake {
+  /** Endpoint that accepts a structured report. https only, no credentials. */
+  url: string;
+  /** JSON Schema the endpoint accepts. */
+  schema?: string;
+  /** Named report profile the schema builds on, e.g. `report-0.1`. */
+  profile?: string;
+  /** Whether a report without reporter details is accepted. */
+  anonymous?: boolean;
+  max_bytes?: number;
+  attachments?: "accepted" | "after_contact" | "not_accepted";
+}
+
 export interface ReportRequirements {
   required_fields: ReportField[];
   proof_of_exploitation?: "required" | "optional" | "prohibited";
   formats?: Array<"text" | "markdown" | "pdf" | "csaf" | "cvrf" | "vex">;
   max_attachment_mb?: number;
   template?: string;
+  /** Since 0.2. */
+  intake?: Intake;
 }
 
 export interface Disclosure {
@@ -111,7 +126,7 @@ export interface Disclosure {
 }
 
 export interface CvdPolicyDocument {
-  cvd_policy: "0.1";
+  cvd_policy: SpecVersion;
   canonical: string;
   expires: string;
   updated?: string;
@@ -146,4 +161,13 @@ export const KNOWN_ACTIVITIES = [
 
 export type KnownActivity = (typeof KNOWN_ACTIVITIES)[number];
 
-export const SPEC_VERSION = "0.1";
+/** Every published version stays readable; a release never changes. */
+export const SUPPORTED_VERSIONS = ["0.1", "0.2"] as const;
+
+export type SpecVersion = (typeof SUPPORTED_VERSIONS)[number];
+
+/** The version `generate` writes. */
+export const SPEC_VERSION: SpecVersion = "0.2";
+
+export const isSupportedVersion = (value: unknown): value is SpecVersion =>
+  typeof value === "string" && (SUPPORTED_VERSIONS as readonly string[]).includes(value);

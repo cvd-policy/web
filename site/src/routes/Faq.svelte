@@ -5,6 +5,8 @@
   const entries = [
     "prohibit",
     "legal",
+    "machine",
+    "versions",
     "cra",
     "who",
     "securitytxt",

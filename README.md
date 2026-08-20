@@ -5,6 +5,9 @@ whether security research is welcome, on what, under which conditions, how to
 report, and how disclosure is handled. One JSON file at
 `/.well-known/cvd.json`, plus one field in `security.txt`.
 
+Since format version 0.2, a policy can also name an endpoint that accepts a
+**structured report**, so incoming reports need not be parsed out of an email.
+
 **Funding:** This site is run by Skalvar Technologies UG (haftungsbeschränkt) in
 Wismar, Germany, which earns its money developing IT security software. The
 format, the library and this site work without our products and without us.
@@ -12,7 +15,7 @@ format, the library and this site work without our products and without us.
 ## Layout
 
 ```text
-packages/core/     @cvd-policy/core — validation, generation, evaluation
+packages/core/     @cvd-policy/core — validation, generation, evaluation, reports
 packages/cli/      @cvd-policy/cli — command line tool
 site/              cvd-policy.eu — Vite + Svelte 5 + SCSS, static build
 site/vendor/spec/  Specification artefacts, copied in (see below)
@@ -33,10 +36,15 @@ npm run site:build    # static output in site/dist
 
 ## Working with the specification
 
-The site renders `SPEC.md`, serves the JSON Schema and loads the examples; the
-library embeds the schema so it never needs the network. Those artefacts are
+The site renders `SPEC.md`, serves the schemas and loads the examples; the
+library embeds every schema so it never needs the network. Those artefacts are
 **copied into this repository and committed**, so a static host can build the
 site without cloning anything else.
+
+Every published format version is kept: `0.1` and `0.2` are compiled separately,
+and a document is validated against the version it declares. A released version
+never changes, so an old file keeps being judged by the rules it was written
+for. The report profile `report-0.1` is embedded the same way.
 
 ```bash
 git clone https://github.com/cvd-policy/spec ../cvd-policy-spec
@@ -45,9 +53,42 @@ npm run sync:spec:check     # fail if the copies have drifted (used by CI)
 ```
 
 Set `CVD_SPEC_DIR` if the specification sits elsewhere. The conformance tests —
-the corpus of valid and invalid documents — run against that repository
-directly and **skip with a notice when it is absent**, since duplicating 45
-fixtures here would only invite drift.
+the corpora of valid and invalid documents and reports — run against that
+repository directly and **skip with a notice when it is absent**, since
+duplicating those fixtures here would only invite drift.
+
+## What the library does
+
+```typescript
+import { validate, validateReport, generate, evaluate, explain } from "@cvd-policy/core";
+
+validate(doc);          // schema for the declared version, plus semantic rules
+validateReport(report);  // an incoming report against the report-0.1 profile
+evaluate(doc, "automated_scanning", "api.example.com");
+```
+
+Issues are stable codes with JSON Pointers, never finished prose, so the UI owns
+the wording. See [packages/core/README.md](packages/core/README.md).
+
+On the command line:
+
+```bash
+npx @cvd-policy/cli validate cvd.json
+npx @cvd-policy/cli check https://example.com
+npx @cvd-policy/cli report incoming.json
+```
+
+## Two rules that outrank convenience
+
+**A document speaks only for hosts it has authority over** — the host it is
+published on and anything under it, plus any host that pointed at it from its
+own `security.txt`. Anyone can list someone else's domain in a policy; that is a
+claim, never permission.
+
+**No tool submits a report on its own.** A report carries the details of an
+unfixed vulnerability. `intake` says where such a report may go; deciding to
+send it is a judgement a person makes. The specification requires the receiving
+host to be shown first, and forbids attaching files automatically.
 
 ## Principles
 
@@ -73,5 +114,7 @@ These take precedence over any feature decision.
 
 ## Status
 
-Version 0.1, draft. The `CVD-Policy` field is not registered with IANA; that
-application only makes sense once real use exists.
+Format version 0.2, draft; 0.1 remains published and valid. Packages are
+versioned independently and currently track the format version. The
+`CVD-Policy` field is not registered with IANA; that application only makes
+sense once real use exists.

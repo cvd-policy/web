@@ -10,6 +10,7 @@
   import StepScope from "./generate/StepScope.svelte";
   import StepTesting from "./generate/StepTesting.svelte";
   import StepReport from "./generate/StepReport.svelte";
+  import StepIntake from "./generate/StepIntake.svelte";
   import StepDisclosure from "./generate/StepDisclosure.svelte";
   import StepValidity from "./generate/StepValidity.svelte";
   import StepResult from "./generate/StepResult.svelte";
@@ -21,6 +22,7 @@
     { key: "scope", labelKey: "generate.step_scope", component: StepScope, quick: false },
     { key: "testing", labelKey: "generate.step_testing", component: StepTesting, quick: false },
     { key: "report", labelKey: "generate.step_report", component: StepReport, quick: false },
+    { key: "intake", labelKey: "generate.step_intake", component: StepIntake, quick: false },
     { key: "disclosure", labelKey: "generate.step_disclosure", component: StepDisclosure, quick: false },
     { key: "validity", labelKey: "generate.step_validity", component: StepValidity, quick: true },
     { key: "result", labelKey: "generate.step_result", component: StepResult, quick: true },

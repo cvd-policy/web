@@ -4,7 +4,11 @@
 
   let { answers }: { answers: WizardAnswers } = $props();
 
-  const disclosure = $derived((answers.disclosure ??= {}));
+  // The object has to exist before anything binds to it. Creating it inside
+  // $derived would be a state change during a computation, which Svelte forbids.
+  // svelte-ignore state_referenced_locally
+  answers.disclosure ??= {};
+  const disclosure = $derived(answers.disclosure);
 
   const models: Disclosure["model"][] = [
     "coordinated",

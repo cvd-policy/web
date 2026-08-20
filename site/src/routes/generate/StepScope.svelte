@@ -4,9 +4,11 @@
 
   let { answers }: { answers: WizardAnswers } = $props();
 
-  const scope = $derived(
-    (answers.scope ??= { precedence: "out_overrides_in", web: [], products: [] }),
-  );
+  // The object has to exist before anything binds to it. Creating it inside
+  // $derived would be a state change during a computation, which Svelte forbids.
+  // svelte-ignore state_referenced_locally
+  answers.scope ??= { precedence: "out_overrides_in", web: [], products: [] };
+  const scope = $derived(answers.scope);
 
   const states: ScopeState[] = ["in", "out"];
   const reasons = ["third_party", "legacy", "not_operated", "other"] as const;

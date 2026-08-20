@@ -8,11 +8,21 @@ const here = dirname(fileURLToPath(import.meta.url));
 const vendor = join(here, "..", "vendor", "spec");
 const publicDir = join(here, "..", "public");
 
-const schemaTarget = join(publicDir, "schema", "0.1");
-mkdirSync(schemaTarget, { recursive: true });
+// Every published version stays reachable at its own URL, plus the profiles.
+for (const version of ["0.1", "0.2"]) {
+  const target = join(publicDir, "schema", version);
+  mkdirSync(target, { recursive: true });
+  copyFileSync(
+    join(vendor, "schema", `cvd-policy-${version}.schema.json`),
+    join(target, "cvd-policy.schema.json"),
+  );
+}
+
+const profileTarget = join(publicDir, "schema", "profiles");
+mkdirSync(profileTarget, { recursive: true });
 copyFileSync(
-  join(vendor, "schema", "cvd-policy-0.1.schema.json"),
-  join(schemaTarget, "cvd-policy.schema.json"),
+  join(vendor, "schema", "profiles", "report-0.1.schema.json"),
+  join(profileTarget, "report-0.1.schema.json"),
 );
 
 const examplesTarget = join(publicDir, "examples");

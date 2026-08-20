@@ -4,7 +4,11 @@
 
   let { answers }: { answers: WizardAnswers } = $props();
 
-  const requirements = $derived((answers.reportRequirements ??= { required_fields: [] }));
+  // The object has to exist before anything binds to it. Creating it inside
+  // $derived would be a state change during a computation, which Svelte forbids.
+  // svelte-ignore state_referenced_locally
+  answers.reportRequirements ??= { required_fields: [] };
+  const requirements = $derived(answers.reportRequirements);
 
   const fields: ReportField[] = [
     "affected_asset",

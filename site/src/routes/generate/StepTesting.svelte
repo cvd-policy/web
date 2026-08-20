@@ -6,7 +6,11 @@
   let { answers }: { answers: WizardAnswers } = $props();
 
   const invitesTesting = $derived(answers.posture === "open" || answers.posture === "limited");
-  const testing = $derived((answers.testing ??= { default: "prohibited", rules: [] }));
+  // The object has to exist before anything binds to it. Creating it inside
+  // $derived would be a state change during a computation, which Svelte forbids.
+  // svelte-ignore state_referenced_locally
+  answers.testing ??= { default: "prohibited", rules: [] };
+  const testing = $derived(answers.testing);
   const states: TestingState[] = ["allowed", "prohibited"];
 
   function addRule() {

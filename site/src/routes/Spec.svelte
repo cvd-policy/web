@@ -22,8 +22,11 @@
       <p class="notice">{t("spec.translated_notice")}</p>
     {/if}
     <p class="row small">
-      <a href="/schema/0.1/cvd-policy.schema.json">{t("spec.schema")}</a>
+      <a href="/schema/0.2/cvd-policy.schema.json">{t("spec.schema")} 0.2</a>
+      <a href="/schema/0.1/cvd-policy.schema.json">0.1</a>
+      <a href="/schema/profiles/report-0.1.schema.json">{t("tools.report_profile")}</a>
     </p>
+    <p class="small mute">{t("spec.versions_note")}</p>
   </div>
 
   {#await rendered then html}

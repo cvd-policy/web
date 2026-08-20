@@ -1,28 +1,35 @@
 # @cvd-policy/core
 
-Reference implementation of the CVD Policy Format 0.1. Framework-free, works in
-the browser and in Node. The schema is embedded at build time, so nothing is
-fetched at runtime.
+Reference implementation of the CVD Policy Format. Framework-free, works in the
+browser and in Node. Every published schema is embedded at build time, so
+nothing is fetched at runtime.
+
+Format versions 0.1 and 0.2 are both supported: a document is validated against
+the version it declares, because a released version never changes.
 
 ```bash
 npm i @cvd-policy/core
 ```
 
 ```typescript
-import { validate, generate, evaluate, explain, securityTxtLines } from "@cvd-policy/core";
+import { validate, validateReport, generate, evaluate, explain } from "@cvd-policy/core";
 
 const result = validate(JSON.parse(raw));
 // { valid: false, issues: [{ level: "error", code: "EXPIRES_PAST", path: "/expires", … }] }
 
 const decision = evaluate(doc, "automated_scanning", "api.example.com");
 // { allowed: true, reason: "RULE_ALLOWED", conditions: { max_requests_per_second: 5 } }
+
+const report = validateReport(JSON.parse(incoming));
+// { valid: true, issues: [{ level: "info", code: "REPORT_NO_REPRODUCTION", … }] }
 ```
 
 ## What each function does
 
 | Function             | Purpose                                                            |
 | -------------------- | ------------------------------------------------------------------ |
-| `validate`           | Schema plus the semantic rules JSON Schema cannot express          |
+| `validate`           | Schema for the declared version, plus the semantic rules           |
+| `validateReport`     | An incoming report against the `report-0.1` profile                |
 | `validateText`       | Same, for unparsed JSON text                                       |
 | `generate`           | Builds a document from wizard answers                              |
 | `answersFrom`        | Reads a document back into answers, for editing                    |
@@ -57,6 +64,23 @@ where you fetched the target's own policy and it agrees.
 
 `validate` applies the same rule, so its `SCOPE_FOREIGN_HOST` and
 `TESTING_TARGET_FOREIGN` warnings predict what evaluators will do.
+
+## Incoming reports
+
+Since format version 0.2 a policy may carry `report_requirements.intake`: an
+endpoint that accepts a structured report, the schema it expects, and whether
+anonymous submission is allowed. `validateReport` checks a report against the
+`report-0.1` profile.
+
+Three fields are required — title, target, description. Missing steps to
+reproduce or impact produce `info`, never an error, because they are not always
+available and a missing field must never stop someone from reporting. Claimed
+exploitation without evidence *is* an error, and exploitation is a three-state
+value so that an unticked box is never stored as a denial.
+
+**This library never sends anything.** `intake` says where a report may go;
+deciding to send it is a judgement a person makes, and the specification
+requires the receiving host to be shown first.
 
 ## Messages are codes, not text
 

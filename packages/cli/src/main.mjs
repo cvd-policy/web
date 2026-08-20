@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { explain, validateText } from "@cvd-policy/core";
+import { explain, validateReport, validateText } from "@cvd-policy/core";
 import { describe } from "./messages.mjs";
 import { fetchPolicy } from "./fetch.mjs";
 
@@ -9,6 +9,7 @@ const USAGE = `cvd-policy — CVD Policy Format 0.1
   cvd-policy validate -            validate stdin
   cvd-policy check <url|domain>    fetch and validate a published policy
   cvd-policy explain <file>        print a document in plain language
+  cvd-policy report <file>         validate a report against the report profile
 
 Exit codes: 0 valid, 1 errors, 2 warnings only, 3 not reachable.
 `;
@@ -67,6 +68,15 @@ export async function run(argv) {
       const result = validateText(body, { retrievedFrom: url });
       console.log(`discovered for ${discoveredFor}`);
       return report(result, url);
+    }
+
+    if (command === "report") {
+      if (!argument) {
+        console.error("report needs a file or -");
+        return 1;
+      }
+      const raw = argument === "-" ? await readStdin() : readFileSync(argument, "utf8");
+      return report(validateReport(JSON.parse(raw)), argument === "-" ? "stdin" : argument);
     }
 
     if (command === "explain") {

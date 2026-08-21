@@ -1,16 +1,5 @@
-import AjvModule from "ajv/dist/2020.js";
-import type { ValidateFunction } from "ajv";
-import addFormatsModule from "ajv-formats";
-import { reportProfile } from "./schema.generated.js";
+import { report as validateProfile } from "../generated/validators.js";
 import type { ValidationIssue, ValidationResult } from "./validate.js";
-
-const Ajv = (AjvModule as unknown as { default?: typeof AjvModule }).default ?? AjvModule;
-const addFormats =
-  (addFormatsModule as unknown as { default?: typeof addFormatsModule }).default ?? addFormatsModule;
-
-const ajv = new Ajv({ allErrors: true, strict: false });
-addFormats(ajv);
-const validateProfile: ValidateFunction = ajv.compile(reportProfile);
 
 /** A vulnerability report following the `report-0.1` profile. */
 export interface CvdReport {

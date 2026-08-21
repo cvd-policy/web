@@ -4,3 +4,6 @@ dist/
 *.log
 .vite/
 coverage/
+
+# Built by packages/core/scripts/build-validators.mjs; the .d.ts beside it is committed.
+packages/core/generated/validators.js

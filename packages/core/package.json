@@ -1,6 +1,6 @@
 {
   "name": "@cvd-policy/core",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Reference implementation of the CVD Policy Format: validation, generation, evaluation, explanation.",
   "license": "Apache-2.0",
   "type": "module",
@@ -14,14 +14,16 @@
   },
   "files": [
     "dist",
+    "generated",
     "LICENSE"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/build-validators.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build"
   },
   "dependencies": {
     "ajv": "^8.17.1",

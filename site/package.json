@@ -13,7 +13,8 @@
     "postbuild": "node scripts/build-routes.mjs",
     "build:icons": "node scripts/build-icons.mjs",
     "build:sitemap": "node scripts/build-sitemap.mjs",
-    "check:dict": "node scripts/check-dict.mjs"
+    "check:dict": "node scripts/check-dict.mjs",
+    "preview:csp": "node scripts/preview-csp.mjs"
   },
   "dependencies": {
     "@cvd-policy/core": "*",

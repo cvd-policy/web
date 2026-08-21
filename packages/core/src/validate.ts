@@ -1,7 +1,7 @@
-import AjvModule from "ajv/dist/2020.js";
-import type { ErrorObject, ValidateFunction } from "ajv";
-import addFormatsModule from "ajv-formats";
-import { LATEST_VERSION, schemas } from "./schema.generated.js";
+import type { ErrorObject } from "ajv";
+import { v0_1, v0_2 } from "../generated/validators.js";
+import type { PrecompiledValidator } from "../generated/validators.js";
+import { LATEST_VERSION } from "./schema.generated.js";
 import {
   hostOf,
   isAtOrUnder,
@@ -14,9 +14,6 @@ import {
 import type { CvdPolicyDocument } from "./types.js";
 import { SUPPORTED_VERSIONS } from "./types.js";
 
-const Ajv = (AjvModule as unknown as { default?: typeof AjvModule }).default ?? AjvModule;
-const addFormats =
-  (addFormatsModule as unknown as { default?: typeof addFormatsModule }).default ?? addFormatsModule;
 
 export interface ValidationIssue {
   level: "error" | "warning" | "info";
@@ -44,17 +41,15 @@ export interface ValidateOptions {
   retrievedFrom?: string;
 }
 
-const ajv = new Ajv({ allErrors: true, strict: false });
-addFormats(ajv);
-
 // Every published version is compiled: a 0.1 document is judged by the rules it
-// was written for, not by the newest ones.
-const compiled: Record<string, ValidateFunction> = Object.fromEntries(
-  Object.entries(schemas).map(([version, definition]) => [version, ajv.compile(definition)]),
-);
+// was written for, not by the newest ones. The compiling happens at build time
+// — see scripts/build-validators.mjs — because Ajv's usual approach of building
+// a function from a string is refused under a strict Content-Security-Policy,
+// which would take the whole page down with it.
+const compiled: Record<string, PrecompiledValidator> = { "0.1": v0_1, "0.2": v0_2 };
 
 /** The schema a document asks for, falling back to the newest. */
-function schemaFor(version: unknown): ValidateFunction {
+function schemaFor(version: unknown): PrecompiledValidator {
   return (typeof version === "string" && compiled[version]) || compiled[LATEST_VERSION]!;
 }
 

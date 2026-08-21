@@ -8,7 +8,7 @@ export const de: Dict = {
   "nav.generate": "Erzeugen",
   "nav.validate": "Prüfen",
   "nav.explain": "Erklären",
-  "nav.tools": "Werkzeuge",
+  "nav.tools": "Tools",
   "nav.faq": "Fragen",
   "nav.imprint": "Impressum",
   "nav.skip": "Zum Inhalt springen",
@@ -33,13 +33,13 @@ export const de: Dict = {
 
   "home.title": "Sagen Sie, wie Sie mit Schwachstellenmeldungen umgehen.",
   "home.lead":
-    "Das CVD Policy Format ist eine kleine JSON-Datei an einem festgelegten Ort. Darin steht, ob Sicherheitsforschung erwünscht ist, woran, unter welchen Bedingungen und wie gemeldet werden soll. Werkzeuge können die Datei auswerten, Menschen können sie lesen.",
+    "Das CVD Policy Format ist eine kleine JSON-Datei an einem festgelegten Ort. Darin steht, ob Sicherheitsforschung erwünscht ist, woran, unter welchen Bedingungen und wie gemeldet werden soll. Tools können die Datei auswerten, Menschen können sie lesen.",
   "home.what_title": "Kurz erklärt",
   "home.what_body":
-    "Die security.txt nennt eine Kontaktadresse. Ob Tests erlaubt sind, welche Systeme überhaupt Ihnen gehören und was nach einer Meldung passiert, kann sie nicht ausdrücken. Diese Angaben stehen heute — wenn überhaupt — als Fließtext auf einer Webseite. Das CVD Policy Format bringt sie in eine Datei, die ein Werkzeug auswerten kann, bevor die erste Anfrage gestellt wird.",
+    "Die security.txt nennt eine Kontaktadresse. Ob Tests erlaubt sind, welche Systeme überhaupt Ihnen gehören und was nach einer Meldung passiert, kann sie nicht ausdrücken. Diese Angaben stehen heute — wenn überhaupt — als Fließtext auf einer Webseite. Das CVD Policy Format bringt sie in eine Datei, die ein Tool auswerten kann, bevor die erste Anfrage gestellt wird.",
   "home.privacy_title": "Nichts verlässt Ihr Gerät",
   "home.privacy_body":
-    "Generator, Prüfung und Erklärung laufen vollständig im Browser. Kein Backend, kein Upload, keine Anfrage an fremde Domains. Wer das nicht glaubt, öffnet die Entwicklerwerkzeuge und schaut im Netzwerk-Tab nach.",
+    "Generator, Prüfung und Erklärung laufen vollständig im Browser. Kein Backend, kein Upload, keine Anfrage an fremde Domains. Wer das nicht glaubt, öffnet die Entwicklertools und schaut im Netzwerk-Tab nach.",
   "home.cta_generate": "Datei erstellen",
   "home.cta_validate": "Datei prüfen",
   "home.cta_spec": "Spezifikation lesen",
@@ -67,7 +67,13 @@ export const de: Dict = {
   "spec.translated_notice":
     "Diese Übersetzung soll das Verständnis erleichtern. Verbindlich ist die englische Fassung.",
   "spec.versions_note": "Version 0.1 bleibt veröffentlicht und gültig: Eine veröffentlichte Version ändert sich nie. 0.2 ergänzt ein freiwilliges Feld.",
+  "spec.package_versions_note":
+    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.3 setzt Format 0.2 um: Die Paketversion sagt, was sich am Paket geändert hat, cvd_policy im Dokument sagt, nach welchen Regeln dieses Dokument geschrieben wurde.",
   "spec.schema": "JSON Schema",
+
+  "notfound.title": "Seite nicht gefunden",
+  "notfound.lead":
+    "Unter dieser Adresse gibt es hier keine Seite. Die gesuchte Datei liegt möglicherweise auf einer fremden Domain — diese Seite hält nur das Format selbst vor.",
 
   "generate.title": "Policy erzeugen",
   "generate.lead":
@@ -103,7 +109,7 @@ export const de: Dict = {
   "generate.posture_question": "Wie gehen Sie mit Sicherheitsforschung um?",
   "generate.statement": "In Ihren eigenen Worten",
   "generate.statement_help":
-    "Richtet sich an Menschen, nicht an Werkzeuge. Höchstens 1000 Zeichen.",
+    "Richtet sich an Menschen, nicht an Tools. Höchstens 1000 Zeichen.",
   "generate.contact_question": "Wohin sollen Meldungen gehen?",
   "generate.contact_equal_note":
     "Alle vier Möglichkeiten sind gleichwertig. Diese Seite empfiehlt keinen Anbieter und hat keinen voreingetragen.",
@@ -157,18 +163,43 @@ export const de: Dict = {
   "generate.expires_help":
     "Zwölf Monate sind ein guter Wert: Eine Datei, die einmal im Jahr geprüft wird, veraltet seltener, ohne dass es auffällt.",
   "generate.expires_months": "Monate ab heute",
-  "generate.result_title": "Ihre Datei",
+  "generate.result_title": "Ihre Dateien",
   "generate.result_step1": "Datei ablegen unter",
   "generate.result_step2": "Diese Zeile in Ihre security.txt aufnehmen",
+  "generate.result_step2_help":
+    "Hat der Host noch keine security.txt, nehmen Sie die oben — diese Zeile steht dort bereits.",
   "generate.result_step3": "Prüfen",
-  "generate.result_human": "Lesbare Fassung (HTML)",
-  "generate.result_human_help":
-    "Das Feld Policy: in der security.txt erwartet eine Seite für Menschen. Sie entsteht hier aus denselben Daten.",
+  "generate.result_securitytxt_preview": "security.txt anzeigen",
+  "generate.import_title": "Veröffentlichen Sie bereits eine security.txt?",
+  "generate.import_help":
+    "Ziehen Sie die Datei hierher — was darin schon beantwortet ist, wird übernommen: Kontakte, Sprachen, das Ablaufdatum, die Domain und der Link zu Ihrem Schlüssel. Der Schlüssel selbst wird nicht angefasst; übernommen wird allein die Adresse, die auf ihn verweist, und zwar unverändert. Gelesen wird die Datei in diesem Tab, hochgeladen wird sie nicht.",
+  "generate.securitytxt_drop_hint": "security.txt hierher ziehen oder Datei auswählen",
+  "generate.import_done": "Eingelesen",
+  "generate.import_done_help":
+    "Im letzten Schritt erhalten Sie dieselbe Datei mit der ergänzten Zeile CVD-Policy zurück — so veröffentlichen Sie beides gemeinsam.",
+  "generate.import_signed":
+    "Diese Datei ist signiert. Die ergänzte Zeile CVD-Policy zerstört die Signatur — ein Feld hinzuzufügen und die Signatur zu behalten, geht nicht — Sie müssen die Datei vor der Veröffentlichung also erneut signieren.",
+  "generate.import_forget": "Datei verwerfen",
+  "generate.merge_title": "Vorhandene security.txt ergänzen",
+  "generate.merge_help":
+    "Fügen Sie Ihre bisherige Datei ein oder ziehen Sie sie hierher. Sie kommt zurück mit dem Feld CVD-Policy, das auf Ihre cvd.json verweist — sonst bleibt alles, wie es war: Kommentare, Reihenfolge, Leerzeilen. Gelesen wird die Datei in diesem Tab, hochgeladen wird sie nicht.",
+  "generate.merge_paste": "Ihre bisherige security.txt",
+  "generate.merge_added": "Feld ergänzt",
+  "generate.merge_replaced": "Feld aktualisiert",
+  "generate.merge_unchanged": "Bereits aktuell",
+  "generate.merge_previous": "vorher",
+  "generate.merge_signed":
+    "Diese Datei ist signiert. Die Signatur passt nicht mehr zum geänderten Text — signieren Sie die Datei vor der Veröffentlichung erneut.",
+  "generate.result_publish": "Veröffentlichen",
+  "generate.result_files_help":
+    "Die cvd.json ist die maschinenlesbare Datei. Die security.txt verweist Meldende darauf. Die cvd-policy.html ist die Seite für Menschen — das Feld Policy: in der security.txt erwartet eine solche Seite, und sie entsteht aus denselben Angaben.",
+  "generate.result_files_merged":
+    "Die security.txt hier ist Ihre eigene Datei mit der ergänzten Zeile CVD-Policy, keine neue. Die cvd-policy.html ist die Seite für Menschen, aus denselben Angaben erzeugt.",
   "generate.result_permalink": "Entwurfslink",
   "generate.result_permalink_help":
     "Der Entwurf steckt hinter dem #-Zeichen der URL. Diesen Teil übertragen Browser grundsätzlich nicht an den Server — der Link bleibt auf Ihrem Gerät, solange Sie ihn nicht selbst weitergeben.",
   "generate.result_no_leak":
-    "Kein Datenabfluss: Diese Datei ist vollständig auf Ihrem Gerät entstanden.",
+    "Kein Datenabfluss: Diese Dateien sind vollständig auf Ihrem Gerät entstanden.",
   "generate.result_invalid":
     "Das Dokument ist noch nicht gültig. Die Prüfung nennt die Gründe.",
   "generate.result_valid": "Das Dokument ist gültig.",
@@ -318,7 +349,7 @@ export const de: Dict = {
     "Ergänzen Sie einen testing-Abschnitt oder wählen Sie report_only.",
   "issue.version_unsupported": "Unbekannte Version. Erwartet wird {expected}.",
   "issue.version_unsupported.hint":
-    "Bei unbekannter Version darf ein Werkzeug nicht raten.",
+    "Bei unbekannter Version darf ein Tool nicht raten.",
   "issue.enum_invalid": "Dieser Wert ist nicht definiert.",
   "issue.enum_invalid.hint": "Erlaubt sind: {allowed}",
   "issue.posture_unknown": "Diese Grundhaltung ist nicht definiert.",
@@ -337,7 +368,7 @@ export const de: Dict = {
   "issue.expires_past":
     "Das Ablaufdatum liegt in der Vergangenheit ({expires}).",
   "issue.expires_past.hint":
-    "Werkzeuge behandeln das Dokument dann, als gäbe es keines.",
+    "Tools behandeln das Dokument dann, als gäbe es keines.",
   "issue.expires_far":
     "Das Ablaufdatum liegt mehr als zwölf Monate in der Zukunft ({expires}).",
   "issue.expires_far.hint":
@@ -353,7 +384,7 @@ export const de: Dict = {
   "issue.testing_target_foreign":
     "Die Regel für {activity} nennt {target}; {own} deckt das nicht ab.",
   "issue.testing_target_foreign.hint":
-    "Solange dieser Host nicht selbst auf das Dokument verweist, übergehen Werkzeuge das Ziel.",
+    "Solange dieser Host nicht selbst auf das Dokument verweist, übergehen Tools das Ziel.",
   "issue.canonical_has_credentials":
     "canonical enthält einen Benutzernamen oder ein Passwort.",
   "issue.canonical_has_credentials.hint":
@@ -362,6 +393,10 @@ export const de: Dict = {
     "{pattern} benennt keinen Host und trifft deshalb auf nichts zu.",
   "issue.scope_pattern_unusable.hint":
     "Tragen Sie einen Hostnamen ein, etwa example.com, oder *.example.com für alles darunter.",
+  "issue.posture_contradiction":
+    "Die Grundhaltung {posture} lädt nicht zu Tests ein, es sind aber Testregeln eingetragen.",
+  "issue.posture_contradiction.hint":
+    "Entfernen Sie die Regeln — oder wählen Sie die Grundhaltung limited oder open, wenn Sie Tests tatsächlich erlauben wollen.",
   "issue.testing_ignored":
     "Bei der Grundhaltung {posture} bleiben Testregeln wirkungslos.",
   "issue.testing_ignored.hint":
@@ -418,11 +453,11 @@ export const de: Dict = {
   "issue.intake_needs_version":
     "Das Dokument nutzt intake, gibt aber eine ältere Version an.",
   "issue.intake_needs_version.hint":
-    "Setzen Sie cvd_policy auf {expected}, damit Werkzeuge den Block auswerten.",
+    "Setzen Sie cvd_policy auf {expected}, damit Tools den Block auswerten.",
   "issue.intake_profile_without_schema":
     "Sie nennen das Profil {profile}, geben aber keine Schema-URL an.",
   "issue.intake_profile_without_schema.hint":
-    "Ohne Schema-URL muss ein Werkzeug von den Vorgaben des Profils ausgehen.",
+    "Ohne Schema-URL muss ein Tool von den Vorgaben des Profils ausgehen.",
   "issue.report_no_reproduction": "Keine Schritte zur Reproduktion.",
   "issue.report_no_impact": "Keine Auswirkung angegeben.",
   "issue.report_no_exploitation":
@@ -455,14 +490,10 @@ export const de: Dict = {
   "tools.schema_frozen": "eine veröffentlichte Version ändert sich nie",
   "tools.report_profile": "Meldeprofil",
   "tools.report_profile_note": "wie eine eingehende Meldung aufgebaut ist",
-  "faq.q_machine": "Lassen sich eingehende Meldungen maschinell verarbeiten?",
-  "faq.a_machine": "Seit Version 0.2 ja. Eine Policy kann einen Endpunkt nennen, der strukturierte Meldungen annimmt, dazu das Schema, das dieser Endpunkt erwartet, und ob anonyme Meldungen angenommen werden. Wie eine Meldung aufgebaut ist, steht in einem eigenen Profil namens report-0.1: drei Pflichtfelder — Titel, betroffenes Ziel, Beschreibung — und alles Weitere freiwillig, denn Reproduktion und Auswirkung liegen nicht immer vor, und ein fehlendes Feld darf niemanden davon abhalten, überhaupt zu melden. Was kein Werkzeug darf: eine Meldung von sich aus abschicken. In einer Meldung stehen die Einzelheiten einer offenen Schwachstelle; wohin sie gehen, entscheidet ein Mensch. Die Spezifikation schreibt das ausdrücklich vor.",
-  "faq.q_versions": "Was hat sich in 0.2 geändert, und muss ich meine Datei neu erstellen?",
-  "faq.a_versions": "Nein. Eine veröffentlichte Version ändert sich nie, und 0.1-Dokumente bleiben gültig und lesbar — Werkzeuge, die 0.2 beherrschen, müssen sie weiterhin verstehen. Version 0.2 ergänzt genau ein freiwilliges Feld, für den maschinenlesbaren Meldeweg aus der vorigen Frage. Wer ihn nicht braucht, hat nichts zu tun. Der Generator schreibt 0.2, weil das die aktuelle Version ist; inhaltlich steht in der Datei dasselbe wie vorher, plus dem, was Sie zusätzlich ausgefüllt haben.",
-  "tools.title": "Werkzeuge",
+  "tools.title": "Tools",
   "tools.lead":
     "Alles, was zur Umsetzung des Formats nötig ist — und alles, was nötig ist, um es ohne diese Seite zu nutzen.",
-  "tools.for_implementers": "Für Implementierer",
+  "tools.for_implementers": "Für Entwickler",
   "tools.schema": "JSON Schema",
   "tools.library": "Bibliothek",
   "tools.cli": "Kommandozeile",
@@ -471,6 +502,11 @@ export const de: Dict = {
   "tools.action": "GitHub Action",
   "tools.cli_body":
     "Exit-Codes: 0 gültig, 1 Fehler, 2 nur Warnungen, 3 nicht erreichbar. Damit läuft die Prüfung in jeder CI.",
+  "tools.securitytxt": "security.txt",
+  "tools.securitytxt_body":
+    "Die Bibliothek schreibt und ergänzt auch die security.txt, damit ein Tool RFC 9116 nicht selbst nachbauen muss. Beim Ergänzen einer vorhandenen Datei bleiben Kommentare, Reihenfolge, Leerzeilen und Zeilenenden unangetastet; zurückgemeldet wird, ob das Feld ergänzt, ersetzt oder bereits richtig war.",
+  "tools.securitytxt_signed":
+    "Eine im Klartext signierte Datei lässt sich nicht ändern, ohne die Signatur zu zerstören. Beide Funktionen melden das, statt es zu verschweigen — so kann Ihr Tool denjenigen benachrichtigen, der erneut signieren muss.",
   "tools.third_party": "Implementierungen Dritter",
   "tools.third_party_empty":
     "Diese Liste ist offen. Pull Requests sind willkommen.",
@@ -482,12 +518,22 @@ export const de: Dict = {
   "faq.q_securitytxt": "Ersetzt das die security.txt?",
   "faq.a_securitytxt":
     "Nein. Die security.txt bleibt, wie sie ist, und behält ihre Aufgabe. Dieses Format ergänzt sie um ein einziges Feld, CVD-Policy, das auf eine Datei verweist — mit den Antworten, für die in der security.txt keine Felder vorgesehen sind.",
+  "faq.q_securitytxt_write": "Schreibt das auch meine security.txt?",
+  "faq.a_securitytxt_write":
+    "Ja. Haben Sie noch keine, erzeugt der Generator aus denselben Angaben eine vollständige Datei: Kontakt, Gültigkeitsdatum, Sprachen, den Link zu Ihrem Schlüssel und die Zeile CVD-Policy, die auf Ihre cvd.json verweist. Haben Sie schon eine, ziehen Sie sie im ersten Schritt hinein — Sie erhalten Ihre eigene Datei zurück, ergänzt um genau diese eine Zeile, sonst unverändert, samt Kommentaren und Reihenfolge. Gelesen wird sie in Ihrem Browser, hochgeladen wird sie nie.",
+  "faq.q_signed": "Ich signiere meine security.txt. Was passiert dann?",
+  "faq.a_signed":
+    "RFC 9116 erlaubt eine im Klartext signierte security.txt, und jede Änderung an einer solchen Datei zerstört ihre Signatur. Ein Feld zu ergänzen und die Signatur zu behalten, ist nicht möglich — hier nicht und anderswo auch nicht. Diese Seite sagt das, statt es zu umgehen: Trägt die übergebene Datei eine Signatur, erfahren Sie es in dem Moment und beim Ergebnis noch einmal. Die geänderte Datei ist richtig, die noch daran hängende Signatur nicht mehr. Signieren Sie sie vor der Veröffentlichung erneut, mit demselben Schlüssel.",
   "faq.q_cra": "Ist das ein CRA-Nachweis?",
   "faq.a_cra":
-    "Nein. Der Cyber Resilience Act verlangt Prozesse, keine JSON-Datei. Das Format kann festhalten, was Sie ohnehin entschieden haben: Kontaktstelle, unterstützte Versionen, Umgang mit der Offenlegung, und zwar so, dass ein Prüfer es lesen und ein Werkzeug es testen kann. Das ist Dokumentation, keine Konformität.",
+    "Nein. Der Cyber Resilience Act verlangt Prozesse, keine JSON-Datei. Das Format kann festhalten, was Sie ohnehin entschieden haben: Kontaktstelle, unterstützte Versionen, Umgang mit der Offenlegung, und zwar so, dass ein Prüfer es lesen und ein Tool es testen kann. Das ist Dokumentation, keine Konformität.",
   "faq.q_legal": "Gibt mir das Rechtssicherheit?",
   "faq.a_legal":
     "Nein. Ein Policy-Dokument ist eine einseitige Erklärung: kein Vertrag, keine Einwilligung im strafrechtlichen Sinn, kein Haftungsausschluss. Wer sich darauf verlässt, trägt das Risiko selbst. Umgekehrt gilt dasselbe: Wer eines veröffentlicht, erwirbt daraus keinen Anspruch gegen Forschende. Wenn die Rechtslage für Ihre Entscheidung wichtig ist, fragen Sie eine Anwältin oder einen Anwalt, kein Dateiformat.",
+  "faq.q_machine": "Lassen sich eingehende Meldungen maschinell verarbeiten?",
+  "faq.a_machine": "Seit Version 0.2 ja. Eine Policy kann einen Endpunkt nennen, der strukturierte Meldungen annimmt, dazu das Schema, das dieser Endpunkt erwartet, und ob anonyme Meldungen angenommen werden. Wie eine Meldung aufgebaut ist, steht in einem eigenen Profil namens report-0.1: drei Pflichtfelder — Titel, betroffenes Ziel, Beschreibung — und alles Weitere freiwillig, denn Reproduktion und Auswirkung liegen nicht immer vor, und ein fehlendes Feld darf niemanden davon abhalten, überhaupt zu melden. Was kein Tool darf: eine Meldung von sich aus abschicken. In einer Meldung stehen die Einzelheiten einer offenen Schwachstelle; wohin sie gehen, entscheidet ein Mensch. Die Spezifikation schreibt das ausdrücklich vor.",
+  "faq.q_versions": "Was hat sich in 0.2 geändert, und muss ich meine Datei neu erstellen?",
+  "faq.a_versions": "Nein. Eine veröffentlichte Version ändert sich nie, und 0.1-Dokumente bleiben gültig und lesbar — Tools, die 0.2 beherrschen, müssen sie weiterhin verstehen. Version 0.2 ergänzt genau ein freiwilliges Feld, für den maschinenlesbaren Meldeweg aus der vorigen Frage. Wer ihn nicht braucht, hat nichts zu tun. Der Generator schreibt 0.2, weil das die aktuelle Version ist; inhaltlich steht in der Datei dasselbe wie vorher, plus dem, was Sie zusätzlich ausgefüllt haben.",
   "faq.q_who": "Wer betreibt diese Seite und wovon?",
   "faq.a_who":
     "Die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld — Produkte, die Sie bei uns kaufen können und für dieses Format nicht brauchen. Im Generator steht ein freies Feld für eine beliebige Meldeadresse, ohne Vorbelegung und ohne Auswahlliste. Sollte sich das je ändern, ist diese Seite nicht mehr neutral, und dann gehört das öffentlich gesagt.",
@@ -497,7 +543,7 @@ export const de: Dict = {
     "Die lösen eine andere Aufgabe, und zwar gut: ein Programm betreiben, Forschende bezahlen, viele Meldungen sichten. Sie setzen voraus, dass Sie ein solches Programm überhaupt wollen. Die meisten Organisationen wollen das nicht und haben deshalb bislang gar nichts Maschinenlesbares anzubieten. Dieses Format setzt eine Ebene darunter an: eine Erklärung Ihrer Bedingungen, von Ihnen selbst abgelegt, ohne Konto lesbar.",
   "faq.q_official": "Ist das offiziell oder standardisiert?",
   "faq.a_official":
-    "Nein. Es ist ein Entwurf, Version 0.1, veröffentlicht unter CC0. Das Feld in der security.txt ist bei der IANA nicht registriert; ein Antrag lohnt sich erst, wenn es echte Nutzung gibt. Bis dahin: ein Vorschlag, den Sie übernehmen, abwandeln oder liegen lassen können.",
+    "Nein. Es ist ein Entwurf, Version 0.2, veröffentlicht unter CC0; 0.1 bleibt veröffentlicht und gültig. Das Feld in der security.txt ist bei der IANA nicht registriert; ein Antrag lohnt sich erst, wenn es echte Nutzung gibt. Bis dahin: ein Vorschlag, den Sie übernehmen, abwandeln oder liegen lassen können.",
   "faq.q_without": "Kann ich das ohne euch nutzen?",
   "faq.a_without":
     "Ja, darum geht es. Spezifikation und Schema stehen unter CC0: kopieren, selbst hosten, verändern. Bibliothek und Seite stehen unter Apache-2.0. Jedes Dokument aus dem Generator kommt ohne jeden Hinweis auf einen Anbieter aus, und die Datei liegt auf Ihrer eigenen Domain. Einen Rückkanal zu uns gibt es nicht.",

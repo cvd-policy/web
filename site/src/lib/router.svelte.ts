@@ -9,11 +9,19 @@ export const ROUTES = [
   "/imprint",
 ] as const;
 
-export type Route = (typeof ROUTES)[number];
+/**
+ * Where an unknown path lands. Not in ROUTES: it is neither navigable nor
+ * listed in the sitemap, and the host serves it with a 404 status.
+ */
+export const NOT_FOUND = "/404";
 
+export type Route = (typeof ROUTES)[number] | typeof NOT_FOUND;
+
+// An unknown path used to render the start page under its own URL, so the site
+// answered 200 for every address anyone cared to invent.
 const normalise = (path: string): Route => {
   const trimmed = path.replace(/\/+$/, "") || "/";
-  return (ROUTES as readonly string[]).includes(trimmed) ? (trimmed as Route) : "/";
+  return (ROUTES as readonly string[]).includes(trimmed) ? (trimmed as Route) : NOT_FOUND;
 };
 
 let path = $state<Route>(normalise(location.pathname));

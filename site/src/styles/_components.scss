@@ -88,13 +88,15 @@ label {
 .field {
   display: block;
   margin-bottom: var(--sp-4);
+}
 
-  .help {
-    color: var(--c-text-mute);
-    font-size: 0.875rem;
-    font-weight: 400;
-    margin-top: var(--sp-1);
-  }
+// Help sits under the thing it explains, inside a field or not: the rule used
+// to be nested in .field, which left every other use looking like body text.
+.help {
+  color: var(--c-text-mute);
+  font-size: 0.875rem;
+  font-weight: 400;
+  margin-top: var(--sp-1);
 }
 
 input[type="text"],

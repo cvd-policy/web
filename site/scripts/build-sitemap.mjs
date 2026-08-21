@@ -2,19 +2,15 @@
 // new page cannot be forgotten here.
 //
 //   SITE_URL=https://cvd-policy.eu node scripts/build-sitemap.mjs
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readRoutes } from "./routes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const site = (process.env["SITE_URL"] ?? "https://cvd-policy.eu").replace(/\/+$/, "");
 
-const router = readFileSync(join(here, "..", "src", "lib", "router.svelte.ts"), "utf8");
-const block = router.match(/export const ROUTES = \[(.*?)\]/s);
-if (!block) throw new Error("ROUTES not found in router.svelte.ts");
-
-const routes = [...block[1].matchAll(/"([^"]+)"/g)].map((match) => match[1]);
-if (routes.length === 0) throw new Error("ROUTES is empty");
+const routes = readRoutes();
 
 // The start page is what people link to; the tools change with the library.
 const priority = (route) => (route === "/" ? "1.0" : route === "/imprint" ? "0.3" : "0.7");

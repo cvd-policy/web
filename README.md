@@ -29,10 +29,16 @@ online, and without inheriting this repository's licence.
 
 ```bash
 npm install
-npm test              # library and command line tool
+npm test              # library, command line tool and site
 npm run site:dev      # http://localhost:5173
 npm run site:build    # static output in site/dist
 ```
+
+The build writes one HTML file per route, each with its own title, description
+and canonical URL, plus a `404.html`. Without that every address served the same
+head, which tells a crawler that every page is a copy of the start page. Adding
+a route to `ROUTES` is enough: the sitemap and the prerendered pages both read
+from there.
 
 ## Working with the specification
 
@@ -114,7 +120,13 @@ These take precedence over any feature decision.
 
 ## Status
 
-Format version 0.2, draft; 0.1 remains published and valid. Packages are
-versioned independently and currently track the format version. The
-`CVD-Policy` field is not registered with IANA; that application only makes
+Format version 0.2, draft; 0.1 remains published and valid.
+
+Packages are versioned independently of the format. They tracked it up to
+`0.2.0`, and no longer do: `@cvd-policy/core` and `@cvd-policy/cli` are at
+`0.3.0` while the format stays at 0.2. A package version says what changed in
+the package; `cvd_policy` inside a document says which rules the document was
+written for. Reading either as the other will mislead.
+
+The `CVD-Policy` field is not registered with IANA; that application only makes
 sense once real use exists.

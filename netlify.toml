@@ -1,0 +1,28 @@
+# Netlify build for cvd-policy.eu.
+#
+# The site imports @cvd-policy/core, whose entry point is dist/, and dist/ is
+# not committed. Building the site on its own therefore fails on a fresh
+# checkout with "Failed to resolve entry for package @cvd-policy/core" — the
+# library has to be compiled first, which is what `npm run build` does.
+#
+# HTTP headers and the 404 rule are NOT repeated here. They live in
+# site/public/_headers and site/public/_redirects, which Vite copies into the
+# publish directory. One source, because keeping the same rules in two files is
+# exactly how ops/Caddyfile and _headers drifted apart once already.
+
+[build]
+  command = "npm run build"
+  publish = "site/dist"
+
+[build.environment]
+  # Matches the version CI builds with.
+  NODE_VERSION = "22"
+
+# Titles, descriptions and canonical URLs are baked into the HTML at build time,
+# so a preview would otherwise claim to be cvd-policy.eu. Netlify marks previews
+# noindex regardless; this just makes the pages honest about where they are.
+[context.deploy-preview]
+  command = "SITE_URL=$DEPLOY_PRIME_URL npm run build"
+
+[context.branch-deploy]
+  command = "SITE_URL=$DEPLOY_PRIME_URL npm run build"

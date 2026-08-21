@@ -2,7 +2,15 @@
   import { readFile } from "../lib/download.js";
   import { t } from "../lib/i18n.svelte.js";
 
-  let { onload }: { onload: (text: string, name: string) => void } = $props();
+  let {
+    onload,
+    accept = "application/json,.json",
+    hintKey = "validate.drop_hint",
+  }: {
+    onload: (text: string, name: string) => void;
+    accept?: string;
+    hintKey?: string;
+  } = $props();
   let over = $state(false);
   let input: HTMLInputElement;
 
@@ -35,11 +43,11 @@
     }
   }}
 >
-  <p>{t("validate.drop_hint")}</p>
+  <p>{t(hintKey)}</p>
   <input
     bind:this={input}
     type="file"
-    accept="application/json,.json"
+    {accept}
     hidden
     onchange={(event) => take(event.currentTarget.files?.[0])}
   />

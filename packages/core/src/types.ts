@@ -1,4 +1,8 @@
-/** Type definitions for a CVD Policy document, version 0.1. */
+/**
+ * Type definitions for a CVD Policy document. The shape covers every published
+ * version; `SUPPORTED_VERSIONS` below says which those are, and fields added
+ * after 0.1 are marked on the interface that carries them.
+ */
 
 export type Posture = "open" | "limited" | "report_only" | "prohibited";
 export type ScopeState = "in" | "out";

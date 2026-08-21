@@ -37,6 +37,9 @@ const report = validateReport(JSON.parse(incoming));
 | `scopeStateFor`      | Resolves whether a target is in scope                              |
 | `explain`            | Display sections, no rating of any kind                            |
 | `securityTxtLines`   | The lines to add to a `security.txt`                               |
+| `securityTxt`        | A complete `security.txt`, for a host that has none yet            |
+| `mergeSecurityTxt`   | Sets `CVD-Policy` in an existing file, leaving the rest alone      |
+| `securityTxtCanonical` | Where the `security.txt` belongs, from `canonical`               |
 | `parseSecurityTxt`   | Parses a `security.txt` into fields                                |
 
 ## Authority: which hosts a document may speak for

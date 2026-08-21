@@ -27,9 +27,17 @@
       <a href="/schema/profiles/report-0.1.schema.json">{t("tools.report_profile")}</a>
     </p>
     <p class="small mute">{t("spec.versions_note")}</p>
+    <p class="small mute">{t("spec.package_versions_note")}</p>
   </div>
 
   {#await rendered then html}
+    <!--
+      Unescaped on purpose. The source is the specification vendored into this
+      repository and committed, never anything a visitor supplies, and marked
+      does not sanitise. Two things keep that safe and both have to hold: the
+      text stays trusted, and the CSP forbids inline scripts. If SPEC.md ever
+      comes from somewhere less trusted, sanitise here first.
+    -->
     <article class="prose spec-body">
       {@html html}
     </article>

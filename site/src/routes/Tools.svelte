@@ -11,6 +11,19 @@ npx @cvd-policy/cli report incoming.json    # against the report profile`;
 
   const action = `- name: Check the CVD policy
   run: npx @cvd-policy/cli validate .well-known/cvd.json`;
+
+  const securityTxtApi = `import {
+  securityTxt,            // a complete file, for a host that has none
+  mergeSecurityTxt,       // set CVD-Policy in a file that exists
+  answersFromSecurityTxt, // read an existing file back into answers
+  isSignedSecurityTxt,
+} from "@cvd-policy/core";
+
+const fresh = securityTxt(doc);
+
+const { text, change, previous, signed } = mergeSecurityTxt(existing, doc);
+// change:  "added" | "replaced" | "unchanged"
+// signed:  the edit invalidated a PGP signature`;
 </script>
 
 <div class="stack">
@@ -62,6 +75,14 @@ npx @cvd-policy/cli report incoming.json    # against the report profile`;
         </tr>
       </tbody>
     </table>
+    <p class="help">{t("spec.package_versions_note")}</p>
+  </section>
+
+  <section class="stack">
+    <h2>{t("tools.securitytxt")}</h2>
+    <p class="small">{t("tools.securitytxt_body")}</p>
+    <CodeBlock code={securityTxtApi} />
+    <p class="small mute">{t("tools.securitytxt_signed")}</p>
   </section>
 
   <section class="stack">

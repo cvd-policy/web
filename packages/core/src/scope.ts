@@ -38,9 +38,24 @@ export function isUnusablePattern(pattern: string): boolean {
 /** True for loopback, private, link-local and unspecified addresses. */
 export function isPrivateAddress(host: string): boolean {
   const bare = host.replace(/^\[|\]$/g, "").toLowerCase();
-  if (bare === "localhost" || bare === "::1" || bare === "::" || bare.startsWith("fe80:") || bare.startsWith("fc") || bare.startsWith("fd")) {
-    return true;
+  if (bare === "localhost") return true;
+
+  // An IPv6 address always has a colon. Requiring it is what keeps a domain
+  // such as `fd-tech.de` or `fcbank.com` from being read as a unique local
+  // address — fc00::/7 and fe80::/10 are address prefixes, not name prefixes.
+  if (bare.includes(":")) {
+    // ::ffff:127.0.0.1 is the loopback wearing an IPv6 coat.
+    const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(bare);
+    if (mapped?.[1]) return isPrivateAddress(mapped[1]);
+
+    return (
+      bare === "::1" ||
+      bare === "::" ||
+      bare.startsWith("fe80:") ||
+      /^f[cd][0-9a-f]{0,2}:/.test(bare)
+    );
   }
+
   const parts = bare.split(".").map(Number);
   if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return false;
   const [a = 0, b = 0] = parts;

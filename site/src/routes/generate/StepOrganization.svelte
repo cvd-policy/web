@@ -1,14 +1,25 @@
 <script lang="ts">
   import { canonicalFor } from "@cvd-policy/core";
   import type { WizardAnswers } from "@cvd-policy/core";
+  import SecurityTxtImport from "../../components/SecurityTxtImport.svelte";
   import { t } from "../../lib/i18n.svelte.js";
 
   let { answers }: { answers: WizardAnswers } = $props();
 
+  const domainOf = (canonical: string) =>
+    canonical.replace(/^https:\/\//, "").replace(/\/\.well-known\/cvd\.json$/, "");
+
   // svelte-ignore state_referenced_locally
-  let domain = $state(
-    answers.canonical.replace(/^https:\/\//, "").replace(/\/\.well-known\/cvd\.json$/, ""),
-  );
+  let domain = $state(domainOf(answers.canonical));
+
+  // An import, or an edit to the canonical URL, fills this field in. Comparing
+  // hosts rather than text keeps it from rewriting what is being typed here.
+  $effect(() => {
+    const fromAnswers = domainOf(answers.canonical);
+    if (fromAnswers !== "" && fromAnswers !== domainOf(canonicalFor(domain))) {
+      domain = fromAnswers;
+    }
+  });
 
   // The domain drives both the file location and a first scope entry.
   function applyDomain() {
@@ -25,7 +36,9 @@
 
 <h2 class="u-mt0">{t("generate.step_org")}</h2>
 
-<div class="field">
+<SecurityTxtImport />
+
+<div class="field u-mt6">
   <label for="org-name">{t("generate.org_name")}</label>
   <input id="org-name" type="text" bind:value={answers.organization.name} required />
 </div>

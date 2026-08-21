@@ -58,3 +58,22 @@ test("an unknown command returns 1", async () => {
 test("a missing file returns 1", async () => {
   assert.equal(await runQuiet(["validate", "does-not-exist.json"]), 1);
 });
+
+// Section 8 of the specification: a consumer MUST NOT reach private, loopback,
+// link-local or metadata addresses. `check` follows redirects, so a public host
+// could otherwise use this tool to read the network it runs in.
+test("check refuses to reach inward", async () => {
+  for (const target of [
+    "https://127.0.0.1/.well-known/cvd.json",
+    "https://192.168.1.1/",
+    "https://169.254.169.254/",
+    "https://[::1]/",
+    "localhost",
+  ]) {
+    assert.equal(await runQuiet(["check", target]), 3, target);
+  }
+});
+
+test("check still refuses anything that is not https", async () => {
+  assert.equal(await runQuiet(["check", "http://example.com/"]), 3);
+});

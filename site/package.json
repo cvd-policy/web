@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest run",
     "check": "node scripts/check-dict.mjs && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit -p tsconfig.json",
     "prebuild": "node scripts/sync-public.mjs && node scripts/build-icons.mjs && node scripts/build-sitemap.mjs",
+    "postbuild": "node scripts/build-routes.mjs",
     "build:icons": "node scripts/build-icons.mjs",
     "build:sitemap": "node scripts/build-sitemap.mjs",
     "check:dict": "node scripts/check-dict.mjs"
@@ -23,6 +25,7 @@
     "svelte": "^5.16.0",
     "svelte-check": "^4.1.1",
     "typescript": "^5.6.3",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "vitest": "^4.1.11"
   }
 }

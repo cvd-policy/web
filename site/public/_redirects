@@ -1,3 +1,5 @@
-# The router uses real paths, so unknown paths must serve index.html.
-# Static files under /.well-known, /schema and /examples are matched first.
-/*    /index.html   200
+# Every real route is prerendered to its own index.html by
+# scripts/build-routes.mjs, and static files are matched before this rule. What
+# reaches it is genuinely nothing, so it answers 404 rather than serving the
+# start page under an invented address.
+/*    /404.html   404

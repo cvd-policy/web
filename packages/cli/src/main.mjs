@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
-import { explain, validateReport, validateText } from "@cvd-policy/core";
+import { explain, SUPPORTED_VERSIONS, validateReport, validateText } from "@cvd-policy/core";
 import { describe } from "./messages.mjs";
 import { fetchPolicy } from "./fetch.mjs";
 
-const USAGE = `cvd-policy — CVD Policy Format 0.1
+// Read from the library rather than written out here, which is how the banner
+// came to claim 0.1 long after 0.2 shipped.
+const USAGE = `cvd-policy — CVD Policy Format ${SUPPORTED_VERSIONS.join(", ")}
 
   cvd-policy validate <file>       validate a file
   cvd-policy validate -            validate stdin

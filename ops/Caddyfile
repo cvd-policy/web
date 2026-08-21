@@ -1,0 +1,76 @@
+# Serving the built site from a plain server, for hosts that do not read
+# site/public/_headers and site/public/_redirects.
+#
+# Those two files stay the source of truth for Netlify and Cloudflare Pages.
+# Whatever changes there has to change here as well — there is no way to derive
+# one from the other, so the header block below is duplicated on purpose and
+# marked as such.
+#
+#   caddy run --config ops/Caddyfile
+#
+# Deploy: copy site/dist to /var/www/cvd-policy.eu, then reload Caddy.
+
+cvd-policy.eu, www.cvd-policy.eu {
+	root * /var/www/cvd-policy.eu
+
+	# Keep the www variant from becoming a second address for the same content.
+	@www host www.cvd-policy.eu
+	redir @www https://cvd-policy.eu{uri} permanent
+
+	header {
+		# Mirrors site/public/_headers
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		Permissions-Policy "interest-cohort=(), geolocation=(), camera=(), microphone=()"
+		Cross-Origin-Opener-Policy "same-origin"
+
+		# The server is not part of the story we tell about this site.
+		-Server
+	}
+
+	# Both files are meant to be fetched by other people's tools.
+	@wellknown path /.well-known/cvd.json
+	header @wellknown {
+		Content-Type "application/json"
+		Access-Control-Allow-Origin "*"
+	}
+
+	@schema path /schema/*
+	header @schema {
+		Content-Type "application/schema+json"
+		Access-Control-Allow-Origin "*"
+	}
+
+	# Hashed assets never change under the same name; everything else may.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	@documents path /.well-known/* /schema/* /examples/* /sitemap.xml /robots.txt
+	header @documents Cache-Control "public, max-age=3600"
+
+	# Each route is prerendered to its own directory, so a real path resolves to
+	# a real file. Anything left over is a 404 and is answered as one, rather
+	# than serving the start page under an invented address.
+	try_files {path} {path}/index.html
+	file_server
+
+	handle_errors {
+		@404 expression {err.status_code} == 404
+		handle @404 {
+			rewrite * /404.html
+			file_server {
+				status 404
+			}
+		}
+	}
+
+	encode zstd gzip
+
+	# No request logging: the site promises that nothing is collected, and an
+	# access log is a record of who read which policy.
+	log {
+		output discard
+	}
+}

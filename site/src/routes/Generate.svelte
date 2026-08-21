@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { generate, validate } from "@cvd-policy/core";
+  import { generate, securityTxt, validate } from "@cvd-policy/core";
   import CodeBlock from "../components/CodeBlock.svelte";
   import IssueList from "../components/IssueList.svelte";
   import { t } from "../lib/i18n.svelte.js";
@@ -30,6 +30,11 @@
 
   let index = $state(0);
 
+  // Both files at once made the preview column twice the height of the form
+  // beside it. One at a time, chosen here.
+  const PREVIEW_FILES = ["cvd.json", "security.txt"] as const;
+  let shown = $state<(typeof PREVIEW_FILES)[number]>("cvd.json");
+
   // Fixed reference time, so a relative `expires` does not drift while typing.
   const now = new Date();
 
@@ -38,10 +43,12 @@
   const doc = $derived(generate(wizard.answers, { now }));
   const result = $derived(validate(doc));
   const json = $derived(JSON.stringify(doc, null, 2));
+  const txt = $derived(securityTxt(doc));
 
   // Answers live in this tab only; a reload should not lose them.
   $effect(() => {
     JSON.stringify(wizard.answers);
+    wizard.securityTxt;
     wizard.save();
   });
 
@@ -130,7 +137,19 @@
         </span>
       </div>
       <p class="small mute">{t("generate.preview_note")}</p>
-      <CodeBlock code={json} title="cvd.json" />
+      <div class="row">
+        {#each PREVIEW_FILES as file (file)}
+          <button
+            type="button"
+            class="btn btn-sm {shown === file ? 'btn-primary' : ''}"
+            aria-pressed={shown === file}
+            onclick={() => (shown = file)}
+          >
+            {file}
+          </button>
+        {/each}
+      </div>
+      <CodeBlock code={shown === "cvd.json" ? json : txt} title={shown} />
       {#if result.issues.length > 0}
         <div class="card card-tight">
           <IssueList issues={result.issues} />

@@ -400,14 +400,18 @@ export function validate(input: unknown, options: ValidateOptions = {}): Validat
 
   for (const semantic of semanticIssues(doc, options)) issues.push(semantic);
 
-  const seen = new Set<string>();
-  const unique = issues.filter((entry) => {
+  // Two checks can reach the same conclusion at the same place — the schema and
+  // the semantic rule both catch a posture that contradicts its testing rules.
+  // Keep the one carrying parameters: dropping it leaves the placeholder in the
+  // rendered message, so the reader sees "the posture {posture}".
+  const byId = new Map<string, ValidationIssue>();
+  for (const entry of issues) {
     const id = `${entry.code}@${entry.path}`;
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
+    const kept = byId.get(id);
+    if (!kept || (!kept.params && entry.params)) byId.set(id, entry);
+  }
 
+  const unique = [...byId.values()];
   unique.sort((a, b) => RANK[a.level] - RANK[b.level]);
 
   return {

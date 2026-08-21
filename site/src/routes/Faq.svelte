@@ -10,6 +10,8 @@
     "cra",
     "who",
     "securitytxt",
+    "securitytxt_write",
+    "signed",
     "others",
     "official",
     "without",

@@ -1,3 +1,8 @@
+# Netlify and Cloudflare Pages syntax.
+#
+# ops/Caddyfile carries the same rules for a plain server. The two cannot be
+# derived from one another, so a change here has to be made there as well.
+
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   Referrer-Policy: no-referrer
@@ -6,10 +11,30 @@
   Permissions-Policy: interest-cohort=(), geolocation=(), camera=(), microphone=()
   Cross-Origin-Opener-Policy: same-origin
 
+# Both files are meant to be fetched by other people's tools.
 /.well-known/cvd.json
   Content-Type: application/json
   Access-Control-Allow-Origin: *
 
-/schema/0.1/cvd-policy.schema.json
+# Every published version and the report profiles, not just one of them: a
+# rule naming a single file went stale the moment 0.2 shipped.
+/schema/*
   Content-Type: application/schema+json
   Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+
+# Hashed assets never change under the same name; everything else may.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/.well-known/*
+  Cache-Control: public, max-age=3600
+
+/examples/*
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Cache-Control: public, max-age=3600

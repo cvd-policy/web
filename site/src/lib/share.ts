@@ -15,9 +15,38 @@ const fromBase64Url = (value: string): Uint8Array<ArrayBuffer> => {
   return bytes;
 };
 
+/**
+ * A draft is a handful of kilobytes. The cap is here because the compressed
+ * form arrives in a link someone else wrote: without it, a few hundred bytes of
+ * crafted deflate can ask this tab for gigabytes.
+ */
+const MAX_DRAFT_BYTES = 512 * 1024;
+
 async function through(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
-  const buffer = await new Response(stream).arrayBuffer();
-  return new Uint8Array(buffer);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      total += value.byteLength;
+      if (total > MAX_DRAFT_BYTES) throw new Error("draft is too large");
+      chunks.push(value);
+    }
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, at);
+    at += chunk.byteLength;
+  }
+  return out;
 }
 
 const supportsCompression = typeof CompressionStream !== "undefined";

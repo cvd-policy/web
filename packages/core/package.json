@@ -1,6 +1,6 @@
 {
   "name": "@cvd-policy/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reference implementation of the CVD Policy Format: validation, generation, evaluation, explanation.",
   "license": "Apache-2.0",
   "type": "module",

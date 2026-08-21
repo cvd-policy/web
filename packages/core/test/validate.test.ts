@@ -293,6 +293,19 @@ describe("authoring mistakes worth catching", () => {
     }
   });
 
+  it("keeps the parameters when two checks report the same thing", () => {
+    // The schema and the semantic rule both catch this, at the same path. The
+    // schema knows nothing about the posture, so if its parameterless issue is
+    // the one kept, the message renders as "the posture {posture}".
+    const doc = base();
+    doc.research.posture = "report_only";
+    doc.testing = { default: "prohibited", rules: [{ activity: "manual_testing", state: "allowed" }] };
+
+    const found = validate(doc).issues.filter((issue) => issue.code === "POSTURE_CONTRADICTION");
+    expect(found).toHaveLength(1);
+    expect(found[0]?.params?.["posture"]).toBe("report_only");
+  });
+
   it("flags a subdomain document that speaks for the wider domain", () => {
     const doc = base();
     doc.canonical = "https://blog.example.com/.well-known/cvd.json";

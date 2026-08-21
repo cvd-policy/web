@@ -54,7 +54,7 @@ export function policyHtml(doc: CvdPolicyDocument, lang: string): string {
 ${sections}
     <footer>
       <p>${escape(t("home.not_3"))}</p>
-      <p>CVD Policy Format 0.1 — <code>${escape(doc.canonical ?? "")}</code></p>
+      <p>CVD Policy Format ${escape(doc.cvd_policy ?? "")} — <code>${escape(doc.canonical ?? "")}</code></p>
     </footer>
   </body>
 </html>

@@ -124,7 +124,7 @@ Format version 0.2, draft; 0.1 remains published and valid.
 
 Packages are versioned independently of the format. They tracked it up to
 `0.2.0`, and no longer do: `@cvd-policy/core` and `@cvd-policy/cli` are at
-`0.3.0` while the format stays at 0.2. A package version says what changed in
+`0.4.0` while the format stays at 0.2. A package version says what changed in
 the package; `cvd_policy` inside a document says which rules the document was
 written for. Reading either as the other will mislead.
 

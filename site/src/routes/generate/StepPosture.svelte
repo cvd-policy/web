@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Posture } from "@cvd-policy/core";
+  import Hint from "../../components/Hint.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
@@ -32,6 +33,7 @@
 
 <div class="field u-mt6">
   <label for="statement">{t("generate.statement")} <span class="mute">({t("common.optional")})</span></label>
+  <Hint k="generate.hint_statement" />
   <textarea
     id="statement"
     class="textarea-prose"

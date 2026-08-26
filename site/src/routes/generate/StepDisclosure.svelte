@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Disclosure } from "@cvd-policy/core";
+  import Hint from "../../components/Hint.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
@@ -34,6 +35,7 @@
 
 <div class="field">
   <label for="deadline">{t("generate.disclosure_deadline")}</label>
+  <Hint k="generate.hint_disclosure_deadline" example="90" />
   <input
     id="deadline"
     type="number"

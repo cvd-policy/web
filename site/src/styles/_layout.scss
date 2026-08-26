@@ -153,6 +153,12 @@ main {
   }
 }
 
+// The wizard's own column is what its rows have to fit inside, and it shrinks
+// exactly when the window grows past the point the preview appears beside it.
+.wizard-form {
+  container-type: inline-size;
+}
+
 // Where the second column carries the example, it explains more than the prose
 // does. On one column it goes first.
 .split-example-first {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ReportField } from "@cvd-policy/core";
+  import Hint from "../../components/Hint.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
@@ -79,6 +80,7 @@
 
 <div class="field">
   <label for="max-mb">{t("generate.report_max_mb")}</label>
+  <Hint k="generate.hint_report_max_mb" example="25" />
   <input
     id="max-mb"
     type="number"
@@ -90,5 +92,9 @@
 
 <div class="field">
   <label for="template">{t("generate.report_template")}</label>
+  <Hint
+    k="generate.hint_report_template"
+    example="https://example.com/report-template.md"
+  />
   <input id="template" type="url" placeholder="https://" bind:value={requirements.template} />
 </div>

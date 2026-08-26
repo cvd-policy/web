@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   answersFromSecurityTxt,
   findPolicyUrl,
+  humanPolicyUrl,
   isSignedSecurityTxt,
   mergeSecurityTxt,
   parseSecurityTxt,
@@ -133,13 +134,21 @@ describe("securityTxt", () => {
     expect(securityTxt(doc)).not.toContain("Berlin");
   });
 
-  it("writes the generated human-readable policy URL by default", () => {
-    expect(securityTxt(doc)).toMatch(
-      /^Policy: https:\/\/example\.com\/\.well-known\/cvd-policy\.html$/m,
-    );
+  it("writes no Policy field unless one is given", () => {
+    // The page is a convention, not something a document states. Naming one
+    // the publisher never uploaded would send reporters to a 404.
+    // Anchored: the CVD-Policy line contains "Policy:" as a substring.
+    expect(securityTxt(doc)).not.toMatch(/^Policy:/m);
     expect(
       securityTxt(doc, { policy: "https://example.com/security" }),
     ).toMatch(/^Policy: https:\/\/example\.com\/security$/m);
+  });
+
+  it("offers the conventional page URL for callers that publish one", () => {
+    expect(securityTxt(doc, { policy: humanPolicyUrl(doc) })).toMatch(
+      /^Policy: https:\/\/example\.com\/security\/cvd\.html$/m,
+    );
+    expect(humanPolicyUrl({ ...doc, canonical: "not a url" })).toBeUndefined();
   });
 
   it("takes an explicit canonical, and omits the field when told to", () => {
@@ -159,8 +168,15 @@ describe("mergeSecurityTxt", () => {
     "",
   ].join("\n");
 
+  /** What a caller publishing the readable page passes in. */
+  const policy = "https://example.com/security/cvd.html";
+
+  it("writes no Policy field unless one is given", () => {
+    expect(mergeSecurityTxt(existing, doc).text).not.toMatch(/^Policy:/m);
+  });
+
   it("adds the field after the last one, keeping comments and order", () => {
-    const merged = mergeSecurityTxt(existing, doc);
+    const merged = mergeSecurityTxt(existing, doc, { policy });
     expect(merged.change).toBe("added");
     expect(merged.text).toBe(
       [
@@ -169,19 +185,17 @@ describe("mergeSecurityTxt", () => {
         "Expires: 2027-06-30T23:59:59Z",
         "Preferred-Languages: en",
         "CVD-Policy: https://example.com/.well-known/cvd.json",
-        "Policy: https://example.com/.well-known/cvd-policy.html",
+        "Policy: https://example.com/security/cvd.html",
         "",
       ].join("\n"),
     );
   });
 
-  it("adds the generated human-readable policy URL", () => {
-    const merged = mergeSecurityTxt(existing, doc, {
-      policy: "https://example.com/.well-known/cvd-policy.html",
-    });
+  it("adds the human-readable policy URL it is given", () => {
+    const merged = mergeSecurityTxt(existing, doc, { policy });
 
     expect(merged.text).toContain(
-      "Policy: https://example.com/.well-known/cvd-policy.html",
+      "Policy: https://example.com/security/cvd.html",
     );
     expect(merged.text).toContain(
       "CVD-Policy: https://example.com/.well-known/cvd.json",
@@ -205,10 +219,10 @@ describe("mergeSecurityTxt", () => {
 
   it("adds Policy when the file already names the machine-readable document", () => {
     const current = `${existing}CVD-Policy: https://example.com/.well-known/cvd.json\n`;
-    const merged = mergeSecurityTxt(current, doc);
+    const merged = mergeSecurityTxt(current, doc, { policy });
     expect(merged.change).toBe("added");
     expect(merged.text).toContain(
-      "Policy: https://example.com/.well-known/cvd-policy.html",
+      "Policy: https://example.com/security/cvd.html",
     );
   });
 
@@ -241,14 +255,14 @@ describe("mergeSecurityTxt", () => {
       "",
     ].join("\n");
 
-    const merged = mergeSecurityTxt(raw, doc);
+    const merged = mergeSecurityTxt(raw, doc, { policy });
     expect(merged.signed).toBe(true);
     const lines = merged.text.split("\n");
     expect(
       lines.indexOf("CVD-Policy: https://example.com/.well-known/cvd.json"),
     ).toBe(5);
     expect(lines[6]).toBe(
-      "Policy: https://example.com/.well-known/cvd-policy.html",
+      "Policy: https://example.com/security/cvd.html",
     );
     expect(lines[7]).toBe("-----BEGIN PGP SIGNATURE-----");
   });
@@ -265,9 +279,9 @@ describe("mergeSecurityTxt", () => {
       "",
     ].join("\n");
 
-    const lines = mergeSecurityTxt(signed, doc).text.split("\n");
+    const lines = mergeSecurityTxt(signed, doc, { policy }).text.split("\n");
     expect(
-      lines.indexOf("Policy: https://example.com/.well-known/cvd-policy.html"),
+      lines.indexOf("Policy: https://example.com/security/cvd.html"),
     ).toBe(4);
     expect(lines[5]).toBe("-----BEGIN PGP SIGNATURE-----");
   });
@@ -287,28 +301,28 @@ describe("mergeSecurityTxt", () => {
       "",
     ].join("\n");
 
-    const lines = mergeSecurityTxt(signed, doc).text.split("\n");
+    const lines = mergeSecurityTxt(signed, doc, { policy }).text.split("\n");
     expect(
-      lines.indexOf("Policy: https://example.com/.well-known/cvd-policy.html"),
+      lines.indexOf("Policy: https://example.com/security/cvd.html"),
     ).toBe(6);
     expect(lines[7]).toBe("-----BEGIN PGP SIGNATURE-----");
     expect(lines[8]).toBe("Version: GnuPG v2");
   });
 
   it("handles a file with nothing in it", () => {
-    expect(mergeSecurityTxt("", doc).text).toBe(
+    expect(mergeSecurityTxt("", doc, { policy }).text).toBe(
       "CVD-Policy: https://example.com/.well-known/cvd.json\n" +
-        "Policy: https://example.com/.well-known/cvd-policy.html\n",
+        "Policy: https://example.com/security/cvd.html\n",
     );
   });
 
   it("handles a file of only comments", () => {
-    const merged = mergeSecurityTxt("# nothing here yet\n", doc);
+    const merged = mergeSecurityTxt("# nothing here yet\n", doc, { policy });
     expect(merged.change).toBe("added");
     expect(merged.text).toBe(
       "# nothing here yet\n" +
         "CVD-Policy: https://example.com/.well-known/cvd.json\n" +
-        "Policy: https://example.com/.well-known/cvd-policy.html\n",
+        "Policy: https://example.com/security/cvd.html\n",
     );
   });
 });

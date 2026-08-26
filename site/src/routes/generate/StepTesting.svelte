@@ -1,5 +1,6 @@
 <script lang="ts">
   import { KNOWN_ACTIVITIES } from "@cvd-policy/core";
+  import Hint from "../../components/Hint.svelte";
   import type { TestingState } from "@cvd-policy/core";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
@@ -51,6 +52,7 @@
       <div class="entry-row">
         <div class="field">
           <label for={`activity-${index}`}>{t("generate.testing_activity")}</label>
+          <Hint k="generate.hint_testing_activity" />
           <select id={`activity-${index}`} bind:value={rule.activity}>
             {#each KNOWN_ACTIVITIES as activity (activity)}
               <option value={activity}>{t(`activity.${activity}`)}</option>
@@ -73,6 +75,7 @@
       {#if rule.state === "allowed"}
         <div class="field">
           <label for={`rps-${index}`}>{t("generate.testing_rps")}</label>
+          <Hint k="generate.hint_testing_rps" example="10" />
           <input
             id={`rps-${index}`}
             type="number"
@@ -90,6 +93,7 @@
 
         <div class="field">
           <label for={`ua-${index}`}>{t("generate.testing_ua")}</label>
+          <Hint k="generate.hint_testing_ua" example="example-research/1.0" />
           <input
             id={`ua-${index}`}
             type="text"
@@ -103,6 +107,7 @@
 
         <div class="field">
           <label for={`targets-${index}`}>{t("generate.testing_targets")}</label>
+          <Hint k="generate.hint_testing_targets" example="staging.example.com" />
           <textarea
             id={`targets-${index}`}
             class="textarea-short"
@@ -113,6 +118,10 @@
 
         <div class="field">
           <label for={`account-${index}`}>{t("generate.testing_account")}</label>
+          <Hint
+            k="generate.hint_testing_account"
+            example="https://example.com/researcher-signup"
+          />
           <input
             id={`account-${index}`}
             type="url"
@@ -128,6 +137,7 @@
 
       <div class="field">
         <label for={`note-${index}`}>{t("generate.testing_note")}</label>
+        <Hint k="generate.hint_testing_note" />
         <input id={`note-${index}`} type="text" bind:value={rule.note} />
       </div>
     </fieldset>

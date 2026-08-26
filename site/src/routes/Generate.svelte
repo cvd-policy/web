@@ -1,8 +1,11 @@
 <script lang="ts">
-  import { generate, securityTxt, validate } from "@cvd-policy/core";
+  import { generate, humanPolicyUrl, securityTxt, validate } from "@cvd-policy/core";
+  import type { ValidationIssue } from "@cvd-policy/core";
+  import { tick } from "svelte";
   import CodeBlock from "../components/CodeBlock.svelte";
   import IssueList from "../components/IssueList.svelte";
   import { t } from "../lib/i18n.svelte.js";
+  import { issueTarget } from "../lib/issueTarget.js";
   import { wizard } from "../lib/wizard.svelte.js";
   import StepOrganization from "./generate/StepOrganization.svelte";
   import StepPosture from "./generate/StepPosture.svelte";
@@ -43,7 +46,9 @@
   const doc = $derived(generate(wizard.answers, { now }));
   const result = $derived(validate(doc));
   const json = $derived(JSON.stringify(doc, null, 2));
-  const txt = $derived(securityTxt(doc));
+  // The generator hands over cvd.html alongside, so the Policy field it
+  // writes points at a page the publisher actually has.
+  const txt = $derived(securityTxt(doc, { policy: humanPolicyUrl(doc) }));
 
   // Answers live in this tab only; a reload should not lose them.
   $effect(() => {
@@ -55,6 +60,43 @@
   function go(next: number) {
     index = Math.max(0, Math.min(next, steps.length - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /**
+   * Opens the step an issue came from and puts the cursor in the field.
+   *
+   * A quick-mode wizard hides most steps, so an issue in one of them would have
+   * nowhere to go: the mode is widened first rather than the click doing
+   * nothing. The flash is what makes the jump legible when the field is one of
+   * several on screen.
+   */
+  async function showIssue(issue: ValidationIssue) {
+    const target = issueTarget(issue.path);
+    if (!target) return;
+
+    if (!steps.some((entry) => entry.key === target.step)) wizard.setMode("full");
+    await tick();
+
+    const position = steps.findIndex((entry) => entry.key === target.step);
+    if (position === -1) return;
+    index = position;
+    await tick();
+
+    const field = target.field ? document.getElementById(target.field) : null;
+    if (!field) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    field.scrollIntoView({ behavior: "smooth", block: "center" });
+    field.focus({ preventScroll: true });
+
+    const box = field.closest(".field") ?? field;
+    box.classList.remove("field-flash");
+    // Reading offsetWidth restarts the animation when the same field is
+    // clicked twice: without it the class is re-added in the same frame.
+    void (box as HTMLElement).offsetWidth;
+    box.classList.add("field-flash");
   }
 
   function setMode(mode: "quick" | "full") {
@@ -88,7 +130,7 @@
   </div>
 
   <div class="split">
-    <div class="stack">
+    <div class="stack wizard-form">
       <ol class="steps">
         {#each steps as entry, position (entry.key)}
           <li>
@@ -159,7 +201,7 @@
       <CodeBlock code={shown === "cvd.json" ? json : txt} title={shown} />
       {#if result.issues.length > 0}
         <div class="card card-tight">
-          <IssueList issues={result.issues} />
+          <IssueList issues={result.issues} onselect={showIssue} />
         </div>
       {/if}
     </div>

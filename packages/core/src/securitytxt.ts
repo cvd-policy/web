@@ -297,7 +297,7 @@ export function mergeSecurityTxt(
   const [policy, ...extraPolicies] = fields.filter(
     (field) => field.name === "policy",
   );
-  const policyValue = options.policy ?? humanPolicyUrl(doc);
+  const policyValue = options.policy;
 
   let text = upsertSecurityTxtField(raw, "CVD-Policy", doc.canonical);
   if (policyValue) text = upsertSecurityTxtField(text, "Policy", policyValue);
@@ -338,9 +338,27 @@ export function securityTxtCanonical(doc: CvdPolicyDocument): string | null {
   }
 }
 
-function humanPolicyUrl(doc: CvdPolicyDocument): string | undefined {
+/**
+ * Where a human-readable policy page would sit on the host `doc.canonical`
+ * names.
+ *
+ * Deliberately not under `/.well-known/`. RFC 8615 governs that namespace by
+ * registry, and `cvd.json` earns its place there because section 3.2 makes it
+ * the path a consumer falls back to. This page is never discovered — it is only
+ * ever reached through the `Policy` field, which carries an absolute URL — so
+ * it takes an ordinary path and leaves the reserved namespace alone.
+ *
+ * Unlike `securityTxtCanonical`, this is a convention and not a derivation:
+ * nothing fixes the location, and no specification requires such a page to
+ * exist. Pass the result to `securityTxt` or `mergeSecurityTxt` as
+ * `options.policy` only when you are publishing that page too. A `Policy` field
+ * pointing at a file nobody uploaded is worse for a reporter than no field.
+ */
+export const HUMAN_POLICY_PATH = "/security/cvd.html";
+
+export function humanPolicyUrl(doc: CvdPolicyDocument): string | undefined {
   try {
-    return new URL("cvd-policy.html", doc.canonical).toString();
+    return new URL(HUMAN_POLICY_PATH, doc.canonical).toString();
   } catch {
     return undefined;
   }
@@ -349,7 +367,10 @@ function humanPolicyUrl(doc: CvdPolicyDocument): string | undefined {
 export interface SecurityTxtOptions {
   /** Absolute URL the file will be served from. Derived from `canonical` when omitted. */
   canonical?: string | null;
-  /** Absolute URL of a page people can read, written as `Policy`. */
+  /**
+   * Absolute URL of a page people can read, written as `Policy`. Omitted
+   * unless given: see `humanPolicyUrl` for why this is never assumed.
+   */
   policy?: string;
 }
 
@@ -394,8 +415,7 @@ export function securityTxt(
       : options.canonical;
   if (canonical) lines.push(`Canonical: ${canonical}`);
 
-  const policy = options.policy ?? humanPolicyUrl(doc);
-  if (policy) lines.push(`Policy: ${policy}`);
+  if (options.policy) lines.push(`Policy: ${options.policy}`);
 
   if (doc.canonical) lines.push(cvdPolicyLine(doc));
 

@@ -14,14 +14,20 @@ npx @cvd-policy/cli report incoming.json    # against the report profile`;
 
   const securityTxtApi = `import {
   securityTxt,            // a complete file, for a host that has none
-  mergeSecurityTxt,       // set CVD-Policy in a file that exists
+  mergeSecurityTxt,       // set CVD-Policy and Policy in a file that exists
   answersFromSecurityTxt, // read an existing file back into answers
+  humanPolicyUrl,         // where a readable page would sit, by convention
   isSignedSecurityTxt,
 } from "@cvd-policy/core";
 
-const fresh = securityTxt(doc);
+// Policy is written only if you pass one. Name a page you are actually
+// publishing; leaving it out beats pointing reporters at a 404.
+const policy = humanPolicyUrl(doc);
 
-const { text, change, previous, signed } = mergeSecurityTxt(existing, doc);
+const fresh = securityTxt(doc, { policy });
+
+const { text, change, previous, signed } =
+  mergeSecurityTxt(existing, doc, { policy });
 // change:  "added" | "replaced" | "unchanged"
 // signed:  the edit invalidated a PGP signature`;
 </script>
@@ -54,11 +60,23 @@ const { text, change, previous, signed } = mergeSecurityTxt(existing, doc);
         </tr>
         <tr>
           <th scope="row">{t("tools.library")}</th>
-          <td><code>npm i @cvd-policy/core</code></td>
+          <td>
+            <code>npm i @cvd-policy/core</code>
+            <span aria-hidden="true"> · </span>
+            <a href="https://www.npmjs.com/package/@cvd-policy/core" rel="noopener noreferrer">
+              {t("tools.on_npm")}
+            </a>
+          </td>
         </tr>
         <tr>
           <th scope="row">{t("tools.cli")}</th>
-          <td><code>npx @cvd-policy/cli</code></td>
+          <td>
+            <code>npx @cvd-policy/cli</code>
+            <span aria-hidden="true"> · </span>
+            <a href="https://www.npmjs.com/package/@cvd-policy/cli" rel="noopener noreferrer">
+              {t("tools.on_npm")}
+            </a>
+          </td>
         </tr>
         <tr>
           <th scope="row">{t("tools.examples")}</th>
@@ -71,7 +89,14 @@ const { text, change, previous, signed } = mergeSecurityTxt(existing, doc);
         </tr>
         <tr>
           <th scope="row">{t("tools.corpus")}</th>
-          <td>github.com/cvd-policy/spec/tree/main/tests</td>
+          <td>
+            <a
+              href="https://github.com/cvd-policy/spec/tree/main/tests"
+              rel="noopener noreferrer"
+            >
+              github.com/cvd-policy/spec/tree/main/tests
+            </a>
+          </td>
         </tr>
       </tbody>
     </table>

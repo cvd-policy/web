@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Hint from "../../components/Hint.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
@@ -17,6 +18,7 @@
 
 <div class="field">
   <label for="intake-url">{t("generate.intake_url")}</label>
+  <Hint k="generate.hint_intake_url" example="https://example.com/api/cvd-report" />
   <input id="intake-url" type="url" placeholder="https://" bind:value={intake.url} />
   <p class="help">{t("generate.intake_url_help")}</p>
 </div>
@@ -24,6 +26,10 @@
 {#if intake.url}
   <div class="field">
     <label for="intake-schema">{t("generate.intake_schema")}</label>
+    <Hint
+      k="generate.hint_intake_schema"
+      example="https://cvd-policy.eu/schema/profiles/report-0.1.schema.json"
+    />
     <input id="intake-schema" type="url" placeholder="https://" bind:value={intake.schema} />
   </div>
 
@@ -54,6 +60,7 @@
 
   <div class="field">
     <label for="intake-max">{t("generate.intake_max_bytes")}</label>
+    <Hint k="generate.hint_intake_max_bytes" example="1048576" />
     <input id="intake-max" type="number" min="1" class="u-w-md" bind:value={intake.maxBytes} />
   </div>
 {/if}

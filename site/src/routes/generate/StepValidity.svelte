@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Hint from "../../components/Hint.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
@@ -22,6 +23,7 @@
 
 <div class="field">
   <label for="expires">{t("generate.expires")}</label>
+  <Hint k="generate.hint_expires" example="2027-06-30" />
   <input
     id="expires"
     type="date"

@@ -5,7 +5,13 @@
   let {
     issues,
     onfix,
-  }: { issues: ValidationIssue[]; onfix?: (issue: ValidationIssue) => void } = $props();
+    onselect,
+  }: {
+    issues: ValidationIssue[];
+    onfix?: (issue: ValidationIssue) => void;
+    /** Given, each issue becomes a button jumping to the field it came from. */
+    onselect?: (issue: ValidationIssue) => void;
+  } = $props();
 
   const groups = $derived([
     { level: "error" as const, titleKey: "validate.errors" },
@@ -22,8 +28,15 @@
     <h3>{t(group.titleKey)}</h3>
     {#each list as issue (issue.code + issue.path)}
       <div class="issue {issue.level}">
-        <p class="issue-path">{issue.path || "/"}</p>
-        <p>{t(issue.message, issue.params)}</p>
+        {#if onselect}
+          <button type="button" class="issue-jump" onclick={() => onselect(issue)}>
+            <span class="issue-path">{issue.path || "/"}</span>
+            <span>{t(issue.message, issue.params)}</span>
+          </button>
+        {:else}
+          <p class="issue-path">{issue.path || "/"}</p>
+          <p>{t(issue.message, issue.params)}</p>
+        {/if}
         {#if has(hintKey(issue))}
           <p class="issue-hint">→ {t(hintKey(issue), issue.params)}</p>
         {/if}

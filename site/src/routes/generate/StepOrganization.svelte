@@ -1,5 +1,6 @@
 <script lang="ts">
   import { canonicalFor } from "@cvd-policy/core";
+  import Hint from "../../components/Hint.svelte";
   import SecurityTxtImport from "../../components/SecurityTxtImport.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
@@ -41,11 +42,13 @@
 
 <div class="field u-mt6">
   <label for="org-name">{t("generate.org_name")}</label>
+  <Hint k="generate.hint_org_name" example="Example GmbH" />
   <input id="org-name" type="text" bind:value={answers.organization.name} required />
 </div>
 
 <div class="field">
   <label for="org-domain">{t("generate.domain")}</label>
+  <Hint k="generate.hint_domain" example="example.com" />
   <input
     id="org-domain"
     type="text"
@@ -58,11 +61,16 @@
 
 <div class="field">
   <label for="org-canonical">{t("generate.canonical")}</label>
+  <Hint
+    k="generate.hint_canonical"
+    example="https://example.com/.well-known/cvd.json"
+  />
   <input id="org-canonical" type="url" bind:value={answers.canonical} />
 </div>
 
 <div class="field">
   <label for="org-country">{t("generate.org_country")} <span class="mute">({t("common.optional")})</span></label>
+  <Hint k="generate.hint_org_country" example="DE" />
   <input
     id="org-country"
     type="text"
@@ -86,5 +94,6 @@
 
 <div class="field">
   <label for="org-url">{t("generate.org_url")} <span class="mute">({t("common.optional")})</span></label>
+  <Hint k="generate.hint_org_url" example="https://example.com" />
   <input id="org-url" type="url" bind:value={answers.organization.url} placeholder="https://" />
 </div>

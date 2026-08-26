@@ -22,6 +22,9 @@ export const en = {
   "common.remove": "Remove",
   "common.print": "Print",
   "common.of": "of",
+  "generate.languages_none": "None chosen",
+  "common.hint_label": "What goes in this field",
+  "common.hint_example": "Example:",
 
   "footer.funding":
     "This site is run by Skalvar Technologies UG (haftungsbeschränkt) in Wismar, Germany, which earns its money developing IT security software. The format, the library and this site work without our products and without us.",
@@ -56,7 +59,7 @@ export const en = {
   "spec.translated_notice": "This translation is provided for convenience. The English text governs.",
   "spec.versions_note": "Version 0.1 stays published and valid: a released version never changes. 0.2 adds one optional field.",
   "spec.package_versions_note":
-    "Package versions are not format versions. @cvd-policy/core 0.3 implements format 0.2: a package version says what changed in the package, while cvd_policy inside a document says which rules that document was written for.",
+    "Package versions are not format versions. @cvd-policy/core 0.4 implements format 0.2: a package version says what changed in the package, while cvd_policy inside a document says which rules that document was written for.",
   "spec.schema": "JSON Schema",
 
   "notfound.title": "Page not found",
@@ -174,10 +177,82 @@ export const en = {
   "generate.merge_signed":
     "This file is signed. The signature no longer matches the changed text, so sign it again before publishing.",
   "generate.result_publish": "Publishing them",
+  // One line per field, saying what goes in it. Kept short on purpose: this is
+  // a hint next to an input, not the explanation the spec page carries.
+  "generate.hint_org_name":
+    "The legal name of the organisation this policy is for, as it appears on your imprint or register entry.",
+  "generate.hint_domain":
+    "The domain you will publish the file on. It fills in the file location and a first scope entry for you.",
+  "generate.hint_canonical":
+    "The exact address the finished cvd.json will answer at. Reporters and tools use it to confirm the file is really yours.",
+  "generate.hint_org_country":
+    "Two-letter country code for where the organisation is based.",
+  "generate.hint_org_url":
+    "Your main website, for a reporter checking who they are about to contact.",
+  "generate.hint_channel_email":
+    "An address a stranger can reach without an account. A role address outlives any one person.",
+  "generate.hint_channel_form":
+    "A page with a form for reports. It has to be reachable without logging in.",
+  "generate.hint_channel_postal":
+    "A postal address. It appears in the policy but has no security.txt field, so it is never written to that file.",
+  "generate.hint_languages":
+    "Languages you can handle a report in, most comfortable first.",
+  "generate.hint_pgp_url":
+    "Where your public key can be fetched, so a reporter can encrypt before sending.",
+  "generate.hint_pgp_fingerprint":
+    "The fingerprint of that key, so a reporter can check they fetched the right one.",
+  "generate.hint_ack_hours":
+    "Hours within which you will confirm a report arrived. Confirming receipt is not the same as having an answer.",
+  "generate.hint_update_days":
+    "How often you will send a progress update while the report is open, in days.",
+  "generate.hint_expires":
+    "The date this policy stops being valid. Set a reminder to renew it: an expired policy is treated as none at all.",
+  "generate.hint_statement":
+    "One or two sentences in your own words. It is shown to reporters as written and changes nothing a tool checks.",
+  "generate.hint_scope_pattern":
+    "A host or a wildcard covering the systems this entry is about.",
+  "generate.hint_scope_reason":
+    "Why this is out of scope. Written for the person reading it, not for a tool.",
+  "generate.hint_product_name":
+    "The product as you sell or ship it, the name a reporter would recognise.",
+  "generate.hint_product_versions":
+    "Which versions this covers. A range or a list, in whatever form your release notes use.",
+  "generate.hint_product_supported":
+    "The date support ends for these versions.",
+  "generate.hint_product_purl":
+    "The package URL, if the product is distributed through a package registry.",
+  "generate.hint_product_sbom":
+    "Where the software bill of materials for this product can be fetched.",
+  "generate.hint_testing_activity":
+    "The kind of testing this rule is about. Anything you do not list is treated as prohibited.",
+  "generate.hint_testing_rps":
+    "The most requests per second you are willing to absorb during testing.",
+  "generate.hint_testing_ua":
+    "A user agent you ask researchers to send, so you can tell their traffic from an attack.",
+  "generate.hint_testing_targets":
+    "Where testing should happen instead, when you would rather it stayed off production.",
+  "generate.hint_testing_account":
+    "Where a researcher gets a test account, if your rules require them to use one.",
+  "generate.hint_testing_note":
+    "Anything a researcher has to know that the rule itself does not say.",
+  "generate.hint_report_max_mb":
+    "The largest attachment your inbox will accept, in megabytes.",
+  "generate.hint_report_template":
+    "A template you would like reports to follow. A missing field must never stop someone reporting.",
+  "generate.hint_intake_url":
+    "The endpoint that accepts a structured report. https only, and never with credentials in the URL.",
+  "generate.hint_intake_schema":
+    "The schema that endpoint expects, so a tool can check a report before sending it.",
+  "generate.hint_intake_max_bytes":
+    "The largest submission the endpoint accepts, in bytes.",
+  "generate.hint_disclosure_deadline":
+    "Days after a report arrives before details may be published. Counted from receipt, not from a fix.",
+  "generate.result_zip_help":
+    "Everything in one archive, with both directories already laid out to unpack at your web root. Take this unless you need a single file on its own: the security.txt inside names /security/cvd.html in its Policy: field, so the two have to be published together.",
   "generate.result_files_help":
-    "cvd.json is the machine-readable file. security.txt is what points reporters at it. cvd-policy.html is the page for people — the Policy: field in security.txt expects one, and it is built from the same answers.",
+    "cvd.json and security.txt belong under /.well-known/, where a tool knows to look for them. cvd.html is the page for people and goes to /security/ instead: nothing discovers it, so it has no business in a reserved directory. Publish it too, or the Policy: line in security.txt leads nowhere.",
   "generate.result_files_merged":
-    "The security.txt here is your own file with the CVD-Policy line put in, not a new one. cvd-policy.html is the page for people, built from the same answers.",
+    "The security.txt here is your own file with the CVD-Policy line put in, not a new one. cvd.html is the page for people, built from the same answers.",
   "generate.result_permalink": "Draft link",
   "generate.result_permalink_help":
     "The draft is encoded in the part of the URL after the #. Browsers never send that part to a server, so the link stays on your device unless you pass it on yourself.",
@@ -417,6 +492,7 @@ export const en = {
   "tools.schema": "JSON Schema",
   "tools.library": "Library",
   "tools.cli": "Command line",
+  "tools.on_npm": "on npm",
   "tools.examples": "Examples",
   "tools.corpus": "Test corpus",
   "tools.action": "GitHub Action",
@@ -438,7 +514,7 @@ export const en = {
     "No. security.txt stays where it is and keeps doing its job. This format adds one field to it, CVD-Policy, pointing at a file that answers the questions security.txt has no fields for.",
   "faq.q_securitytxt_write": "Can it write my security.txt as well?",
   "faq.a_securitytxt_write":
-    "Yes. If you have none, the generator writes a complete one from the same answers: the contact, the expiry date, the languages, the link to your key, and the CVD-Policy line pointing at your cvd.json. If you already have one, drop it in at the first step — you get your own file back with that one line added and everything else exactly as it was, comments and field order included. It is read in your browser and never uploaded.",
+    "Yes. If you have none, the generator writes a complete one from the same answers: the contact, the expiry date, the languages, the link to your key, the CVD-Policy line pointing at your cvd.json, and a Policy line pointing at the readable page it builds alongside. If you already have one, drop it in at the first step — you get your own file back with those two lines added and everything else exactly as it was, comments and field order included. It is read in your browser and never uploaded.",
   "faq.q_signed": "I sign my security.txt. What happens?",
   "faq.a_signed":
     "RFC 9116 allows a clear-signed security.txt, and any change to such a file breaks its signature. Adding a field and keeping the signature is not possible — not here, not anywhere. This site says so rather than working around it: when the file you hand over carries a signature, you are told at that moment, and again with the result. The changed file is correct; the signature still attached to it is not. Sign it again with the same key before you publish it.",

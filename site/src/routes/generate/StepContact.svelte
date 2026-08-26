@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { ContactChannel } from "@cvd-policy/core";
+  import Hint from "../../components/Hint.svelte";
+  import LanguageSelect from "../../components/LanguageSelect.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
@@ -7,6 +9,13 @@
 
   // All four rank equally. Nothing here is pre-filled or recommended.
   const types: ContactChannel["type"][] = ["email", "form", "service", "postal"];
+
+  // Service carries its own help line already, so it gets no hint.
+  const channelExamples: Partial<Record<ContactChannel["type"], string>> = {
+    email: "security@example.com",
+    form: "https://example.com/report",
+    postal: "Example GmbH, Musterstraße 1, 23966 Wismar",
+  };
 
   function valueOf(type: ContactChannel["type"]): string {
     return answers.contact.channels.find((channel) => channel.type === type)?.value ?? "";
@@ -27,14 +36,9 @@
 
   const filled = $derived(answers.contact.channels.filter((channel) => channel.value.trim() !== ""));
 
+  // The array has to exist before the picker binds to it.
   // svelte-ignore state_referenced_locally
-  let languages = $state((answers.contact.languages ?? []).join(", "));
-  function applyLanguages() {
-    answers.contact.languages = languages
-      .split(/[,\s]+/)
-      .map((entry) => entry.trim())
-      .filter(Boolean);
-  }
+  answers.contact.languages ??= [];
 </script>
 
 <h2 class="u-mt0">{t("generate.contact_question")}</h2>
@@ -43,6 +47,9 @@
 {#each types as type (type)}
   <div class="field">
     <label for={`channel-${type}`}>{t(`generate.channel_${type}`)}</label>
+    {#if channelExamples[type]}
+      <Hint k={`generate.hint_channel_${type}`} example={channelExamples[type]} />
+    {/if}
     <div class="row">
       <input
         id={`channel-${type}`}
@@ -74,21 +81,31 @@
 
   <div class="field">
     <label for="languages">{t("generate.languages")}</label>
-    <input id="languages" type="text" bind:value={languages} oninput={applyLanguages} placeholder="en, de" />
+    <Hint k="generate.hint_languages" example="en, de" />
+    <LanguageSelect id="languages" bind:selected={answers.contact.languages} />
   </div>
 
   <div class="field">
     <label for="pgp-url">{t("generate.pgp_url")}</label>
+    <Hint
+      k="generate.hint_pgp_url"
+      example="https://example.com/.well-known/pgp-key.txt"
+    />
     <input id="pgp-url" type="url" bind:value={answers.contact.pgpUrl} placeholder="https://" />
   </div>
 
   <div class="field">
     <label for="pgp-fp">{t("generate.pgp_fingerprint")}</label>
+    <Hint
+      k="generate.hint_pgp_fingerprint"
+      example="A1B2 C3D4 E5F6 0718 2938 4A5B 6C7D 8E9F A0B1 C2D3"
+    />
     <input id="pgp-fp" type="text" bind:value={answers.contact.pgpFingerprint} />
   </div>
 
   <div class="field">
     <label for="ack-hours">{t("generate.ack_hours")}</label>
+    <Hint k="generate.hint_ack_hours" example="72" />
     <input
       id="ack-hours"
       type="number"
@@ -100,6 +117,7 @@
 
   <div class="field">
     <label for="update-days">{t("generate.update_days")}</label>
+    <Hint k="generate.hint_update_days" example="14" />
     <input
       id="update-days"
       type="number"

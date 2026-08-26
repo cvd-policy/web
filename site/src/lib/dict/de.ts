@@ -23,6 +23,9 @@ export const de: Dict = {
   "common.remove": "Entfernen",
   "common.print": "Drucken",
   "common.of": "von",
+  "generate.languages_none": "Keine ausgewählt",
+  "common.hint_label": "Was in dieses Feld gehört",
+  "common.hint_example": "Beispiel:",
 
   "footer.funding":
     "Diese Seite betreibt die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld. Format, Bibliothek und Seite lassen sich ohne unsere Produkte und ohne uns verwenden.",
@@ -68,7 +71,7 @@ export const de: Dict = {
     "Diese Übersetzung soll das Verständnis erleichtern. Verbindlich ist die englische Fassung.",
   "spec.versions_note": "Version 0.1 bleibt veröffentlicht und gültig: Eine veröffentlichte Version ändert sich nie. 0.2 ergänzt ein freiwilliges Feld.",
   "spec.package_versions_note":
-    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.3 setzt Format 0.2 um: Die Paketversion sagt, was sich am Paket geändert hat, cvd_policy im Dokument sagt, nach welchen Regeln dieses Dokument geschrieben wurde.",
+    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.4 setzt Format 0.2 um: Die Paketversion sagt, was sich am Paket geändert hat, cvd_policy im Dokument sagt, nach welchen Regeln dieses Dokument geschrieben wurde.",
   "spec.schema": "JSON Schema",
 
   "notfound.title": "Seite nicht gefunden",
@@ -130,7 +133,7 @@ export const de: Dict = {
   "generate.scope_pattern": "Hostmuster",
   "generate.scope_pattern_help": "Beispiel: example.com oder *.example.com",
   "generate.scope_state": "Status",
-  "generate.scope_reason": "Grund für den Ausschluss",
+  "generate.scope_reason": "Ausschlussgrund",
   "generate.scope_precedence": "Welcher Eintrag gewinnt im Konflikt?",
   "generate.product_name": "Name",
   "generate.product_purl": "Package URL",
@@ -191,10 +194,82 @@ export const de: Dict = {
   "generate.merge_signed":
     "Diese Datei ist signiert. Die Signatur passt nicht mehr zum geänderten Text — signieren Sie die Datei vor der Veröffentlichung erneut.",
   "generate.result_publish": "Veröffentlichen",
+  // Eine Zeile pro Feld. Bewusst kurz: ein Hinweis am Eingabefeld, nicht die
+  // Erklärung, die die Spezifikationsseite trägt.
+  "generate.hint_org_name":
+    "Der rechtliche Name der Organisation, für die diese Policy gilt, wie im Impressum oder Registereintrag.",
+  "generate.hint_domain":
+    "Die Domain, auf der Sie die Datei veröffentlichen. Daraus ergeben sich der Ablageort und ein erster Geltungsbereich.",
+  "generate.hint_canonical":
+    "Die genaue Adresse, unter der die fertige cvd.json erreichbar sein wird. Meldende und Tools prüfen damit, dass die Datei wirklich Ihre ist.",
+  "generate.hint_org_country":
+    "Zweibuchstabiger Ländercode des Sitzes der Organisation.",
+  "generate.hint_org_url":
+    "Ihre Hauptwebsite, damit Meldende sehen, an wen sie sich wenden.",
+  "generate.hint_channel_email":
+    "Eine Adresse, die Fremde ohne Konto erreichen. Eine Rollenadresse überdauert jede einzelne Person.",
+  "generate.hint_channel_form":
+    "Eine Seite mit einem Meldeformular. Sie muss ohne Anmeldung erreichbar sein.",
+  "generate.hint_channel_postal":
+    "Eine Postanschrift. Sie steht in der Policy, hat aber kein security.txt-Feld und wird dort nie eingetragen.",
+  "generate.hint_languages":
+    "Sprachen, in denen Sie eine Meldung bearbeiten können, die sicherste zuerst.",
+  "generate.hint_pgp_url":
+    "Wo Ihr öffentlicher Schlüssel abrufbar ist, damit Meldende vor dem Senden verschlüsseln können.",
+  "generate.hint_pgp_fingerprint":
+    "Der Fingerabdruck dieses Schlüssels, damit Meldende prüfen können, dass sie den richtigen geladen haben.",
+  "generate.hint_ack_hours":
+    "Stunden, in denen Sie den Eingang bestätigen. Eine Eingangsbestätigung ist noch keine Antwort.",
+  "generate.hint_update_days":
+    "In welchem Abstand Sie über den Stand berichten, solange die Meldung offen ist, in Tagen.",
+  "generate.hint_expires":
+    "Das Datum, an dem diese Policy ungültig wird. Setzen Sie sich eine Erinnerung: Eine abgelaufene Policy gilt wie keine.",
+  "generate.hint_statement":
+    "Ein bis zwei Sätze in Ihren eigenen Worten. Meldende lesen sie unverändert; für die Prüfung durch Tools ändert sie nichts.",
+  "generate.hint_scope_pattern":
+    "Ein Host oder ein Platzhalter, der die gemeinten Systeme abdeckt.",
+  "generate.hint_scope_reason":
+    "Warum das außerhalb des Geltungsbereichs liegt. Für Menschen geschrieben, nicht für Tools.",
+  "generate.hint_product_name":
+    "Das Produkt, wie Sie es verkaufen oder ausliefern — der Name, den Meldende kennen.",
+  "generate.hint_product_versions":
+    "Welche Versionen gemeint sind. Ein Bereich oder eine Liste, in der Form Ihrer Release Notes.",
+  "generate.hint_product_supported":
+    "Das Datum, an dem der Support für diese Versionen endet.",
+  "generate.hint_product_purl":
+    "Die Package-URL, falls das Produkt über eine Paketquelle verteilt wird.",
+  "generate.hint_product_sbom":
+    "Wo die Stückliste (SBOM) für dieses Produkt abrufbar ist.",
+  "generate.hint_testing_activity":
+    "Die Art des Testens, um die es in dieser Regel geht. Alles, was Sie nicht aufführen, gilt als verboten.",
+  "generate.hint_testing_rps":
+    "Wie viele Anfragen pro Sekunde Sie beim Testen höchstens hinnehmen.",
+  "generate.hint_testing_ua":
+    "Ein User-Agent, um den Sie Forschende bitten, damit Sie deren Verkehr von einem Angriff unterscheiden können.",
+  "generate.hint_testing_targets":
+    "Wo stattdessen getestet werden soll, wenn Sie die Produktivumgebung heraushalten möchten.",
+  "generate.hint_testing_account":
+    "Wo Forschende ein Testkonto bekommen, falls Ihre Regeln eines verlangen.",
+  "generate.hint_testing_note":
+    "Was Forschende sonst wissen müssen und die Regel selbst nicht hergibt.",
+  "generate.hint_report_max_mb":
+    "Der größte Anhang, den Ihr Postfach annimmt, in Megabyte.",
+  "generate.hint_report_template":
+    "Eine Vorlage, an der sich Meldungen orientieren sollen. Ein fehlendes Feld darf eine Meldung nie verhindern.",
+  "generate.hint_intake_url":
+    "Der Endpunkt, der eine strukturierte Meldung annimmt. Nur https und nie mit Zugangsdaten in der URL.",
+  "generate.hint_intake_schema":
+    "Das Schema, das dieser Endpunkt erwartet, damit ein Tool eine Meldung vor dem Senden prüfen kann.",
+  "generate.hint_intake_max_bytes":
+    "Die größte Übermittlung, die der Endpunkt annimmt, in Bytes.",
+  "generate.hint_disclosure_deadline":
+    "Tage nach Eingang einer Meldung, bevor Details veröffentlicht werden dürfen. Gezählt ab Eingang, nicht ab Behebung.",
+  "generate.result_zip_help":
+    "Alles in einem Archiv, beide Verzeichnisse bereits angelegt und bereit, im Web-Root entpackt zu werden. Nehmen Sie dieses, sofern Sie nicht eine einzelne Datei brauchen: Die security.txt darin nennt im Feld Policy: die /security/cvd.html, beide müssen also zusammen veröffentlicht werden.",
   "generate.result_files_help":
-    "Die cvd.json ist die maschinenlesbare Datei. Die security.txt verweist Meldende darauf. Die cvd-policy.html ist die Seite für Menschen — das Feld Policy: in der security.txt erwartet eine solche Seite, und sie entsteht aus denselben Angaben.",
+    "Die cvd.json und die security.txt gehören unter /.well-known/, wo Tools sie erwarten. Die cvd.html ist die Seite für Menschen und kommt stattdessen nach /security/: Sie wird von niemandem automatisch gesucht und hat in einem reservierten Verzeichnis nichts verloren. Veröffentlichen Sie sie mit, sonst führt die Zeile Policy: in der security.txt ins Leere.",
   "generate.result_files_merged":
-    "Die security.txt hier ist Ihre eigene Datei mit der ergänzten Zeile CVD-Policy, keine neue. Die cvd-policy.html ist die Seite für Menschen, aus denselben Angaben erzeugt.",
+    "Die security.txt hier ist Ihre eigene Datei mit der ergänzten Zeile CVD-Policy, keine neue. Die cvd.html ist die Seite für Menschen, aus denselben Angaben erzeugt.",
   "generate.result_permalink": "Entwurfslink",
   "generate.result_permalink_help":
     "Der Entwurf steckt hinter dem #-Zeichen der URL. Diesen Teil übertragen Browser grundsätzlich nicht an den Server — der Link bleibt auf Ihrem Gerät, solange Sie ihn nicht selbst weitergeben.",
@@ -497,6 +572,7 @@ export const de: Dict = {
   "tools.schema": "JSON Schema",
   "tools.library": "Bibliothek",
   "tools.cli": "Kommandozeile",
+  "tools.on_npm": "auf npm",
   "tools.examples": "Beispiele",
   "tools.corpus": "Testkorpus",
   "tools.action": "GitHub Action",
@@ -520,7 +596,7 @@ export const de: Dict = {
     "Nein. Die security.txt bleibt, wie sie ist, und behält ihre Aufgabe. Dieses Format ergänzt sie um ein einziges Feld, CVD-Policy, das auf eine Datei verweist — mit den Antworten, für die in der security.txt keine Felder vorgesehen sind.",
   "faq.q_securitytxt_write": "Schreibt das auch meine security.txt?",
   "faq.a_securitytxt_write":
-    "Ja. Haben Sie noch keine, erzeugt der Generator aus denselben Angaben eine vollständige Datei: Kontakt, Gültigkeitsdatum, Sprachen, den Link zu Ihrem Schlüssel und die Zeile CVD-Policy, die auf Ihre cvd.json verweist. Haben Sie schon eine, ziehen Sie sie im ersten Schritt hinein — Sie erhalten Ihre eigene Datei zurück, ergänzt um genau diese eine Zeile, sonst unverändert, samt Kommentaren und Reihenfolge. Gelesen wird sie in Ihrem Browser, hochgeladen wird sie nie.",
+    "Ja. Haben Sie noch keine, erzeugt der Generator aus denselben Angaben eine vollständige Datei: Kontakt, Gültigkeitsdatum, Sprachen, den Link zu Ihrem Schlüssel, die Zeile CVD-Policy, die auf Ihre cvd.json verweist, und eine Zeile Policy, die auf die lesbare Seite verweist, die daneben entsteht. Haben Sie schon eine, ziehen Sie sie im ersten Schritt hinein — Sie erhalten Ihre eigene Datei zurück, ergänzt um genau diese beiden Zeilen, sonst unverändert, samt Kommentaren und Reihenfolge. Gelesen wird sie in Ihrem Browser, hochgeladen wird sie nie.",
   "faq.q_signed": "Ich signiere meine security.txt. Was passiert dann?",
   "faq.a_signed":
     "RFC 9116 erlaubt eine im Klartext signierte security.txt, und jede Änderung an einer solchen Datei zerstört ihre Signatur. Ein Feld zu ergänzen und die Signatur zu behalten, ist nicht möglich — hier nicht und anderswo auch nicht. Diese Seite sagt das, statt es zu umgehen: Trägt die übergebene Datei eine Signatur, erfahren Sie es in dem Moment und beim Ergebnis noch einmal. Die geänderte Datei ist richtig, die noch daran hängende Signatur nicht mehr. Signieren Sie sie vor der Veröffentlichung erneut, mit demselben Schlüssel.",

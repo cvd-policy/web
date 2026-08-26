@@ -99,6 +99,121 @@ label {
   margin-top: var(--sp-1);
 }
 
+// A checkbox list behind a disclosure button. Not an ARIA listbox: checkboxes
+// already say "several of these" to a screen reader, and they work under a
+// thumb, which a ctrl-click multiple select does not.
+.multiselect {
+  position: relative;
+}
+
+.multiselect-toggle {
+  align-items: center;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: var(--sp-2);
+  justify-content: space-between;
+  min-height: 2.75rem;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  width: 100%;
+
+  &:focus-visible {
+    border-color: var(--c-accent);
+  }
+}
+
+.multiselect-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiselect-caret {
+  color: var(--c-text-mute);
+  flex: none;
+}
+
+.multiselect-panel {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+  left: 0;
+  max-height: 17rem;
+  overflow-y: auto;
+  padding: var(--sp-2);
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--sp-1));
+  z-index: 20;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.multiselect-option {
+  align-items: baseline;
+  border-radius: var(--r-sm);
+  display: flex;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-1) var(--sp-2);
+
+  &:hover {
+    background: var(--c-accent-soft);
+  }
+}
+
+// A label followed by a hint button has to share its line with it, and labels
+// are block-level everywhere else.
+label:has(+ .hint) {
+  display: inline-block;
+  margin-right: var(--sp-1);
+}
+
+.hint {
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: 50%;
+  color: var(--c-text-mute);
+  cursor: pointer;
+  font-size: 0.75rem;
+  height: 1.2rem;
+  line-height: 1;
+  padding: 0;
+  vertical-align: text-bottom;
+  width: 1.2rem;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--c-accent);
+    color: var(--c-accent);
+  }
+
+  &[aria-expanded="true"] {
+    background: var(--c-accent-soft);
+    border-color: var(--c-accent);
+    color: var(--c-accent);
+  }
+}
+
+.hint-body {
+  margin-bottom: var(--sp-1);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.hint-example code {
+  margin-left: var(--sp-1);
+}
+
 input[type="text"],
 input[type="url"],
 input[type="email"],
@@ -271,6 +386,56 @@ legend {
     color: var(--c-text-mute);
     font-size: 0.925rem;
   }
+
+  // The whole issue is the click target when it can lead somewhere, so it has
+  // to look like text and behave like a button.
+  .issue-jump {
+    background: none;
+    border: 0;
+    border-radius: var(--r-sm);
+    color: inherit;
+    cursor: pointer;
+    display: block;
+    font: inherit;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+
+    .issue-path {
+      display: block;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 2px;
+    }
+
+    &:hover .issue-path,
+    &:focus-visible .issue-path {
+      color: var(--c-accent);
+    }
+  }
+}
+
+// Where a clicked issue landed. Colour alone would be missed by a reader who
+// cannot see it, so the field is focused as well and this only confirms it.
+.field-flash {
+  animation: field-flash 1.6s ease-out;
+  border-radius: var(--r-sm);
+}
+
+@keyframes field-flash {
+  0%,
+  55% {
+    box-shadow: 0 0 0 3px var(--c-accent-soft);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-flash {
+    animation-duration: 1ms;
+  }
 }
 
 .steps {
@@ -360,8 +525,19 @@ legend {
   padding-bottom: var(--sp-3);
   border-bottom: 1px solid var(--c-border);
 
-  @media (min-width: 44rem) {
-    grid-template-columns: 2fr 1fr 1fr auto;
+  // Measured against the column this sits in, not the window: past 62rem the
+  // preview opens beside the form and the form column gets *narrower* as the
+  // window grows, which the old viewport media query could not see. It matched
+  // at 44rem of window while the row itself only ever had about 30rem.
+  @container (min-width: 30rem) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+
+    // Three fields and a remove button across one 30rem row left each field
+    // about 7rem, which no German label survives. The first takes a row of its
+    // own and the two that follow get half the width each.
+    &.entry-row-wide > .field:first-child {
+      grid-column: 1 / -1;
+    }
   }
 
   .field {

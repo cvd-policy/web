@@ -11,6 +11,17 @@
   Permissions-Policy: interest-cohort=(), geolocation=(), camera=(), microphone=()
   Cross-Origin-Opener-Policy: same-origin
 
+# The readable policy carries its stylesheet inside the file, because it is
+# handed to publishers as one thing to upload. `style-src 'self'` forbids an
+# inline <style>, so under the policy above the page rendered with no styling
+# at all — the same failure as the Ajv one, moved from script to style.
+#
+# The answer is a narrower policy, not a looser one: this page has no scripts,
+# no images and nothing to fetch, so everything is denied except the one thing
+# it needs. Do not fold this into the rule above.
+/security/*
+  Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+
 # Both files are meant to be fetched by other people's tools.
 /.well-known/cvd.json
   Content-Type: application/json

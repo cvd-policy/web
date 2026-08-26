@@ -309,6 +309,8 @@ export const de: Dict = {
   "validate.url_body":
     "Ein Browser darf die Datei einer fremden Domain nur abrufen, wenn diese es erlaubt. Der Umweg über einen eigenen Server hätte einen Preis: Er würde mitlesen, welche Policies Sie prüfen. Und er wäre ein Backend, das es hier nicht gibt. Nehmen Sie deshalb den Befehl unten.",
 
+  "explain.page_subtitle": "Richtlinie zur koordinierten Offenlegung von Schwachstellen",
+  "explain.page_expires": "Diese Richtlinie gilt erklärtermaßen bis",
   "explain.title": "Policy erklären",
   "explain.lead":
     "Dieselbe Datei, ausgeschrieben für alle, die kein JSON lesen.",

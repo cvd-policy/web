@@ -47,6 +47,26 @@ describeBuilt("the shipped bundle under the production CSP", () => {
     expect(csp).not.toContain("unsafe-inline");
   });
 
+  // The policy page needs an inline <style>, which the rule above forbids, so
+  // it has a rule of its own. That exception is the kind of thing that widens
+  // quietly over time, so it is pinned: scripts stay denied, and the allowance
+  // stays confined to styles on that one path.
+  it("confines the inline-style exception to the policy page", () => {
+    const headers = readFileSync(join(root, "public", "_headers"), "utf8");
+    const block = /^\/security\/\*\n((?:\s{2}.+\n)+)/m.exec(headers)?.[1] ?? "";
+    const csp = /Content-Security-Policy:\s*(.+)/.exec(block)?.[1] ?? "";
+
+    expect(csp, "no policy for /security/*").not.toBe("");
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain("style-src 'unsafe-inline'");
+    expect(csp).not.toContain("script-src");
+    expect(csp).not.toContain("unsafe-eval");
+
+    // Caddy serves the same site and cannot be derived from this file.
+    const caddy = readFileSync(join(root, "..", "ops", "Caddyfile"), "utf8");
+    expect(caddy, "Caddyfile is missing the /security/* rule").toContain(csp);
+  });
+
   it("ships the files a host needs beside the pages", () => {
     for (const file of ["_headers", "_redirects", "404.html", "index.html"]) {
       expect(existsSync(join(dist, file)), file).toBe(true);

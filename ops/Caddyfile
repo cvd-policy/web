@@ -30,6 +30,13 @@ cvd-policy.eu, www.cvd-policy.eu {
 		-Server
 	}
 
+	# The readable policy keeps its stylesheet inside the file, and
+	# `style-src 'self'` forbids an inline <style>: under the policy above the
+	# page rendered unstyled. Narrower, not looser — it has no scripts, no
+	# images and nothing to fetch, so all of that stays denied.
+	@policypage path /security/*
+	header @policypage Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+
 	# Both files are meant to be fetched by other people's tools.
 	@wellknown path /.well-known/cvd.json
 	header @wellknown {

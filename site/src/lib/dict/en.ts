@@ -286,6 +286,8 @@ export const en = {
   "validate.url_body":
     "A browser cannot fetch another domain's file without that domain allowing it, and routing the request through a server here would mean a server that sees which policies you check. It would also be a backend, which this site does not have. Use the command below instead.",
 
+  "explain.page_subtitle": "Coordinated vulnerability disclosure policy",
+  "explain.page_expires": "This policy is stated until",
   "explain.title": "Explain a policy",
   "explain.lead": "The same file, written out for someone who does not read JSON.",
   "explain.paste_hint": "Paste a document, drop a file, or load an example.",

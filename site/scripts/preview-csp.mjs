@@ -22,8 +22,34 @@ if (!existsSync(dist)) {
 }
 
 const headerFile = readFileSync(join(here, "..", "public", "_headers"), "utf8");
-const csp = /Content-Security-Policy:\s*(.+)/.exec(headerFile)?.[1]?.trim();
-if (!csp) throw new Error("no Content-Security-Policy found in public/_headers");
+
+/**
+ * Every path rule that sets a policy, in file order.
+ *
+ * Reading only the first one would serve the site-wide policy everywhere and
+ * miss exactly what a path rule exists to change — which is how the policy page
+ * shipped unstyled: its own rule was not the one being previewed.
+ */
+const policies = [...headerFile.matchAll(/^(\/\S*)\n((?:[ \t]+\S.*\n)+)/gm)]
+  .map(([, path, block]) => ({
+    path,
+    csp: /Content-Security-Policy:\s*(.+)/.exec(block)?.[1]?.trim(),
+  }))
+  .filter((rule) => rule.csp);
+
+const site = policies.find((rule) => rule.path === "/*")?.csp;
+if (!site) throw new Error("no site-wide Content-Security-Policy in public/_headers");
+
+/** Last matching rule wins, as on the hosts this mirrors. */
+const cspFor = (path) => {
+  const match = policies
+    .filter((rule) => rule.path !== "/*")
+    .filter((rule) =>
+      rule.path.endsWith("/*") ? path.startsWith(rule.path.slice(0, -1)) : path === rule.path,
+    )
+    .at(-1);
+  return match?.csp ?? site;
+};
 
 const TYPES = {
   ".html": "text/html", ".js": "text/javascript", ".css": "text/css",
@@ -42,10 +68,10 @@ createServer((request, response) => {
 
   response.writeHead(found ? 200 : 404, {
     "content-type": `${TYPES[extname(file)] ?? "application/octet-stream"}; charset=utf-8`,
-    "content-security-policy": csp,
+    "content-security-policy": cspFor(path),
   });
   response.end(readFileSync(file));
 }).listen(port, () => {
   console.log(`site/dist on http://localhost:${port} under the production CSP`);
-  console.log(csp);
+  for (const rule of policies) console.log(`${rule.path}\n  ${rule.csp}`);
 });

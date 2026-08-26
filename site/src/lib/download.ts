@@ -1,11 +1,30 @@
-/** Offers text as a file download. The blob never leaves the browser. */
-export function downloadText(filename: string, text: string, mime = "application/json"): void {
-  const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }));
+function downloadUrl(filename: string, url: string): void {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
   anchor.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+/** Offers text as a file download. The blob never leaves the browser. */
+export function downloadText(
+  filename: string,
+  text: string,
+  mime = "application/json",
+): void {
+  downloadUrl(
+    filename,
+    URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` })),
+  );
+}
+
+/** Offers binary data as a file download. */
+export function downloadBytes(
+  filename: string,
+  bytes: Uint8Array<ArrayBuffer>,
+  mime: string,
+): void {
+  downloadUrl(filename, URL.createObjectURL(new Blob([bytes], { type: mime })));
 }
 
 /** Copies text to the clipboard, falling back to a hidden textarea. */

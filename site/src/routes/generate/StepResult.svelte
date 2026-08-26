@@ -4,10 +4,11 @@
   import CodeBlock from "../../components/CodeBlock.svelte";
   import CopyButton from "../../components/CopyButton.svelte";
   import FileDrop from "../../components/FileDrop.svelte";
-  import { downloadText } from "../../lib/download.js";
+  import { downloadBytes, downloadText } from "../../lib/download.js";
   import { i18n, t } from "../../lib/i18n.svelte.js";
   import { policyHtml } from "../../lib/policyHtml.js";
   import { encodeDraft } from "../../lib/share.js";
+  import { wellKnownZip } from "../../lib/wellKnownZip.js";
   import { wizard } from "../../lib/wizard.svelte.js";
 
   let { doc, result }: { doc: CvdPolicyDocument; result: ValidationResult } = $props();
@@ -37,6 +38,18 @@
   ]);
 
   let permalink = $state("");
+
+  function downloadWellKnownZip() {
+    downloadBytes(
+      ".well-known.zip",
+      wellKnownZip({
+        cvdJson: json,
+        policyHtml: policyHtml(doc, i18n.lang),
+        securityTxt: securityTxtFile,
+      }),
+      "application/zip",
+    );
+  }
 
   async function makePermalink() {
     permalink = `${location.origin}/explain#${await encodeDraft(doc)}`;
@@ -74,6 +87,13 @@
         class="btn btn-sm"
         onclick={() => downloadText("cvd-policy.html", policyHtml(doc, i18n.lang), "text/html")}
       >
+        {t("common.download")}
+      </button>
+    </div>
+
+    <div class="row">
+      <code class="u-grow">.well-known.zip</code>
+      <button type="button" class="btn btn-sm btn-primary" onclick={downloadWellKnownZip}>
         {t("common.download")}
       </button>
     </div>

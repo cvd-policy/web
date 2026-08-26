@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { WizardAnswers } from "@cvd-policy/core";
   import { t } from "../../lib/i18n.svelte.js";
+  import { wizard } from "../../lib/wizard.svelte.js";
 
-  let { answers, doc }: { answers: WizardAnswers; doc: { expires: string } } = $props();
+  let { doc }: { doc: { expires: string } } = $props();
+  const answers = $derived(wizard.answers);
 
   // The date input works in days; the document stores an RFC 3339 timestamp.
   const asDate = $derived((answers.expires ?? doc.expires).slice(0, 10));

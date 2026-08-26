@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { Posture, WizardAnswers } from "@cvd-policy/core";
+  import type { Posture } from "@cvd-policy/core";
   import { t } from "../../lib/i18n.svelte.js";
+  import { wizard } from "../../lib/wizard.svelte.js";
 
-  let { answers }: { answers: WizardAnswers } = $props();
+  const answers = $derived(wizard.answers);
 
   // report_only first: the path most organisations can honestly take.
   const postures: Posture[] = ["report_only", "prohibited", "limited", "open"];

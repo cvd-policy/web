@@ -107,7 +107,14 @@
       <div class="card">
         {#key step.key}
           {@const StepComponent = step.component}
-          <StepComponent answers={wizard.answers} {doc} {result} />
+          {#if StepComponent === StepValidity}
+            <StepValidity {doc} />
+          {:else if StepComponent === StepResult}
+            <StepResult {doc} {result} />
+          {:else}
+            {@const FormStep = StepComponent as typeof StepOrganization}
+            <FormStep />
+          {/if}
         {/key}
 
         <div class="row u-mt6">

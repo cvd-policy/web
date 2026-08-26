@@ -1,10 +1,10 @@
 <script lang="ts">
   import { canonicalFor } from "@cvd-policy/core";
-  import type { WizardAnswers } from "@cvd-policy/core";
   import SecurityTxtImport from "../../components/SecurityTxtImport.svelte";
   import { t } from "../../lib/i18n.svelte.js";
+  import { wizard } from "../../lib/wizard.svelte.js";
 
-  let { answers }: { answers: WizardAnswers } = $props();
+  const answers = $derived(wizard.answers);
 
   const domainOf = (canonical: string) =>
     canonical.replace(/^https:\/\//, "").replace(/\/\.well-known\/cvd\.json$/, "");
@@ -22,7 +22,8 @@
   });
 
   // The domain drives both the file location and a first scope entry.
-  function applyDomain() {
+  function applyDomain(value: string) {
+    domain = value;
     answers.canonical = canonicalFor(domain);
     const host = domain.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
     if (!host) return;
@@ -48,8 +49,8 @@
   <input
     id="org-domain"
     type="text"
-    bind:value={domain}
-    oninput={applyDomain}
+    value={domain}
+    oninput={(event) => applyDomain(event.currentTarget.value)}
     placeholder="example.com"
   />
   <p class="help">{t("generate.domain_help")}</p>

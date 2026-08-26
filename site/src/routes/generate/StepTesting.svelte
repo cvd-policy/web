@@ -1,9 +1,10 @@
 <script lang="ts">
   import { KNOWN_ACTIVITIES } from "@cvd-policy/core";
-  import type { TestingState, WizardAnswers } from "@cvd-policy/core";
+  import type { TestingState } from "@cvd-policy/core";
   import { t } from "../../lib/i18n.svelte.js";
+  import { wizard } from "../../lib/wizard.svelte.js";
 
-  let { answers }: { answers: WizardAnswers } = $props();
+  const answers = $derived(wizard.answers);
 
   const invitesTesting = $derived(answers.posture === "open" || answers.posture === "limited");
   // The object has to exist before anything binds to it. Creating it inside

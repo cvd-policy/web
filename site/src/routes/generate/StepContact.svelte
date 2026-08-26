@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { ContactChannel, WizardAnswers } from "@cvd-policy/core";
+  import type { ContactChannel } from "@cvd-policy/core";
   import { t } from "../../lib/i18n.svelte.js";
+  import { wizard } from "../../lib/wizard.svelte.js";
 
-  let { answers }: { answers: WizardAnswers } = $props();
+  const answers = $derived(wizard.answers);
 
   // All four rank equally. Nothing here is pre-filled or recommended.
   const types: ContactChannel["type"][] = ["email", "form", "service", "postal"];

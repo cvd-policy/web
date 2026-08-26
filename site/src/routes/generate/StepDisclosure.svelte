@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { Disclosure, WizardAnswers } from "@cvd-policy/core";
+  import type { Disclosure } from "@cvd-policy/core";
   import { t } from "../../lib/i18n.svelte.js";
+  import { wizard } from "../../lib/wizard.svelte.js";
 
-  let { answers }: { answers: WizardAnswers } = $props();
+  const answers = $derived(wizard.answers);
 
   // The object has to exist before anything binds to it. Creating it inside
   // $derived would be a state change during a computation, which Svelte forbids.

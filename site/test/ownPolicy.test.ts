@@ -43,7 +43,7 @@ describe("the policy this site publishes about itself", () => {
   });
 
   it("has a readable page built from this very document", async () => {
-    await expect(policyHtml(doc, "en")).toMatchFileSnapshot(
+    await expect(policyHtml(doc)).toMatchFileSnapshot(
       fileURLToPath(new URL("../public/security/cvd.html", import.meta.url)),
     );
   });

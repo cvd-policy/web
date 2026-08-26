@@ -47,10 +47,7 @@ describeBuilt("the shipped bundle under the production CSP", () => {
     expect(csp).not.toContain("unsafe-inline");
   });
 
-  // The policy page needs an inline <style>, which the rule above forbids, so
-  // it has a rule of its own. That exception is the kind of thing that widens
-  // quietly over time, so it is pinned: scripts stay denied, and the allowance
-  // stays confined to styles on that one path.
+  // The policy page's exception is the kind that widens quietly, so pin it.
   it("confines the inline-style exception to the policy page", () => {
     const headers = readFileSync(join(root, "public", "_headers"), "utf8");
     const block = /^\/security\/\*\n((?:\s{2}.+\n)+)/m.exec(headers)?.[1] ?? "";

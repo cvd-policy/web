@@ -1,16 +1,25 @@
 import { explain } from "@cvd-policy/core";
 import type { CvdPolicyDocument } from "@cvd-policy/core";
-import { hasPlural, plural, t } from "./i18n.svelte.js";
+import { translator } from "./i18n.svelte.js";
+import type { Lang, Translator } from "./i18n.svelte.js";
+
+/** Always English: it used to follow the interface, which is not the publisher's. */
+const PAGE_LANG = "en" as const satisfies Lang;
 
 const escape = (value: string) =>
   value.replace(/[&<>"]/g, (character) => `&${{ "&": "amp", "<": "lt", ">": "gt", '"': "quot" }[character]};`);
 
-const renderValue = (item: { value: string; valueIsKey?: boolean; params?: Record<string, string | number> }) =>
+const renderValue = (
+  text: Translator,
+  item: { value: string; valueIsKey?: boolean; params?: Record<string, string | number> },
+) =>
   item.valueIsKey
     ? item.value
         .split(",")
         .map((key) =>
-          hasPlural(key) ? plural(key, Number(item.params?.count ?? 0)) : t(key, item.params),
+          text.hasPlural(key)
+            ? text.plural(key, Number(item.params?.count ?? 0))
+            : text.t(key, item.params),
         )
         .join(", ")
     : item.value;
@@ -18,14 +27,18 @@ const renderValue = (item: { value: string; valueIsKey?: boolean; params?: Recor
 /**
  * Builds a standalone HTML page from a document, for the `Policy:` field in
  * security.txt. Self-contained: no scripts, no external resources.
+ *
+ * Always English, whatever the interface is set to.
  */
-export function policyHtml(doc: CvdPolicyDocument, lang: string): string {
+export function policyHtml(doc: CvdPolicyDocument): string {
+  const text = translator(PAGE_LANG);
+  const { t } = text;
   const sections = explain(doc)
     .map((section) => {
       const rows = section.items
         .map(
           (item) =>
-            `      <dt>${escape(t(item.labelKey))}</dt>\n      <dd>${escape(renderValue(item))}</dd>`,
+            `      <dt>${escape(t(item.labelKey))}</dt>\n      <dd>${escape(renderValue(text, item))}</dd>`,
         )
         .join("\n");
       return `    <section>\n      <h2>${escape(t(`explain.section.${section.key}`))}</h2>\n      <dl>\n${rows}\n      </dl>\n    </section>`;
@@ -37,15 +50,14 @@ export function policyHtml(doc: CvdPolicyDocument, lang: string): string {
     : "";
 
   return `<!doctype html>
-<html lang="${escape(lang)}">
+<html lang="${PAGE_LANG}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escape(doc.organization?.name ?? "")} — ${escape(t("explain.page_subtitle"))}</title>
     <meta name="robots" content="index, follow" />
     <style>
-      /* One file, no scripts, no external requests: it is served from the
-         publisher's own domain and has to work with nothing else present. */
+      /* One file: it lands on the publisher's domain with nothing beside it. */
       :root {
         color-scheme: light dark;
         --ink: #1a1a18; --muted: #6b6b64; --bg: #fbfbf9;
@@ -78,8 +90,7 @@ export function policyHtml(doc: CvdPolicyDocument, lang: string): string {
       dt, dd { padding: 0.6rem 0; border-bottom: 1px solid var(--rule); }
       dt { color: var(--muted); padding-right: 1.5rem; }
       dd { margin: 0; overflow-wrap: anywhere; }
-      /* Two columns cannot hold a label and a sentence on a phone: below this
-         the pairs stack, and the label becomes a caption over its value. */
+      /* Two columns cannot hold a label and a sentence on a phone. */
       @media (max-width: 34rem) {
         dl { grid-template-columns: 1fr; border-top: 0; }
         dt {

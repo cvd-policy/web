@@ -5,7 +5,7 @@
   import CopyButton from "../../components/CopyButton.svelte";
   import FileDrop from "../../components/FileDrop.svelte";
   import { downloadBytes, downloadText } from "../../lib/download.js";
-  import { i18n, t } from "../../lib/i18n.svelte.js";
+  import { t } from "../../lib/i18n.svelte.js";
   import { policyHtml } from "../../lib/policyHtml.js";
   import { encodeDraft } from "../../lib/share.js";
   import { policyZip } from "../../lib/policyZip.js";
@@ -50,7 +50,7 @@
       "cvd-policy.zip",
       policyZip({
         cvdJson: json,
-        policyHtml: policyHtml(doc, i18n.lang),
+        policyHtml: policyHtml(doc),
         securityTxt: securityTxtFile,
       }),
       "application/zip",
@@ -106,7 +106,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        onclick={() => downloadText("cvd.html", policyHtml(doc, i18n.lang), "text/html")}
+        onclick={() => downloadText("cvd.html", policyHtml(doc), "text/html")}
       >
         {t("common.download")}
       </button>

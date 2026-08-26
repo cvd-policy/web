@@ -43,9 +43,13 @@ function fill(template: string, params?: Record<string, string | number>): strin
   );
 }
 
+function lookup(lang: Lang, key: string, params?: Record<string, string | number>): string {
+  return fill(DICTS[lang][key] ?? DICTS.en[key] ?? key, params);
+}
+
 /** Looks up a key, falling back to English and then to the key itself. */
 export function t(key: string, params?: Record<string, string | number>): string {
-  return fill(DICTS[current][key] ?? DICTS.en[key] ?? key, params);
+  return lookup(current, key, params);
 }
 
 const PLURAL_RULES: Record<Lang, Intl.PluralRules> = {
@@ -58,8 +62,17 @@ const PLURAL_RULES: Record<Lang, Intl.PluralRules> = {
  * Expects keys named `<key>_one` and `<key>_other`.
  */
 export function plural(key: string, count: number, params?: Record<string, string | number>): string {
-  const category = PLURAL_RULES[current].select(count);
-  const dict = DICTS[current];
+  return pluralIn(current, key, count, params);
+}
+
+function pluralIn(
+  lang: Lang,
+  key: string,
+  count: number,
+  params?: Record<string, string | number>,
+): string {
+  const category = PLURAL_RULES[lang].select(count);
+  const dict = DICTS[lang];
   const template =
     dict[`${key}_${category}`] ??
     dict[`${key}_other`] ??
@@ -71,7 +84,26 @@ export function plural(key: string, count: number, params?: Record<string, strin
 
 /** True when a key has plural forms rather than a single text. */
 export function hasPlural(key: string): boolean {
-  return `${key}_other` in DICTS[current] || `${key}_other` in DICTS.en;
+  return hasPluralIn(current, key);
+}
+
+function hasPluralIn(lang: Lang, key: string): boolean {
+  return `${key}_other` in DICTS[lang] || `${key}_other` in DICTS.en;
+}
+
+export interface Translator {
+  t(key: string, params?: Record<string, string | number>): string;
+  plural(key: string, count: number, params?: Record<string, string | number>): string;
+  hasPlural(key: string): boolean;
+}
+
+/** Text bound to one language, for files that are written out rather than shown. */
+export function translator(lang: Lang): Translator {
+  return {
+    t: (key, params) => lookup(lang, key, params),
+    plural: (key, count, params) => pluralIn(lang, key, count, params),
+    hasPlural: (key) => hasPluralIn(lang, key),
+  };
 }
 
 /** True when a key exists in either dictionary. */

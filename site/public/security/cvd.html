@@ -6,8 +6,7 @@
     <title>Skalvar Technologies UG (haftungsbeschränkt) — Coordinated vulnerability disclosure policy</title>
     <meta name="robots" content="index, follow" />
     <style>
-      /* One file, no scripts, no external requests: it is served from the
-         publisher's own domain and has to work with nothing else present. */
+      /* One file: it lands on the publisher's domain with nothing beside it. */
       :root {
         color-scheme: light dark;
         --ink: #1a1a18; --muted: #6b6b64; --bg: #fbfbf9;
@@ -40,8 +39,7 @@
       dt, dd { padding: 0.6rem 0; border-bottom: 1px solid var(--rule); }
       dt { color: var(--muted); padding-right: 1.5rem; }
       dd { margin: 0; overflow-wrap: anywhere; }
-      /* Two columns cannot hold a label and a sentence on a phone: below this
-         the pairs stack, and the label becomes a caption over its value. */
+      /* Two columns cannot hold a label and a sentence on a phone. */
       @media (max-width: 34rem) {
         dl { grid-template-columns: 1fr; border-top: 0; }
         dt {

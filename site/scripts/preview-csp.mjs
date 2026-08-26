@@ -23,13 +23,8 @@ if (!existsSync(dist)) {
 
 const headerFile = readFileSync(join(here, "..", "public", "_headers"), "utf8");
 
-/**
- * Every path rule that sets a policy, in file order.
- *
- * Reading only the first one would serve the site-wide policy everywhere and
- * miss exactly what a path rule exists to change — which is how the policy page
- * shipped unstyled: its own rule was not the one being previewed.
- */
+// Every rule that sets a policy. Reading only the first served the site-wide
+// one everywhere, so a path rule was never the one being previewed.
 const policies = [...headerFile.matchAll(/^(\/\S*)\n((?:[ \t]+\S.*\n)+)/gm)]
   .map(([, path, block]) => ({
     path,

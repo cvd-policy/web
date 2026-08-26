@@ -2,5 +2,5 @@ Contact: mailto:security@cvd-policy.eu
 Expires: 2027-08-18T00:00:00Z
 Preferred-Languages: en, de
 Canonical: https://cvd-policy.eu/.well-known/security.txt
-Policy: https://cvd-policy.eu/spec
+Policy: https://cvd-policy.eu/security/cvd.html
 CVD-Policy: https://cvd-policy.eu/.well-known/cvd.json

@@ -1,8 +1,8 @@
 {
-  "cvd_policy": "0.1",
+  "cvd_policy": "0.2",
   "canonical": "https://cvd-policy.eu/.well-known/cvd.json",
   "expires": "2027-08-18T00:00:00Z",
-  "updated": "2026-08-18",
+  "updated": "2026-08-26",
   "organization": {
     "name": "Skalvar Technologies UG (haftungsbeschränkt)",
     "country": "DE",

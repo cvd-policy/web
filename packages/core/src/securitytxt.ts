@@ -42,8 +42,11 @@ function contactValue(channel: ContactChannel): string {
 export function securityTxtLines(doc: CvdPolicyDocument): string[] {
   const lines: string[] = [];
 
-  const preferred = doc.contact?.channels?.find((channel) => channel.preferred) ?? doc.contact?.channels?.[0];
-  if (preferred && preferred.type !== "postal") lines.push(`Contact: ${contactValue(preferred)}`);
+  const preferred =
+    doc.contact?.channels?.find((channel) => channel.preferred) ??
+    doc.contact?.channels?.[0];
+  if (preferred && preferred.type !== "postal")
+    lines.push(`Contact: ${contactValue(preferred)}`);
 
   if (doc.expires) lines.push(`Expires: ${doc.expires}`);
 
@@ -99,12 +102,16 @@ export function answersFromSecurityTxt(
 
   const channels: ContactChannel[] = [];
   for (const value of fields["contact"] ?? []) {
-    if (/^mailto:/i.test(value)) channels.push({ type: "email", value: value.slice(7) });
-    else if (/^https?:\/\//i.test(value)) channels.push({ type: "form", value });
+    if (/^mailto:/i.test(value))
+      channels.push({ type: "email", value: value.slice(7) });
+    else if (/^https?:\/\//i.test(value))
+      channels.push({ type: "form", value });
   }
   if (channels.length > 0) {
     const [first, ...rest] = channels;
-    answers.contact.channels = first ? [{ ...first, preferred: true }, ...rest] : rest;
+    answers.contact.channels = first
+      ? [{ ...first, preferred: true }, ...rest]
+      : rest;
     applied.push("contact");
   }
 
@@ -116,7 +123,10 @@ export function answersFromSecurityTxt(
 
   const languages = fields["preferred-languages"]?.[0];
   if (languages) {
-    const list = languages.split(",").map((entry) => entry.trim()).filter(Boolean);
+    const list = languages
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
     if (list.length > 0) {
       answers.contact.languages = list;
       applied.push("preferred-languages");
@@ -138,7 +148,10 @@ export function answersFromSecurityTxt(
     applied.push("cvd-policy");
   } else if (canonical) {
     try {
-      answers.canonical = new URL("/.well-known/cvd.json", canonical).toString();
+      answers.canonical = new URL(
+        "/.well-known/cvd.json",
+        canonical,
+      ).toString();
       applied.push("canonical");
     } catch {
       // An unusable Canonical simply supplies nothing.
@@ -150,7 +163,8 @@ export function answersFromSecurityTxt(
   if (host) {
     answers.scope ??= { precedence: "out_overrides_in", web: [], products: [] };
     answers.scope.web ??= [];
-    if (answers.scope.web.length === 0) answers.scope.web.push({ pattern: host, state: "in" });
+    if (answers.scope.web.length === 0)
+      answers.scope.web.push({ pattern: host, state: "in" });
   }
 
   return { answers, applied, signed: isSignedSecurityTxt(raw) };
@@ -202,8 +216,25 @@ function fieldLines(lines: string[]): FieldLine[] {
   return found;
 }
 
+/** Fields in the signed message body, excluding PGP armor metadata. */
+function editableFieldLines(lines: string[]): FieldLine[] {
+  const fields = fieldLines(lines);
+  if (lines[0] !== "-----BEGIN PGP SIGNED MESSAGE-----") return fields;
+
+  const bodyStart =
+    lines.findIndex((line, index) => index > 0 && line === "") + 1;
+  const signatureStart = lines.findIndex(
+    (line) => line === "-----BEGIN PGP SIGNATURE-----",
+  );
+  return fields.filter(
+    (field) =>
+      field.index >= bodyStart &&
+      (signatureStart === -1 || field.index < signatureStart),
+  );
+}
+
 export interface SecurityTxtMerge {
-  /** The file with `CVD-Policy` naming this document. */
+  /** The file with `CVD-Policy` naming this document and, when given, its human-readable policy. */
   text: string;
   /** Whether the field was added, its value replaced, or already correct. */
   change: "added" | "replaced" | "unchanged";
@@ -213,45 +244,84 @@ export interface SecurityTxtMerge {
   signed: boolean;
 }
 
-/**
- * Puts the `CVD-Policy` field into a security.txt that already exists.
- *
- * Everything else is left as it was: comments, field order, blank lines and
- * the line ending the file already uses. A file that has the field keeps its
- * position and changes only its value; a repeated field is reduced to one, so
- * no reader is left choosing between two answers.
- *
- * The edit invalidates a PGP signature, which `signed` reports rather than
- * hides — the file has to be signed again afterwards.
- */
-export function mergeSecurityTxt(raw: string, doc: CvdPolicyDocument): SecurityTxtMerge {
+function upsertSecurityTxtField(
+  raw: string,
+  name: string,
+  value: string,
+): string {
   const newline = raw.includes("\r\n") ? "\r\n" : "\n";
   const lines = raw.split(/\r?\n/);
-  const signed = isSignedSecurityTxt(raw);
-
-  const fields = fieldLines(lines);
-  const [first, ...extra] = fields.filter((field) => field.name === "cvd-policy");
+  const fields = editableFieldLines(lines);
+  const [first, ...extra] = fields.filter(
+    (field) => field.name === name.toLowerCase(),
+  );
+  const line = `${name}: ${value}`;
 
   if (first === undefined) {
     // After the last field, which on a signed file keeps it inside the block
     // the signature covers rather than after the signature.
-    const last = fields[fields.length - 1];
+    const last = fields.at(-1);
     if (last === undefined) {
+      const signatureStart = lines.indexOf("-----BEGIN PGP SIGNATURE-----");
+      if (signatureStart !== -1) {
+        lines.splice(signatureStart, 0, line);
+        return lines.join(newline);
+      }
       const body = raw === "" || raw.endsWith("\n") ? raw : `${raw}${newline}`;
-      return { text: `${body}${cvdPolicyLine(doc)}${newline}`, change: "added", signed };
+      return `${body}${line}${newline}`;
     }
-    lines.splice(last.index + 1, 0, cvdPolicyLine(doc));
-    return { text: lines.join(newline), change: "added", signed };
+    lines.splice(last.index + 1, 0, line);
+    return lines.join(newline);
   }
 
-  if (first.value === doc.canonical && extra.length === 0) {
-    return { text: raw, change: "unchanged", signed };
-  }
+  if (first.value === value && extra.length === 0) return raw;
 
-  lines[first.index] = cvdPolicyLine(doc);
+  lines[first.index] = line;
   for (const field of [...extra].reverse()) lines.splice(field.index, 1);
+  return lines.join(newline);
+}
 
-  return { text: lines.join(newline), change: "replaced", previous: first.value, signed };
+/**
+ * Puts the `CVD-Policy` field and optional human-readable `Policy` into an
+ * existing security.txt while preserving comments, order and line endings.
+ */
+export function mergeSecurityTxt(
+  raw: string,
+  doc: CvdPolicyDocument,
+  options: { policy?: string } = {},
+): SecurityTxtMerge {
+  const fields = editableFieldLines(raw.split(/\r?\n/));
+  const [cvdPolicy, ...extraCvdPolicies] = fields.filter(
+    (field) => field.name === "cvd-policy",
+  );
+  const [policy, ...extraPolicies] = fields.filter(
+    (field) => field.name === "policy",
+  );
+  const policyValue = options.policy ?? humanPolicyUrl(doc);
+
+  let text = upsertSecurityTxtField(raw, "CVD-Policy", doc.canonical);
+  if (policyValue) text = upsertSecurityTxtField(text, "Policy", policyValue);
+
+  const replaced =
+    (cvdPolicy !== undefined &&
+      (cvdPolicy.value !== doc.canonical || extraCvdPolicies.length > 0)) ||
+    (policyValue !== undefined &&
+      policy !== undefined &&
+      (policy.value !== policyValue || extraPolicies.length > 0));
+  const missing =
+    cvdPolicy === undefined ||
+    (policyValue !== undefined && policy === undefined);
+  let change: SecurityTxtMerge["change"] = "unchanged";
+  if (replaced) change = "replaced";
+  else if (missing) change = "added";
+  const result: SecurityTxtMerge = {
+    text,
+    change,
+    signed: isSignedSecurityTxt(raw),
+  };
+  if (change === "replaced")
+    result.previous = cvdPolicy?.value ?? policy?.value;
+  return result;
 }
 
 /**
@@ -265,6 +335,14 @@ export function securityTxtCanonical(doc: CvdPolicyDocument): string | null {
     return new URL("/.well-known/security.txt", doc.canonical).toString();
   } catch {
     return null;
+  }
+}
+
+function humanPolicyUrl(doc: CvdPolicyDocument): string | undefined {
+  try {
+    return new URL("cvd-policy.html", doc.canonical).toString();
+  } catch {
+    return undefined;
   }
 }
 
@@ -283,16 +361,22 @@ export interface SecurityTxtOptions {
  * one is for a host that has none. `Contact` and `Expires` are the two fields
  * RFC 9116 requires, and a valid document carries both.
  */
-export function securityTxt(doc: CvdPolicyDocument, options: SecurityTxtOptions = {}): string {
+export function securityTxt(
+  doc: CvdPolicyDocument,
+  options: SecurityTxtOptions = {},
+): string {
   const lines: string[] = [];
 
   // Contact may repeat, in order of preference. A postal address has no field.
-  const channels = (doc.contact?.channels ?? []).filter((channel) => channel.type !== "postal");
+  const channels = (doc.contact?.channels ?? []).filter(
+    (channel) => channel.type !== "postal",
+  );
   const preferredFirst = [
     ...channels.filter((channel) => channel.preferred),
     ...channels.filter((channel) => !channel.preferred),
   ];
-  for (const value of new Set(preferredFirst.map(contactValue))) lines.push(`Contact: ${value}`);
+  for (const value of new Set(preferredFirst.map(contactValue)))
+    lines.push(`Contact: ${value}`);
 
   if (doc.expires) lines.push(`Expires: ${doc.expires}`);
 
@@ -304,10 +388,14 @@ export function securityTxt(doc: CvdPolicyDocument, options: SecurityTxtOptions 
     lines.push(`Preferred-Languages: ${doc.contact.languages.join(", ")}`);
   }
 
-  const canonical = options.canonical === undefined ? securityTxtCanonical(doc) : options.canonical;
+  const canonical =
+    options.canonical === undefined
+      ? securityTxtCanonical(doc)
+      : options.canonical;
   if (canonical) lines.push(`Canonical: ${canonical}`);
 
-  if (options.policy) lines.push(`Policy: ${options.policy}`);
+  const policy = options.policy ?? humanPolicyUrl(doc);
+  if (policy) lines.push(`Policy: ${policy}`);
 
   if (doc.canonical) lines.push(cvdPolicyLine(doc));
 

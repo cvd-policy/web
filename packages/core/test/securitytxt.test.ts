@@ -28,17 +28,23 @@ describe("parseSecurityTxt", () => {
   });
 
   it("ignores comments, blank lines and lines without a value", () => {
-    expect(Object.keys(parseSecurityTxt("# only a comment\n\nBroken\n"))).toEqual([]);
+    expect(
+      Object.keys(parseSecurityTxt("# only a comment\n\nBroken\n")),
+    ).toEqual([]);
   });
 });
 
 describe("findPolicyUrl", () => {
   it("prefers the first occurrence", () => {
-    expect(findPolicyUrl(parseSecurityTxt(raw))).toBe("https://example.com/.well-known/cvd.json");
+    expect(findPolicyUrl(parseSecurityTxt(raw))).toBe(
+      "https://example.com/.well-known/cvd.json",
+    );
   });
 
   it("returns null when the field is absent", () => {
-    expect(findPolicyUrl(parseSecurityTxt("Contact: mailto:a@example.com"))).toBeNull();
+    expect(
+      findPolicyUrl(parseSecurityTxt("Contact: mailto:a@example.com")),
+    ).toBeNull();
   });
 });
 
@@ -63,7 +69,9 @@ const doc = {
 
 describe("securityTxtLines", () => {
   it("uses the preferred channel and adds a mailto scheme", () => {
-    expect(securityTxtLines(doc)[0]).toBe("Contact: mailto:security@example.com");
+    expect(securityTxtLines(doc)[0]).toBe(
+      "Contact: mailto:security@example.com",
+    );
   });
 
   it("ends with the CVD-Policy line", () => {
@@ -78,12 +86,19 @@ describe("securityTxtLines", () => {
 
 describe("securityTxtCanonical", () => {
   it("derives the well-known location from the canonical URL", () => {
-    expect(securityTxtCanonical(doc)).toBe("https://example.com/.well-known/security.txt");
+    expect(securityTxtCanonical(doc)).toBe(
+      "https://example.com/.well-known/security.txt",
+    );
   });
 
   it("keeps host and port, and drops any other path", () => {
-    const other = { ...doc, canonical: "https://example.com:8443/policy/cvd.json" };
-    expect(securityTxtCanonical(other)).toBe("https://example.com:8443/.well-known/security.txt");
+    const other = {
+      ...doc,
+      canonical: "https://example.com:8443/policy/cvd.json",
+    };
+    expect(securityTxtCanonical(other)).toBe(
+      "https://example.com:8443/.well-known/security.txt",
+    );
   });
 
   it("returns null when canonical is not a URL", () => {
@@ -99,8 +114,12 @@ describe("securityTxt", () => {
       "https://example.com/report",
     ]);
     expect(fields["expires"]).toEqual(["2027-06-30T23:59:59Z"]);
-    expect(fields["canonical"]).toEqual(["https://example.com/.well-known/security.txt"]);
-    expect(findPolicyUrl(fields)).toBe("https://example.com/.well-known/cvd.json");
+    expect(fields["canonical"]).toEqual([
+      "https://example.com/.well-known/security.txt",
+    ]);
+    expect(findPolicyUrl(fields)).toBe(
+      "https://example.com/.well-known/cvd.json",
+    );
   });
 
   it("has the two fields RFC 9116 requires, and ends with a newline", () => {
@@ -114,17 +133,19 @@ describe("securityTxt", () => {
     expect(securityTxt(doc)).not.toContain("Berlin");
   });
 
-  it("writes Policy only when a page is given", () => {
-    expect(securityTxt(doc)).not.toMatch(/^Policy:/m);
-    expect(securityTxt(doc, { policy: "https://example.com/security" })).toMatch(
-      /^Policy: https:\/\/example\.com\/security$/m,
+  it("writes the generated human-readable policy URL by default", () => {
+    expect(securityTxt(doc)).toMatch(
+      /^Policy: https:\/\/example\.com\/\.well-known\/cvd-policy\.html$/m,
     );
+    expect(
+      securityTxt(doc, { policy: "https://example.com/security" }),
+    ).toMatch(/^Policy: https:\/\/example\.com\/security$/m);
   });
 
   it("takes an explicit canonical, and omits the field when told to", () => {
-    expect(securityTxt(doc, { canonical: "https://cdn.example.net/security.txt" })).toContain(
-      "Canonical: https://cdn.example.net/security.txt",
-    );
+    expect(
+      securityTxt(doc, { canonical: "https://cdn.example.net/security.txt" }),
+    ).toContain("Canonical: https://cdn.example.net/security.txt");
     expect(securityTxt(doc, { canonical: null })).not.toContain("Canonical:");
   });
 });
@@ -148,8 +169,22 @@ describe("mergeSecurityTxt", () => {
         "Expires: 2027-06-30T23:59:59Z",
         "Preferred-Languages: en",
         "CVD-Policy: https://example.com/.well-known/cvd.json",
+        "Policy: https://example.com/.well-known/cvd-policy.html",
         "",
       ].join("\n"),
+    );
+  });
+
+  it("adds the generated human-readable policy URL", () => {
+    const merged = mergeSecurityTxt(existing, doc, {
+      policy: "https://example.com/.well-known/cvd-policy.html",
+    });
+
+    expect(merged.text).toContain(
+      "Policy: https://example.com/.well-known/cvd-policy.html",
+    );
+    expect(merged.text).toContain(
+      "CVD-Policy: https://example.com/.well-known/cvd.json",
     );
   });
 
@@ -168,18 +203,22 @@ describe("mergeSecurityTxt", () => {
     expect(merged.text.split("\n")[4]).toBe("Preferred-Languages: en");
   });
 
-  it("leaves a file that already names this document untouched", () => {
+  it("adds Policy when the file already names the machine-readable document", () => {
     const current = `${existing}CVD-Policy: https://example.com/.well-known/cvd.json\n`;
     const merged = mergeSecurityTxt(current, doc);
-    expect(merged.change).toBe("unchanged");
-    expect(merged.text).toBe(current);
+    expect(merged.change).toBe("added");
+    expect(merged.text).toContain(
+      "Policy: https://example.com/.well-known/cvd-policy.html",
+    );
   });
 
   it("reduces a repeated field to one", () => {
     const twice = `${existing}CVD-Policy: https://a.example.com/cvd.json\nCVD-Policy: https://b.example.com/cvd.json\n`;
     const merged = mergeSecurityTxt(twice, doc);
     expect(merged.text.match(/^CVD-Policy:/gm)).toHaveLength(1);
-    expect(merged.text).toContain("CVD-Policy: https://example.com/.well-known/cvd.json");
+    expect(merged.text).toContain(
+      "CVD-Policy: https://example.com/.well-known/cvd.json",
+    );
   });
 
   it("keeps CRLF line endings when the file uses them", () => {
@@ -205,13 +244,61 @@ describe("mergeSecurityTxt", () => {
     const merged = mergeSecurityTxt(raw, doc);
     expect(merged.signed).toBe(true);
     const lines = merged.text.split("\n");
-    expect(lines.indexOf("CVD-Policy: https://example.com/.well-known/cvd.json")).toBe(5);
-    expect(lines[6]).toBe("-----BEGIN PGP SIGNATURE-----");
+    expect(
+      lines.indexOf("CVD-Policy: https://example.com/.well-known/cvd.json"),
+    ).toBe(5);
+    expect(lines[6]).toBe(
+      "Policy: https://example.com/.well-known/cvd-policy.html",
+    );
+    expect(lines[7]).toBe("-----BEGIN PGP SIGNATURE-----");
+  });
+
+  it("keeps additions before the signature when the signed body has no fields", () => {
+    const signed = [
+      "-----BEGIN PGP SIGNED MESSAGE-----",
+      "Hash: SHA256",
+      "",
+      "-----BEGIN PGP SIGNATURE-----",
+      "",
+      "signature",
+      "-----END PGP SIGNATURE-----",
+      "",
+    ].join("\n");
+
+    const lines = mergeSecurityTxt(signed, doc).text.split("\n");
+    expect(
+      lines.indexOf("Policy: https://example.com/.well-known/cvd-policy.html"),
+    ).toBe(4);
+    expect(lines[5]).toBe("-----BEGIN PGP SIGNATURE-----");
+  });
+
+  it("does not treat PGP signature armor headers as security.txt fields", () => {
+    const signed = [
+      "-----BEGIN PGP SIGNED MESSAGE-----",
+      "Hash: SHA256",
+      "",
+      "Contact: mailto:security@example.com",
+      "Expires: 2027-06-30T23:59:59Z",
+      "-----BEGIN PGP SIGNATURE-----",
+      "Version: GnuPG v2",
+      "",
+      "signature",
+      "-----END PGP SIGNATURE-----",
+      "",
+    ].join("\n");
+
+    const lines = mergeSecurityTxt(signed, doc).text.split("\n");
+    expect(
+      lines.indexOf("Policy: https://example.com/.well-known/cvd-policy.html"),
+    ).toBe(6);
+    expect(lines[7]).toBe("-----BEGIN PGP SIGNATURE-----");
+    expect(lines[8]).toBe("Version: GnuPG v2");
   });
 
   it("handles a file with nothing in it", () => {
     expect(mergeSecurityTxt("", doc).text).toBe(
-      "CVD-Policy: https://example.com/.well-known/cvd.json\n",
+      "CVD-Policy: https://example.com/.well-known/cvd.json\n" +
+        "Policy: https://example.com/.well-known/cvd-policy.html\n",
     );
   });
 
@@ -219,7 +306,9 @@ describe("mergeSecurityTxt", () => {
     const merged = mergeSecurityTxt("# nothing here yet\n", doc);
     expect(merged.change).toBe("added");
     expect(merged.text).toBe(
-      "# nothing here yet\nCVD-Policy: https://example.com/.well-known/cvd.json\n",
+      "# nothing here yet\n" +
+        "CVD-Policy: https://example.com/.well-known/cvd.json\n" +
+        "Policy: https://example.com/.well-known/cvd-policy.html\n",
     );
   });
 });
@@ -279,7 +368,10 @@ describe("answersFromSecurityTxt", () => {
   });
 
   it("keeps answers already given, and reports nothing applied for an empty file", () => {
-    const base = { ...defaultAnswers(), organization: { name: "Example Ltd." } };
+    const base = {
+      ...defaultAnswers(),
+      organization: { name: "Example Ltd." },
+    };
     const { answers, applied } = answersFromSecurityTxt("# nothing\n", base);
     expect(answers.organization.name).toBe("Example Ltd.");
     expect(applied).toEqual([]);
@@ -311,6 +403,8 @@ describe("answersFromSecurityTxt", () => {
     const base = defaultAnswers();
     answersFromSecurityTxt(raw, base);
     expect(base.canonical).toBe("");
-    expect(base.contact.channels).toEqual([{ type: "email", value: "", preferred: true }]);
+    expect(base.contact.channels).toEqual([
+      { type: "email", value: "", preferred: true },
+    ]);
   });
 });

@@ -42,10 +42,11 @@ from there.
 
 ## Working with the specification
 
-The site renders `SPEC.md`, serves the schemas and loads the examples; the
-library embeds every schema so it never needs the network. Those artefacts are
-**copied into this repository and committed**, so a static host can build the
-site without cloning anything else.
+The site renders the published 0.x `SPEC.md`, serves its schemas and loads its
+examples. It is intentionally not migrated to the Version 1 pre-standard
+candidate. The library embeds every schema so it never needs the network. Those
+artefacts are **copied into this repository and committed**, so builds and
+runtime validation do not require a specification checkout.
 
 Every published format version is kept: `0.1` and `0.2` are compiled separately,
 and a document is validated against the version it declares. A released version
@@ -58,10 +59,10 @@ npm run sync:spec           # refresh site/vendor/spec and the embedded schema
 npm run sync:spec:check     # fail if the copies have drifted (used by CI)
 ```
 
-Set `CVD_SPEC_DIR` if the specification sits elsewhere. The conformance tests —
-the corpora of valid and invalid documents and reports — run against that
-repository directly and **skip with a notice when it is absent**, since
-duplicating those fixtures here would only invite drift.
+Set `CVD_SPEC_DIR` if the specification sits elsewhere. Published 0.x
+conformance tests can run against that repository directly. The isolated V1
+schema and corpus are vendored under `packages/core/vendor/spec-v1/` with the
+exact source commit and run without a neighboring checkout.
 
 ## What the library does
 
@@ -120,7 +121,9 @@ These take precedence over any feature decision.
 
 ## Status
 
-Format version 0.2, draft; 0.1 remains published and valid.
+Format version 0.2, draft; 0.1 remains published and valid. Version 1 is an
+opt-in pre-standard candidate exposed only as `@cvd-policy/core/v1`; the CLI and
+website remain on the published 0.x line.
 
 Packages are versioned independently of the format. They tracked it up to
 `0.2.0`, and no longer do: `@cvd-policy/core` and `@cvd-policy/cli` are at

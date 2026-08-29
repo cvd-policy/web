@@ -20,6 +20,7 @@ import standaloneModule from "ajv/dist/standalone/index.js";
 import addFormatsModule from "ajv-formats";
 import { _ } from "ajv";
 import { schemas, reportProfile } from "../dist/schema.generated.js";
+import { schema as v1Schema } from "../dist/v1/schema.generated.js";
 
 const Ajv = AjvModule.default ?? AjvModule;
 const standaloneCode = standaloneModule.default ?? standaloneModule;
@@ -50,6 +51,8 @@ for (const [version, schema] of Object.entries(schemas)) {
 }
 ajv.addSchema(reportProfile, "report");
 exports["report"] = "report";
+ajv.addSchema(v1Schema, "1");
+exports["v1"] = "1";
 
 let code = standaloneCode(ajv, exports);
 

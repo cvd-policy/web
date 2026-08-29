@@ -6,6 +6,12 @@ versions: the packages stopped tracking the specification at 0.3.0, and the
 format they implement is `0.1` and `0.2`. The site is not published to the
 registry and carries no version of its own.
 
+## Unreleased
+
+- Adds the isolated `@cvd-policy/core/v1` pre-standard candidate API and a
+  vendored, commit-pinned V1 corpus. The package remains 0.4.0.
+- Leaves the root 0.x API, CLI, website, and report/intake behavior unchanged.
+
 ## 0.4.0
 
 `security.txt` now carries a human-readable policy, and the site hands over the

@@ -17,5 +17,8 @@ export interface PrecompiledValidator {
 export const v0_1: PrecompiledValidator;
 export const v0_2: PrecompiledValidator;
 
+/** The isolated pre-standard Version 1 candidate. */
+export const v1: PrecompiledValidator;
+
 /** The `report-0.1` profile: the shape of an incoming report. */
 export const report: PrecompiledValidator;

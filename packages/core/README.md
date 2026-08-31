@@ -25,8 +25,16 @@ const decision = evaluatePolicy(
   { activity: "automated_scanning", target: "https://example.com/", plan },
   authority.established ? authority.evidence : null,
 );
-// Only decision.status === "publisher-stated-permitted" is positive.
+if (!decision.inputValid) {
+  // Invalid target input: decision has issues but no evaluation status.
+} else {
+  // Only decision.status === "publisher-stated-permitted" is positive.
+}
 ```
+
+V1 `reasonCode` values are stable Core diagnostics, not normative interoperability
+requirements. Invalid targets return `inputValid: false` with a
+`target_url_invalid` issue and no evaluation status.
 
 V1 has no report intake or submission API. `requested_fields` is advisory and
 never authorizes collecting third-party data or unsafe proof of exploitation.

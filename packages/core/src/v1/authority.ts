@@ -17,7 +17,7 @@ const issue = (code: ReasonCode, path = ""): ValidationIssue => ({
 function parseHttpsUri(value: string): URL | null {
   try {
     const uri = new URL(value);
-    if (uri.protocol !== "https:" || uri.username || uri.password || uri.hash) return null;
+    if (uri.protocol !== "https:" || uri.username || uri.password || value.includes("#")) return null;
     return uri;
   } catch {
     return null;
@@ -99,7 +99,10 @@ export function assessSecurityTxtAuthority(
   if (policyValues.length > 1) return failure("security_txt_cvd_policy_duplicate", signed, humanPolicyUris);
 
   const expires = Date.parse(expiresValues[0] ?? "");
-  if (!Number.isFinite(expires) || expires <= context.retrievedAt.getTime()) {
+  if (!Number.isFinite(expires)) {
+    return failure("security_txt_expires_invalid", signed, humanPolicyUris);
+  }
+  if (expires <= context.retrievedAt.getTime()) {
     return failure("security_txt_expired", signed, humanPolicyUris);
   }
   const policyUri = parseHttpsUri(policyValues[0] ?? "");

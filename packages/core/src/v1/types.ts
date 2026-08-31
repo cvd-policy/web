@@ -122,7 +122,6 @@ export type ReasonCode =
   | "policy_scope_id_duplicate"
   | "policy_target_reference_invalid"
   | "policy_posture_conflict"
-  | "policy_condition_invalid"
   | "policy_critical_extension_missing"
   | "policy_critical_extension_unsupported"
   | "policy_activity_unsupported"
@@ -131,6 +130,7 @@ export type ReasonCode =
   | "security_txt_contact_invalid"
   | "security_txt_expires_missing"
   | "security_txt_expires_duplicate"
+  | "security_txt_expires_invalid"
   | "security_txt_expired"
   | "security_txt_cvd_policy_missing"
   | "security_txt_cvd_policy_duplicate"
@@ -233,6 +233,7 @@ export interface EvaluationConstraints {
 }
 
 export interface EvaluationResult {
+  inputValid: true;
   status: EvaluationStatus;
   reasonCode: ReasonCode;
   matchedRuleIds: string[];
@@ -240,3 +241,10 @@ export interface EvaluationResult {
   issues: ValidationIssue[];
   constraints?: EvaluationConstraints;
 }
+
+export interface EvaluationInputFailure {
+  inputValid: false;
+  issues: ValidationIssue[];
+}
+
+export type EvaluationOutcome = EvaluationResult | EvaluationInputFailure;

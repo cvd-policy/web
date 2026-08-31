@@ -68,10 +68,10 @@ function isLanguageTag(value: string): boolean {
   }
 }
 
-function uriHasForbiddenUserinfo(value: string): boolean {
+function uriHasForbiddenUserinfo(value: string, rejectFragment = false): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && Boolean(url.username || url.password);
+    return url.protocol === "https:" && Boolean(url.username || url.password || (rejectFragment && url.hash));
   } catch {
     return true;
   }
@@ -96,7 +96,7 @@ export function semanticIssues(
     issues.push(issue("policy_uri_invalid", "/organization/uri"));
   }
   for (const [index, channel] of doc.contact.channels.entries()) {
-    if (uriHasForbiddenUserinfo(channel))
+    if (uriHasForbiddenUserinfo(channel, true))
       issues.push(issue("policy_uri_invalid", `/contact/channels/${index}`));
   }
   for (const [index, encryption] of (doc.contact.encryption ?? []).entries()) {

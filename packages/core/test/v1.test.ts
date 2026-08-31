@@ -13,7 +13,14 @@ import {
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "vendor", "spec-v1");
 const tests = join(root, "tests", "v1");
-const read = <T>(...parts: string[]): T => JSON.parse(readFileSync(join(root, ...parts), "utf8")) as T;
+const read = <T>(...parts: string[]): T => {
+  const file = join(root, ...parts);
+  try {
+    return JSON.parse(readFileSync(file, "utf8")) as T;
+  } catch (error) {
+    throw new Error(`Cannot parse ${file}`, { cause: error });
+  }
+};
 const readText = (...parts: string[]): string => readFileSync(join(root, ...parts), "utf8");
 const now = new Date("2026-08-29T10:00:00Z");
 
@@ -52,21 +59,23 @@ describe("V1 vendored corpus", () => {
     }
   });
 
-  it("rejects every invalid policy with the declared code", () => {
-    const expected = read<Record<string, { code: string }>>("tests", "v1", "expected.json");
-    for (const [file, outcome] of Object.entries(expected)) {
+  it("rejects every invalid policy", () => {
+    const expected = read<Record<string, { status: "invalid-policy" | "unsupported-policy" }>>(
+      "tests", "v1", "expected.json",
+    );
+    for (const file of Object.keys(expected)) {
       const result = parsePolicyText(readText("tests", "v1", "policy", "invalid", file), { now });
       expect(result.valid, file).toBe(false);
-      expect(result.issues.map((entry) => entry.code), file).toContain(outcome.code);
     }
   });
 
   it("rejects invalid raw JSON and duplicate members", () => {
-    const expected = read<Record<string, { code: string }>>("tests", "v1", "raw-expected.json");
-    for (const [file, outcome] of Object.entries(expected)) {
+    const expected = read<Record<string, { status: "invalid-policy" }>>(
+      "tests", "v1", "raw-expected.json",
+    );
+    for (const file of Object.keys(expected)) {
       const result = parsePolicyText(readText("tests", "v1", "policy", "raw-invalid", file), { now });
       expect(result.valid, file).toBe(false);
-      expect(result.issues[0]?.code, file).toBe(outcome.code);
     }
   });
 
@@ -76,7 +85,7 @@ describe("V1 vendored corpus", () => {
         id: string;
         text: string;
         context: { requestedUri: string; finalUri: string; redirectChain: string[]; retrievedAt: string };
-        expected: { established: boolean; code?: string; discoveryHost?: string; cvdPolicyUri?: string };
+        expected: { established: boolean; discoveryHost?: string; cvdPolicyUri?: string };
       }>
     >("tests", "v1", "security-txt", "cases.json");
     for (const entry of cases) {
@@ -88,10 +97,41 @@ describe("V1 vendored corpus", () => {
       if (result.established) {
         expect(result.evidence.discoveryHost, entry.id).toBe(entry.expected.discoveryHost);
         expect(result.evidence.cvdPolicyUri, entry.id).toBe(entry.expected.cvdPolicyUri);
-      } else {
-        expect(result.issues[0]?.code, entry.id).toBe(entry.expected.code);
       }
     }
+  });
+
+  it("keeps malformed and expired security.txt diagnostics distinct", () => {
+    const context = {
+      requestedUri: "https://example.com/.well-known/security.txt",
+      finalUri: "https://example.com/.well-known/security.txt",
+      redirectChain: [],
+      retrievedAt: now,
+    };
+    const source = (expires: string) =>
+      `Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: ${expires}\n`;
+
+    const malformed = assessSecurityTxtAuthority(source("not-a-timestamp"), context);
+    expect(malformed.established).toBe(false);
+    if (!malformed.established) expect(malformed.issues[0]?.code).toBe("security_txt_expires_invalid");
+
+    const expired = assessSecurityTxtAuthority(source("2026-08-29T09:00:00Z"), context);
+    expect(expired.established).toBe(false);
+    if (!expired.established) expect(expired.issues[0]?.code).toBe("security_txt_expired");
+  });
+
+  it("rejects an empty fragment in a security.txt CVD-Policy URI", () => {
+    const result = assessSecurityTxtAuthority(
+      "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json#\nExpires: 2027-02-28T08:00:00Z\n",
+      {
+        requestedUri: "https://example.com/.well-known/security.txt",
+        finalUri: "https://example.com/.well-known/security.txt",
+        redirectChain: [],
+        retrievedAt: now,
+      },
+    );
+    expect(result.established).toBe(false);
+    if (!result.established) expect(result.issues[0]?.code).toBe("security_txt_cvd_policy_uri_invalid");
   });
 
   it("matches every evaluation vector", () => {
@@ -103,15 +143,34 @@ describe("V1 vendored corpus", () => {
         query: EvaluationQuery;
         authority: AuthorityEvidence | null;
         now: string;
-        expected: { status: string; reasonCode: string };
+        expected: { status?: string; inputValid?: false };
       }>
     >("tests", "v1", "evaluation", "cases.json");
     for (const entry of cases) {
       const policy = apply(read("tests", "v1", "policy", "valid", entry.base), entry.set);
       const result = evaluatePolicy(policy, entry.query, entry.authority, { now: new Date(entry.now) });
-      expect(result.status, entry.id).toBe(entry.expected.status);
-      expect(result.reasonCode, entry.id).toBe(entry.expected.reasonCode);
+      if (entry.expected.inputValid === false) {
+        expect(result.inputValid, entry.id).toBe(false);
+        if (!result.inputValid) expect(result.issues[0]?.code, entry.id).toBe("target_url_invalid");
+        expect(result, entry.id).not.toHaveProperty("status");
+      } else {
+        expect(result.inputValid, entry.id).toBe(true);
+        if (result.inputValid) expect(result.status, entry.id).toBe(entry.expected.status);
+      }
     }
+  });
+
+  it("validates target input before policy evaluation", () => {
+    const result = evaluatePolicy(
+      { cvd_policy: "invalid" },
+      { activity: "automated_scanning", target: "pkg:npm/example" },
+      null,
+      { now },
+    );
+    expect(result).toEqual({
+      inputValid: false,
+      issues: [{ level: "error", code: "target_url_invalid", path: "/target", message: "target_url_invalid" }],
+    });
   });
 
   it("validates without a neighboring specification checkout", () => {

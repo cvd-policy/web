@@ -118,7 +118,7 @@ export const schema = {
           "items": {
             "type": "string",
             "format": "uri",
-            "pattern": "^(?:mailto:|tel:|https://)"
+            "pattern": "^(?:mailto:|tel:|https://[^#]*$)"
           }
         },
         "preferred_languages": {

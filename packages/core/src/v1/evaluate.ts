@@ -4,6 +4,7 @@ import type {
   AuthorityEvidence,
   CvdPolicyDocument,
   EvaluationConstraints,
+  EvaluationOutcome,
   EvaluationQuery,
   EvaluationResult,
   EvaluationStatus,
@@ -23,6 +24,7 @@ function result(
   constraints?: EvaluationConstraints,
 ): EvaluationResult {
   return {
+    inputValid: true,
     status,
     reasonCode,
     matchedRuleIds,
@@ -101,7 +103,22 @@ export function evaluatePolicy(
   query: EvaluationQuery,
   authority: AuthorityEvidence | null,
   options: ValidationOptions = {},
-): EvaluationResult {
+): EvaluationOutcome {
+  let target;
+  try {
+    target = normalizeTarget(query.target);
+  } catch {
+    return {
+      inputValid: false,
+      issues: [{
+        level: "error",
+        code: "target_url_invalid",
+        path: "/target",
+        message: "target_url_invalid",
+      }],
+    };
+  }
+
   const validation =
     typeof input === "string" ? parsePolicyText(input, options) : validatePolicy(input, options);
   if (!validation.valid || !validation.policy) {
@@ -125,12 +142,6 @@ export function evaluatePolicy(
   }
   if (authority === null) return result("authority-not-established", "authority_evidence_missing");
 
-  let target;
-  try {
-    target = normalizeTarget(query.target);
-  } catch {
-    return result("not-covered", "target_url_invalid");
-  }
   let discoveryHost;
   try {
     discoveryHost = normalizeHost(authority.discoveryHost).host;

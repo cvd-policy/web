@@ -9,26 +9,26 @@ permissions:
   contents: read
 
 env:
-  # Pinned on purpose. Tracking the default branch meant a commit in the
-  # specification repository could turn every open pull request here red for
-  # reasons unrelated to the pull request. Move this to the next tag
-  # deliberately, as its own commit.
-  SPEC_REF: main
+  # Exact source commit for the vendored legacy and V1 conformance artifacts.
+  SPEC_REF: ab80d917bd64334380c3cfda9674a798f8d6951e
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       # The conformance corpus lives in the specification repository.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: cvd-policy/spec
           ref: ${{ env.SPEC_REF }}
           path: cvd-policy-spec
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm

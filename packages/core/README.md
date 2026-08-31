@@ -5,7 +5,31 @@ browser and in Node. Every published schema is embedded at build time, so
 nothing is fetched at runtime.
 
 Format versions 0.1 and 0.2 are both supported: a document is validated against
-the version it declares, because a released version never changes.
+the version it declares, because a released version never changes. Their API
+remains at the package root.
+
+The isolated Version 1 pre-standard candidate is opt-in. It does not change the
+0.x API, CLI, website, package version, or report/intake behavior:
+
+```typescript
+import {
+  assessSecurityTxtAuthority,
+  evaluatePolicy,
+  parsePolicyText,
+} from "@cvd-policy/core/v1";
+
+const parsed = parsePolicyText(raw, { now: new Date() });
+const authority = assessSecurityTxtAuthority(securityTxt, retrievalContext);
+const decision = evaluatePolicy(
+  parsed.policy,
+  { activity: "automated_scanning", target: "https://example.com/", plan },
+  authority.established ? authority.evidence : null,
+);
+// Only decision.status === "publisher-stated-permitted" is positive.
+```
+
+V1 has no report intake or submission API. `requested_fields` is advisory and
+never authorizes collecting third-party data or unsafe proof of exploitation.
 
 ```bash
 npm i @cvd-policy/core

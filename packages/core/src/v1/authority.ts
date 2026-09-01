@@ -126,11 +126,12 @@ export function assessSecurityTxtAuthority(
 
   const requestedHost = normalizeHost(requested.hostname).host;
   const finalHost = normalizeHost(final.hostname).host;
-  if (requestedHost !== finalHost) {
-    const canonicals = fields.get("canonical") ?? [];
-    if (!canonicals.some((value) => parseHttpsUri(value)?.href === requested.href)) {
-      return failure("security_txt_canonical_mismatch", signed, humanPolicyUris);
-    }
+  const canonicals = fields.get("canonical") ?? [];
+  if (
+    (requestedHost !== finalHost || canonicals.length > 0) &&
+    !canonicals.includes(context.requestedUri)
+  ) {
+    return failure("security_txt_canonical_mismatch", signed, humanPolicyUris);
   }
 
   const evidence: AuthorityEvidence = {

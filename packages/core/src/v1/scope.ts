@@ -38,6 +38,35 @@ export function normalizeHost(value: string): NormalizedHost {
   return { host, ip: /^\d+(?:\.\d+){3}$/.test(host) };
 }
 
+export function normalizePath(value: string): string {
+  if (value === "") return "/";
+  if (!value.startsWith("/") || /%(?![0-9A-Fa-f]{2})/.test(value))
+    throw new TypeError("invalid path");
+
+  let input = value.replace(/%[0-9A-Fa-f]{2}/g, (escape) => escape.toUpperCase());
+  let output = "";
+  while (input) {
+    if (input.startsWith("../")) input = input.slice(3);
+    else if (input.startsWith("./")) input = input.slice(2);
+    else if (input.startsWith("/./")) input = input.slice(2);
+    else if (input === "/.") input = "/";
+    else if (input.startsWith("/../")) {
+      input = input.slice(3);
+      output = output.replace(/\/?[^/]*$/, "");
+    } else if (input === "/..") {
+      input = "/";
+      output = output.replace(/\/?[^/]*$/, "");
+    } else if (input === "." || input === "..") input = "";
+    else {
+      const nextSlash = input.indexOf("/", 1);
+      const end = nextSlash < 0 ? input.length : nextSlash;
+      output += input.slice(0, end);
+      input = input.slice(end);
+    }
+  }
+  return output || "/";
+}
+
 export function normalizeTarget(value: string): NormalizedTarget {
   const url = parseUrl(value);
   if (url.protocol !== "http:" && url.protocol !== "https:")
@@ -48,12 +77,14 @@ export function normalizeTarget(value: string): NormalizedTarget {
   const rawHost = url.hostname.startsWith("[")
     ? url.hostname.slice(1, -1)
     : url.hostname;
+  const rawPath = value.match(/^[A-Za-z][A-Za-z0-9+.-]*:\/\/[^/?#]*([^?#]*)/)?.[1];
+  if (rawPath === undefined) throw new TypeError("invalid target URL");
   const normalized = normalizeHost(rawHost);
   return {
     ...normalized,
     scheme,
     port: url.port ? Number(url.port) : scheme === "https" ? 443 : 80,
-    path: url.pathname,
+    path: normalizePath(rawPath),
   };
 }
 
@@ -82,7 +113,11 @@ export function scopeEntryMatches(
   const portMatches = entry.ports
     ? entry.ports.includes(target.port)
     : target.port === (target.scheme === "https" ? 443 : 80);
-  return portMatches && pathMatches(entry.path_prefix, target.path);
+  try {
+    return portMatches && pathMatches(normalizePath(entry.path_prefix), target.path);
+  } catch {
+    return false;
+  }
 }
 
 export function matchingScopeIds(

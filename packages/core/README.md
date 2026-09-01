@@ -22,7 +22,18 @@ const parsed = parsePolicyText(raw, { now: new Date() });
 const authority = assessSecurityTxtAuthority(securityTxt, retrievalContext);
 const decision = evaluatePolicy(
   parsed.policy,
-  { activity: "automated_scanning", target: "https://example.com/", plan },
+  {
+    activity: "automated_scanning",
+    target: "https://example.com/",
+    plan,
+    policyRetrieval: {
+      requestedUri: "https://example.com/cvd-policy.json",
+      finalUri: "https://example.com/cvd-policy.json",
+      redirectChain: [],
+      statusCode: 200,
+      mediaType: "application/cvd-policy+json",
+    },
+  },
   authority.established ? authority.evidence : null,
 );
 if (!decision.inputValid) {
@@ -34,7 +45,10 @@ if (!decision.inputValid) {
 
 V1 `reasonCode` values are stable Core diagnostics, not normative interoperability
 requirements. Invalid targets return `inputValid: false` with a
-`target_url_invalid` issue and no evaluation status.
+`target_url_invalid` issue and no evaluation status. Status-bearing evaluation also
+requires policy retrieval evidence bound to the `CVD-Policy` URI. Only HTTPS
+redirect chains ending in a `200 OK` JSON representation are accepted;
+`application/json` requires the explicit `allowApplicationJson` option.
 
 V1 has no report intake or submission API. `requested_fields` is advisory and
 never authorizes collecting third-party data or unsafe proof of exploitation.

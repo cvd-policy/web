@@ -144,19 +144,59 @@ describe("V1 vendored corpus", () => {
         authority: AuthorityEvidence | null;
         now: string;
         expected: { status?: string; inputValid?: false };
+        options?: { allowApplicationJson?: boolean };
       }>
     >("tests", "v1", "evaluation", "cases.json");
     for (const entry of cases) {
       const policy = apply(read("tests", "v1", "policy", "valid", entry.base), entry.set);
-      const result = evaluatePolicy(policy, entry.query, entry.authority, { now: new Date(entry.now) });
+      const result = evaluatePolicy(policy, entry.query, entry.authority, {
+        now: new Date(entry.now),
+        ...entry.options,
+      });
       if (entry.expected.inputValid === false) {
         expect(result.inputValid, entry.id).toBe(false);
         if (!result.inputValid) expect(result.issues[0]?.code, entry.id).toBe("target_url_invalid");
         expect(result, entry.id).not.toHaveProperty("status");
       } else {
         expect(result.inputValid, entry.id).toBe(true);
-        if (result.inputValid) expect(result.status, entry.id).toBe(entry.expected.status);
+        if (result.inputValid) {
+          expect(result.status, entry.id).toBe(entry.expected.status);
+          if (entry.id.startsWith("multiple-permits-one-satisfied")) {
+            expect(result.matchedRuleIds, entry.id).toEqual(["a-permit", "z-permit"]);
+            expect(result, entry.id).not.toHaveProperty("constraints");
+          }
+        }
       }
+    }
+  });
+
+  it("dispatches missing and typed versions to the required statuses", () => {
+    const query: EvaluationQuery = {
+      activity: "manual_testing",
+      target: "https://example.com/",
+      policyRetrieval: {
+        requestedUri: "https://example.com/cvd-policy.json",
+        finalUri: "https://example.com/cvd-policy.json",
+        redirectChain: [],
+        statusCode: 200,
+        mediaType: "application/cvd-policy+json",
+      },
+    };
+    const authority: AuthorityEvidence = {
+      established: true,
+      discoveryHost: "example.com",
+      securityTxtUri: "https://example.com/.well-known/security.txt",
+      cvdPolicyUri: "https://example.com/cvd-policy.json",
+      securityTxtExpires: "2027-02-28T08:00:00Z",
+    };
+    for (const [policy, status] of [
+      [{}, "invalid-policy"],
+      [{ cvd_policy: "1" }, "invalid-policy"],
+      [{ cvd_policy: 2 }, "unsupported-policy"],
+    ] as const) {
+      const result = evaluatePolicy(policy, query, authority, { now });
+      expect(result.inputValid).toBe(true);
+      if (result.inputValid) expect(result.status).toBe(status);
     }
   });
 

@@ -139,6 +139,7 @@ export type ReasonCode =
   | "security_txt_redirect_invalid"
   | "authority_evidence_missing"
   | "authority_host_mismatch"
+  | "policy_retrieval_invalid"
   | "target_url_invalid"
   | "scope_target_not_covered"
   | "scope_target_excluded"
@@ -166,6 +167,7 @@ export interface ValidationResult {
 export interface ValidationOptions {
   now?: Date;
   checkExpiry?: boolean;
+  allowApplicationJson?: boolean;
 }
 
 export interface SecurityTxtRetrievalContext {
@@ -209,11 +211,20 @@ export interface EvaluationPlan {
   usesOnlyTestAccounts?: boolean;
 }
 
+export interface PolicyRetrievalContext {
+  requestedUri: string;
+  finalUri: string;
+  redirectChain: string[];
+  statusCode: number;
+  mediaType: string;
+}
+
 export interface EvaluationQuery {
   activity: string;
   target: string;
   plan?: EvaluationPlan;
   understoodExtensions?: string[];
+  policyRetrieval?: PolicyRetrievalContext;
 }
 
 export type EvaluationStatus =
@@ -225,13 +236,6 @@ export type EvaluationStatus =
   | "invalid-policy"
   | "unsupported-policy";
 
-export interface EvaluationConstraints {
-  maxRequestsPerSecond?: number;
-  maxConcurrentRequests?: number;
-  requiredUserAgentToken?: string;
-  testAccountsOnly?: true;
-}
-
 export interface EvaluationResult {
   inputValid: true;
   status: EvaluationStatus;
@@ -239,7 +243,6 @@ export interface EvaluationResult {
   matchedRuleIds: string[];
   matchedTargetIds: string[];
   issues: ValidationIssue[];
-  constraints?: EvaluationConstraints;
 }
 
 export interface EvaluationInputFailure {

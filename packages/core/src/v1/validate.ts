@@ -1,7 +1,10 @@
 import type { ErrorObject } from "ajv";
 import { v1 as validateSchema } from "../../generated/validators.js";
 import { DuplicateMemberError, parseJsonText } from "./parse.js";
-import { normalizeHost } from "./scope.js";
+import {
+  normalizeHost,
+  normalizePath,
+} from "./scope.js";
 import type {
   CvdPolicyDocument,
   ReasonCode,
@@ -68,10 +71,10 @@ function isLanguageTag(value: string): boolean {
   }
 }
 
-function uriHasForbiddenUserinfo(value: string): boolean {
+function uriHasForbiddenUserinfo(value: string, rejectFragment = false): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && Boolean(url.username || url.password);
+    return url.protocol === "https:" && Boolean(url.username || url.password || (rejectFragment && url.hash));
   } catch {
     return true;
   }
@@ -96,7 +99,7 @@ export function semanticIssues(
     issues.push(issue("policy_uri_invalid", "/organization/uri"));
   }
   for (const [index, channel] of doc.contact.channels.entries()) {
-    if (uriHasForbiddenUserinfo(channel))
+    if (uriHasForbiddenUserinfo(channel, true))
       issues.push(issue("policy_uri_invalid", `/contact/channels/${index}`));
   }
   for (const [index, encryption] of (doc.contact.encryption ?? []).entries()) {
@@ -127,6 +130,7 @@ export function semanticIssues(
     webById.set(entry.id, entry.state);
     try {
       const normalized = normalizeHost(entry.host);
+      normalizePath(entry.path_prefix);
       if (normalized.ip && entry.include_subdomains) {
         issues.push(
           issue(
@@ -204,7 +208,11 @@ export function validatePolicy(
     return { valid: false, issues: [issue("policy_schema_invalid")] };
   }
   const record = input as Record<string, unknown>;
-  if (Object.hasOwn(record, "cvd_policy") && record["cvd_policy"] !== 1) {
+  if (
+    Object.hasOwn(record, "cvd_policy") &&
+    Number.isInteger(record["cvd_policy"]) &&
+    record["cvd_policy"] !== 1
+  ) {
     return {
       valid: false,
       issues: [issue("policy_version_unsupported", "/cvd_policy")],

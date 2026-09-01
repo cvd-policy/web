@@ -122,7 +122,6 @@ export type ReasonCode =
   | "policy_scope_id_duplicate"
   | "policy_target_reference_invalid"
   | "policy_posture_conflict"
-  | "policy_condition_invalid"
   | "policy_critical_extension_missing"
   | "policy_critical_extension_unsupported"
   | "policy_activity_unsupported"
@@ -131,6 +130,7 @@ export type ReasonCode =
   | "security_txt_contact_invalid"
   | "security_txt_expires_missing"
   | "security_txt_expires_duplicate"
+  | "security_txt_expires_invalid"
   | "security_txt_expired"
   | "security_txt_cvd_policy_missing"
   | "security_txt_cvd_policy_duplicate"
@@ -139,6 +139,7 @@ export type ReasonCode =
   | "security_txt_redirect_invalid"
   | "authority_evidence_missing"
   | "authority_host_mismatch"
+  | "policy_retrieval_invalid"
   | "target_url_invalid"
   | "scope_target_not_covered"
   | "scope_target_excluded"
@@ -166,6 +167,7 @@ export interface ValidationResult {
 export interface ValidationOptions {
   now?: Date;
   checkExpiry?: boolean;
+  allowApplicationJson?: boolean;
 }
 
 export interface SecurityTxtRetrievalContext {
@@ -209,11 +211,20 @@ export interface EvaluationPlan {
   usesOnlyTestAccounts?: boolean;
 }
 
+export interface PolicyRetrievalContext {
+  requestedUri: string;
+  finalUri: string;
+  redirectChain: string[];
+  statusCode: number;
+  mediaType: string;
+}
+
 export interface EvaluationQuery {
   activity: string;
   target: string;
   plan?: EvaluationPlan;
   understoodExtensions?: string[];
+  policyRetrieval?: PolicyRetrievalContext;
 }
 
 export type EvaluationStatus =
@@ -225,18 +236,18 @@ export type EvaluationStatus =
   | "invalid-policy"
   | "unsupported-policy";
 
-export interface EvaluationConstraints {
-  maxRequestsPerSecond?: number;
-  maxConcurrentRequests?: number;
-  requiredUserAgentToken?: string;
-  testAccountsOnly?: true;
-}
-
 export interface EvaluationResult {
+  inputValid: true;
   status: EvaluationStatus;
   reasonCode: ReasonCode;
   matchedRuleIds: string[];
   matchedTargetIds: string[];
   issues: ValidationIssue[];
-  constraints?: EvaluationConstraints;
 }
+
+export interface EvaluationInputFailure {
+  inputValid: false;
+  issues: ValidationIssue[];
+}
+
+export type EvaluationOutcome = EvaluationResult | EvaluationInputFailure;

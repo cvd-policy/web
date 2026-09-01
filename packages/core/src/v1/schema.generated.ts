@@ -118,7 +118,7 @@ export const schema = {
           "items": {
             "type": "string",
             "format": "uri",
-            "pattern": "^(?:mailto:|tel:|https://)"
+            "pattern": "^(?:mailto:|tel:|https://[^#]*$)"
           }
         },
         "preferred_languages": {
@@ -232,7 +232,7 @@ export const schema = {
         },
         "path_prefix": {
           "type": "string",
-          "pattern": "^/[^?#]*$"
+          "pattern": "^/(?:[^%?#]|%[0-9A-Fa-f]{2})*$"
         },
         "include_subdomains": {
           "type": "boolean"
@@ -424,6 +424,25 @@ export const schema = {
                   "test_accounts_only": true
                 }
               }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "prohibited"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "conditions"
+              ]
             }
           }
         }

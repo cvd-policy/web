@@ -10,7 +10,7 @@ permissions:
 
 env:
   # Exact source commit for the vendored legacy and V1 conformance artifacts.
-  SPEC_REF: ab80d917bd64334380c3cfda9674a798f8d6951e
+  SPEC_REF: a7e359ac2bc2efbc89febc7c4a5cd42dec03eade
 
 jobs:
   build:

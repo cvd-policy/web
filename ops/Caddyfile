@@ -35,11 +35,12 @@ cvd-policy.eu, www.cvd-policy.eu {
 	@policypage path /security/*
 	header @policypage Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 
-	# Both files are meant to be fetched by other people's tools.
-	@wellknown path /.well-known/cvd.json
-	header @wellknown {
-		Content-Type "application/json"
+	# This site's concrete URI; V1 defines no default JSON path.
+	@cvdpolicy path /cvd-policy.json
+	header @cvdpolicy {
+		Content-Type "application/cvd-policy+json"
 		Access-Control-Allow-Origin "*"
+		Cache-Control "public, max-age=3600"
 	}
 
 	@schema path /schema/*

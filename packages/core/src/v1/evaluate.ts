@@ -1,4 +1,5 @@
 import { matchingScopeIds, normalizeHost, normalizeTarget } from "./scope.js";
+import { policyRetrievalIssues } from "./retrieval.js";
 import { parsePolicyText, validatePolicy } from "./validate.js";
 import type {
   AuthorityEvidence,
@@ -8,7 +9,6 @@ import type {
   EvaluationResult,
   EvaluationStatus,
   ReasonCode,
-  PolicyRetrievalContext,
   TestingConditions,
   TestingRule,
   ValidationOptions,
@@ -62,45 +62,6 @@ function conditionFailure(
     return "conditions_test_accounts_unconfirmed";
   }
   return null;
-}
-
-function policyRetrievalValid(
-  retrieval: PolicyRetrievalContext | undefined,
-  authority: AuthorityEvidence,
-  allowApplicationJson: boolean,
-): boolean {
-  if (!retrieval || retrieval.statusCode !== 200) return false;
-  const mediaType = retrieval.mediaType.split(";", 1)[0]?.trim().toLowerCase();
-  if (
-    mediaType !== "application/cvd-policy+json" &&
-    !(allowApplicationJson && mediaType === "application/json")
-  ) return false;
-
-  const values = [retrieval.requestedUri, ...retrieval.redirectChain];
-  try {
-    const uris = values.map((value) => new URL(value));
-    if (
-      uris.some(
-        (uri, index) =>
-          uri.protocol !== "https:" ||
-          Boolean(uri.username || uri.password) ||
-          values[index]?.includes("#"),
-      ) ||
-      retrieval.redirectChain.length > 5 ||
-      new Set(values).size !== values.length ||
-      uris[0]?.href !== authority.cvdPolicyUri ||
-      (uris.at(-1)?.href ?? uris[0]?.href) !== new URL(retrieval.finalUri).href
-    ) return false;
-    const final = new URL(retrieval.finalUri);
-    return (
-      final.protocol === "https:" &&
-      !final.username &&
-      !final.password &&
-      !retrieval.finalUri.includes("#")
-    );
-  } catch {
-    return false;
-  }
 }
 
 function applicableRules(
@@ -159,7 +120,11 @@ export function evaluatePolicy(
     return result("unsupported-policy", "policy_activity_unsupported");
   }
   if (authority === null) return result("authority-not-established", "authority_evidence_missing");
-  if (!policyRetrievalValid(query.policyRetrieval, authority, options.allowApplicationJson === true)) {
+  if (policyRetrievalIssues(
+    query.policyRetrieval,
+    authority,
+    options.allowApplicationJson === true,
+  ).length > 0) {
     return result("authority-not-established", "policy_retrieval_invalid");
   }
 

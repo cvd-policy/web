@@ -1,0 +1,40 @@
+{
+  "cvd_policy": 1,
+  "last_updated": "2026-09-03T00:00:00Z",
+  "expires": "2027-09-03T00:00:00Z",
+  "organization": {
+    "name": "Skalvar Technologies UG (haftungsbeschränkt)",
+    "uri": "https://cvd-policy.eu"
+  },
+  "contact": {
+    "channels": ["mailto:security@cvd-policy.eu"],
+    "preferred_languages": ["en", "de"]
+  },
+  "research": {
+    "posture": "report_only",
+    "statement": "Reports about this website, the specification, or the reference implementation are welcome. This static website does not grant permission for active testing."
+  },
+  "reporting_scope": {
+    "web": [
+      {
+        "id": "website",
+        "state": "in",
+        "host": "cvd-policy.eu",
+        "schemes": ["https"],
+        "path_prefix": "/",
+        "include_subdomains": false
+      }
+    ]
+  },
+  "reporting": {
+    "requested_fields": ["affected_asset", "description", "reproduction_steps"],
+    "proof_of_exploitation": "prohibited"
+  },
+  "response_targets": {
+    "acknowledgement_days": 3
+  },
+  "disclosure": {
+    "approach": "coordinated",
+    "default_days": 90
+  }
+}

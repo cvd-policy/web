@@ -1,117 +1,148 @@
-// Fetches a policy document. Limits redirects, time and size, and refuses
-// anything that is not https or that points inward.
+// Fetches foreign resources with bounded redirects, time and size while
+// binding every connection to a DNS answer checked by the client.
+import https from "node:https";
 import { Buffer } from "node:buffer";
 import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { isPrivateAddress } from "@cvd-policy/core";
 
-const MAX_REDIRECTS = 3;
+const MAX_REDIRECTS = 5;
 const TIMEOUT_MS = 10_000;
 const MAX_BYTES = 256 * 1024;
+const decoder = new TextDecoder("utf-8", { fatal: true });
 
-/**
- * Reads a response body, giving up once it passes the limit.
- *
- * Reading it whole and measuring afterwards is no limit at all: by the time the
- * check runs the bytes are already in memory, and a hostile or broken server
- * decides how many there are. Counting bytes off the stream stops it early.
- */
-async function readCapped(response) {
-  const stream = response.body;
-  if (!stream) return "";
-
-  const reader = stream.getReader();
-  const chunks = [];
-  let total = 0;
-
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      total += value.byteLength;
-      if (total > MAX_BYTES) throw new Error("document is larger than 256 KiB");
-      chunks.push(value);
-    }
-  } finally {
-    await reader.cancel().catch(() => {});
+function httpsUrl(target) {
+  if (
+    !/^https:\/\/[^/\\\s?#]+(?:[/?][^\\\s#]*)?$/i.test(target) ||
+    /%(?![0-9a-f]{2})/i.test(target)
+  ) throw new Error("only syntactically valid absolute https URLs are supported");
+  const url = new URL(target);
+  if (url.protocol !== "https:" || url.username || url.password || target.includes("#")) {
+    throw new Error("only absolute https URLs without userinfo or fragments are supported");
   }
-
-  return Buffer.concat(chunks).toString("utf8");
+  return url;
 }
 
-/**
- * Refuses an address inside the network running this tool.
- *
- * Section 8 of the specification puts it on consumers: a policy document comes
- * from a foreign server, and reaching a private, loopback, link-local or
- * metadata address on its say-so turns this tool into someone else's probe.
- * The redirect chain is the interesting part — a public host is free to send us
- * at 169.254.169.254 — so every hop is checked, not only the first.
- *
- * The name is resolved as well, because a public name may point inward. A name
- * that changes its answer between this check and the request still gets
- * through; stopping that needs the socket, which `fetch` does not hand over.
- */
-async function refuseInward(target) {
-  const host = new URL(target).hostname;
-  const bare = host.replace(/^\[|\]$/g, "");
-
-  if (isPrivateAddress(bare)) {
-    throw new Error(`refusing to fetch a private address: ${host}`);
+export async function publicAddresses(url, lookupFn = lookup) {
+  const host = url.hostname.replace(/^\[|\]$/g, "");
+  if (isIP(host)) {
+    if (isPrivateAddress(host)) throw new Error(`refusing to fetch a private address: ${url.hostname}`);
+    return [{ address: host, family: isIP(host) }];
   }
 
-  let addresses;
-  try {
-    addresses = await lookup(bare, { all: true });
-  } catch {
-    // Let the request fail on its own with a clearer message.
-    return;
-  }
-
-  for (const { address } of addresses) {
-    if (isPrivateAddress(address)) {
-      throw new Error(`refusing to fetch ${host}: it resolves to ${address}`);
-    }
-  }
+  const addresses = await lookupFn(host, { all: true, verbatim: true });
+  const usable = addresses.filter(({ address }) => !isPrivateAddress(address));
+  if (usable.length === 0) throw new Error(`refusing to fetch ${url.hostname}: it has no public address`);
+  return usable;
 }
 
-export async function fetchPolicy(target) {
-  const base = target.startsWith("http") ? target : `https://${target}`;
-  const url = new URL(base);
-  if (url.protocol !== "https:") throw new Error("only https is supported");
-  if (!url.pathname || url.pathname === "/") url.pathname = "/.well-known/cvd.json";
+async function requestOnce(url, { accept, maxBytes, signal }) {
+  const selected = await publicAddresses(url);
+  return new Promise((resolve, reject) => {
+    const request = https.request(url, {
+      method: "GET",
+      signal,
+      autoSelectFamily: true,
+      headers: accept ? { accept, "user-agent": "cvd-policy-cli" } : { "user-agent": "cvd-policy-cli" },
+      lookup: (_hostname, options, callback) => options?.all
+        ? callback(null, selected)
+        : callback(null, selected[0].address, selected[0].family),
+    }, (response) => {
+      const statusCode = response.statusCode ?? 0;
+      if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
+        response.destroy();
+        resolve({ body: "", statusCode, mediaType: "", location: response.headers.location });
+        return;
+      }
+      const chunks = [];
+      let bytes = 0;
+      response.on("data", (chunk) => {
+        bytes += chunk.length;
+        if (bytes > maxBytes) {
+          response.destroy(new Error(`document is larger than ${maxBytes} bytes`));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.on("end", () => {
+        try {
+          resolve({
+            body: decoder.decode(Buffer.concat(chunks)),
+            statusCode: response.statusCode ?? 0,
+            mediaType: String(response.headers["content-type"] ?? ""),
+            location: response.headers.location,
+          });
+        } catch {
+          reject(new Error("response is not valid UTF-8"));
+        }
+      });
+      response.on("error", reject);
+    });
+    request.on("error", reject);
+    request.end();
+  });
+}
 
+export async function fetchResource(target, { accept, maxBytes = MAX_BYTES } = {}) {
+  const requestedUri = target;
+  const initialUri = httpsUrl(target).href;
+  if (requestedUri !== initialUri) {
+    throw new Error("refusing a URL that changes during normalization");
+  }
+  const redirectChain = [];
+  const seen = new Set([initialUri]);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    let current = url.toString();
+    let current = initialUri;
     for (let redirect = 0; redirect <= MAX_REDIRECTS; redirect += 1) {
-      await refuseInward(current);
-
-      const response = await fetch(current, {
-        redirect: "manual",
+      const response = await requestOnce(httpsUrl(current), {
+        accept,
+        maxBytes,
         signal: controller.signal,
-        headers: { accept: "application/json" },
       });
-
-      if (response.status >= 300 && response.status < 400) {
-        const location = response.headers.get("location");
-        if (!location) throw new Error(`redirect without a location (${response.status})`);
-        current = new URL(location, current).toString();
-        if (!current.startsWith("https://")) throw new Error("redirect left https");
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.location) {
+        if (redirect === MAX_REDIRECTS) throw new Error("too many redirects");
+        const next = httpsUrl(new URL(response.location, current).href).href;
+        if (seen.has(next)) throw new Error("redirect loop");
+        seen.add(next);
+        redirectChain.push(next);
+        current = next;
         continue;
       }
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const body = await readCapped(response);
-      // The host we asked is the one this document speaks for, wherever it was
-      // finally served from.
-      return { body, url: current, discoveredFor: url.hostname };
+      return {
+        body: response.body,
+        requestedUri,
+        finalUri: current,
+        redirectChain,
+        statusCode: response.statusCode,
+        mediaType: response.mediaType,
+      };
     }
     throw new Error("too many redirects");
   } finally {
     clearTimeout(timer);
   }
+}
+
+function targetBase(target) {
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(target) ? target : `https://${target}`;
+}
+
+export async function fetchSecurityTxt(target, { fetcher = fetchResource } = {}) {
+  const origin = httpsUrl(targetBase(target));
+  return fetcher(new URL("/.well-known/security.txt", origin).href, {
+    accept: "text/plain, application/octet-stream;q=0.5",
+    maxBytes: 64 * 1024,
+  });
+}
+
+/** Legacy 0.x direct policy retrieval, retained only for `check --legacy`. */
+export async function fetchPolicy(target, { fetcher = fetchResource } = {}) {
+  const url = httpsUrl(targetBase(target));
+  if (!url.pathname || url.pathname === "/") url.pathname = "/.well-known/cvd.json";
+  const result = await fetcher(url.href, { accept: "application/json" });
+  if (result.statusCode !== 200) throw new Error(`HTTP ${result.statusCode}`);
+  return { body: result.body, url: result.finalUri, discoveredFor: url.hostname };
 }

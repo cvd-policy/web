@@ -1,15 +1,23 @@
 <script lang="ts">
   import CodeBlock from "../components/CodeBlock.svelte";
   import { t } from "../lib/i18n.svelte.js";
-  import example from "../../vendor/spec/examples/01-manufacturer-report-only.json";
-
-  const json = JSON.stringify(example, null, 2);
+  const json = JSON.stringify({
+    cvd_policy: 1,
+    last_updated: "2026-09-03T00:00:00Z",
+    expires: "2027-03-03T00:00:00Z",
+    organization: { name: "Example Organization" },
+    contact: { channels: ["mailto:security@example.com"] },
+    research: { posture: "report_only" },
+    reporting_scope: { web: [{ id: "main", state: "in", host: "example.com", schemes: ["https"], path_prefix: "/", include_subdomains: false }] },
+    reporting: { requested_fields: ["affected_asset", "description"], proof_of_exploitation: "not_requested" },
+  }, null, 2);
 </script>
 
 <div class="stack">
   <section class="prose">
     <h1>{t("home.title")}</h1>
     <p class="lead">{t("home.lead")}</p>
+    <p class="notice">Experimental V1 implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. The proposed field and media type may change.</p>
     <div class="row actions-primary">
       <a class="btn btn-primary" href="/generate">{t("home.cta_generate")}</a>
       <a class="btn" href="/validate">{t("home.cta_validate")}</a>
@@ -44,7 +52,7 @@
     <div class="stack">
       <h2>{t("home.example_title")}</h2>
       <p class="mute small">{t("home.example_caption")}</p>
-      <CodeBlock code={json} title="cvd.json" />
+      <CodeBlock code={json} title="cvd-policy.json" />
     </div>
   </section>
 </div>

@@ -2,15 +2,28 @@
 
 Releases of `@cvd-policy/core` and `@cvd-policy/cli`, which are versioned
 together and published from this repository. These numbers are not format
-versions: the packages stopped tracking the specification at 0.3.0, and the
-format they implement is `0.1` and `0.2`. The site is not published to the
-registry and carries no version of its own.
+versions: the stable root API implements `0.1` and `0.2`, while the isolated
+V1 API is an experimental implementation of the current Internet-Draft. The
+site is not published to the registry and carries no version of its own.
 
 ## Unreleased
 
-- Adds the isolated `@cvd-policy/core/v1` pre-standard candidate API and a
-  vendored, commit-pinned V1 corpus. The package remains 0.4.0.
-- Leaves the root 0.x API, CLI, website, and report/intake behavior unchanged.
+## 0.5.0-rc.1
+
+Experimental implementation of
+[`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00).
+The proposed `CVD-Policy` field and `application/cvd-policy+json` media type may
+change before standardization.
+
+- Adds V1 generation, `security.txt` creation and signed-safe merge helpers to
+  `@cvd-policy/core/v1`.
+- Makes CLI `validate` and `check` use V1 by default. `check <domain>` starts at
+  `/.well-known/security.txt`, follows its one advertised `CVD-Policy` HTTPS
+  URI, reports redirects, and validates both expiries and retrieval metadata.
+- Accepts `application/json` only with `--allow-application-json`, returning a
+  compatibility warning. Legacy 0.x validation and direct retrieval require
+  `--legacy`.
+- Retains the root Core 0.x API and immutable 0.x formats for existing users.
 
 ## 0.4.0
 

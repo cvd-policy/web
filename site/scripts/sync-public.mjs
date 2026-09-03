@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const vendor = join(here, "..", "vendor", "spec");
 const publicDir = join(here, "..", "public");
+const v1Vendor = join(here, "..", "..", "packages", "core", "vendor", "spec-v1");
 
 // Every published version stays reachable at its own URL, plus the profiles.
 for (const version of ["0.1", "0.2"]) {
@@ -17,6 +18,12 @@ for (const version of ["0.1", "0.2"]) {
     join(target, "cvd-policy.schema.json"),
   );
 }
+
+mkdirSync(join(publicDir, "schema"), { recursive: true });
+copyFileSync(
+  join(v1Vendor, "schema", "cvd-policy-1.schema.json"),
+  join(publicDir, "schema", "cvd-policy-1.schema.json"),
+);
 
 const profileTarget = join(publicDir, "schema", "profiles");
 mkdirSync(profileTarget, { recursive: true });

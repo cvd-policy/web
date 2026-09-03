@@ -12,11 +12,17 @@
     hintKey?: string;
   } = $props();
   let over = $state(false);
+  let error = $state("");
   let input: HTMLInputElement;
 
   async function take(file: File | undefined) {
     if (!file) return;
-    onload(await readFile(file), file.name);
+    try {
+      onload(await readFile(file), file.name);
+      error = "";
+    } catch {
+      error = "The selected file is not valid UTF-8.";
+    }
   }
 </script>
 
@@ -52,3 +58,4 @@
     onchange={(event) => take(event.currentTarget.files?.[0])}
   />
 </div>
+{#if error}<p class="issue error" role="alert">{error}</p>{/if}

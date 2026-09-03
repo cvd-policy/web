@@ -3,39 +3,31 @@
   import { examples } from "../lib/examples.js";
   import { t } from "../lib/i18n.svelte.js";
 
-  const cli = `npx @cvd-policy/cli validate cvd.json
-npx @cvd-policy/cli validate -              # from stdin
-npx @cvd-policy/cli check https://example.com
-npx @cvd-policy/cli explain cvd.json
-npx @cvd-policy/cli report incoming.json    # against the report profile`;
+  const cli = `npx @cvd-policy/cli@0.5.0-rc.1 validate cvd-policy.json
+npx @cvd-policy/cli@0.5.0-rc.1 validate -
+npx @cvd-policy/cli@0.5.0-rc.1 check example.com
+npx @cvd-policy/cli@0.5.0-rc.1 validate --legacy old-cvd.json`;
 
-  const action = `- name: Check the CVD policy
-  run: npx @cvd-policy/cli validate .well-known/cvd.json`;
+  const action = `- name: Check the deployed CVD policy
+  run: npx @cvd-policy/cli@0.5.0-rc.1 check example.com`;
 
-  const securityTxtApi = `import {
-  securityTxt,            // a complete file, for a host that has none
-  mergeSecurityTxt,       // set CVD-Policy and Policy in a file that exists
-  answersFromSecurityTxt, // read an existing file back into answers
-  humanPolicyUrl,         // where a readable page would sit, by convention
-  isSignedSecurityTxt,
-} from "@cvd-policy/core";
+  const securityTxtApi = `import { generatePolicy, mergeSecurityTxt, securityTxt } from "@cvd-policy/core/v1";
 
-// Policy is written only if you pass one. Name a page you are actually
-// publishing; leaving it out beats pointing reporters at a 404.
-const policy = humanPolicyUrl(doc);
-
-const fresh = securityTxt(doc, { policy });
-
-const { text, change, previous, signed } =
-  mergeSecurityTxt(existing, doc, { policy });
-// change:  "added" | "replaced" | "unchanged"
-// signed:  the edit invalidated a PGP signature`;
+const doc = generatePolicy(input);
+const policyUri = "https://example.com/cvd-policy.json";
+const fresh = securityTxt(doc, {
+  policyUri,
+  securityTxtUri: "https://example.com/.well-known/security.txt",
+  humanPolicyUris: ["https://example.com/security/cvd-policy.html"],
+});
+const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned input`;
 </script>
 
 <div class="stack">
   <div class="prose">
     <h1>{t("tools.title")}</h1>
     <p class="lead">{t("tools.lead")}</p>
+    <p class="notice">Experimental implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. Install the exact release candidate, not the floating <code>next</code> tag.</p>
   </div>
 
   <section class="card">
@@ -45,6 +37,8 @@ const { text, change, previous, signed } =
         <tr>
           <th scope="row">{t("tools.schema")}</th>
           <td>
+            <a href="/schema/cvd-policy-1.schema.json">V1 draft-00</a>
+            <span aria-hidden="true"> · </span>
             <a href="/schema/0.2/cvd-policy.schema.json">0.2</a>
             <span aria-hidden="true"> · </span>
             <a href="/schema/0.1/cvd-policy.schema.json">0.1</a>
@@ -61,7 +55,7 @@ const { text, change, previous, signed } =
         <tr>
           <th scope="row">{t("tools.library")}</th>
           <td>
-            <code>npm i @cvd-policy/core</code>
+            <code>npm i @cvd-policy/core@0.5.0-rc.1</code>
             <span aria-hidden="true"> · </span>
             <a href="https://www.npmjs.com/package/@cvd-policy/core" rel="noopener noreferrer">
               {t("tools.on_npm")}
@@ -71,7 +65,7 @@ const { text, change, previous, signed } =
         <tr>
           <th scope="row">{t("tools.cli")}</th>
           <td>
-            <code>npx @cvd-policy/cli</code>
+            <code>npx @cvd-policy/cli@0.5.0-rc.1</code>
             <span aria-hidden="true"> · </span>
             <a href="https://www.npmjs.com/package/@cvd-policy/cli" rel="noopener noreferrer">
               {t("tools.on_npm")}

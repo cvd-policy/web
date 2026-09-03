@@ -44,21 +44,37 @@ export function isPrivateAddress(host: string): boolean {
   // such as `fd-tech.de` or `fcbank.com` from being read as a unique local
   // address — fc00::/7 and fe80::/10 are address prefixes, not name prefixes.
   if (bare.includes(":")) {
-    // ::ffff:127.0.0.1 is the loopback wearing an IPv6 coat.
-    const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(bare);
-    if (mapped?.[1]) return isPrivateAddress(mapped[1]);
-
+    const groups = ipv6Groups(bare);
+    if (!groups) return true;
+    const [first = 0] = groups;
+    if (groups.slice(0, 5).every((group) => group === 0) && groups[5] === 0xffff) {
+      const sixth = groups[6] ?? 0;
+      const seventh = groups[7] ?? 0;
+      return isPrivateAddress(`${sixth >> 8}.${sixth & 255}.${seventh >> 8}.${seventh & 255}`);
+    }
+    if (groups.slice(0, 6).every((group) => group === 0)) return true;
+    if (first === 0x0064 && groups[1] === 0xff9b && groups.slice(2, 6).every((group) => group === 0)) {
+      const sixth = groups[6] ?? 0;
+      const seventh = groups[7] ?? 0;
+      return isPrivateAddress(`${sixth >> 8}.${sixth & 255}.${seventh >> 8}.${seventh & 255}`);
+    }
     return (
-      bare === "::1" ||
-      bare === "::" ||
-      bare.startsWith("fe80:") ||
-      /^f[cd][0-9a-f]{0,2}:/.test(bare)
+      groups.every((group) => group === 0) ||
+      (groups.slice(0, 7).every((group) => group === 0) && groups[7] === 1) ||
+      (first & 0xfe00) === 0xfc00 ||
+      (first & 0xffc0) === 0xfe80 ||
+      (first & 0xffc0) === 0xfec0 ||
+      (first & 0xff00) === 0xff00 ||
+      (first === 0x0064 && groups[1] === 0xff9b && groups[2] === 1) ||
+      (first === 0x0100 && groups.slice(1, 4).every((group) => group === 0)) ||
+      (first === 0x2001 && groups[1] === 0x0db8)
     );
   }
 
   const parts = bare.split(".").map(Number);
   if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return false;
-  const [a = 0, b = 0] = parts;
+  if (parts.some((n) => n < 0 || n > 255)) return true;
+  const [a = 0, b = 0, c = 0] = parts;
   return (
     a === 0 ||
     a === 10 ||
@@ -66,8 +82,37 @@ export function isPrivateAddress(host: string): boolean {
     (a === 169 && b === 254) ||
     (a === 172 && b >= 16 && b <= 31) ||
     (a === 192 && b === 168) ||
-    (a === 100 && b >= 64 && b <= 127)
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 192 && b === 0 && c === 0) ||
+    (a === 192 && b === 0 && c === 2) ||
+    (a === 198 && (b === 18 || b === 19)) ||
+    (a === 198 && b === 51 && c === 100) ||
+    (a === 203 && b === 0 && c === 113) ||
+    a >= 224
   );
+}
+
+function ipv6Groups(address: string): number[] | null {
+  const pieces = address.split("::");
+  if (pieces.length > 2) return null;
+  const parse = (part: string): number[] | null => {
+    if (!part) return [];
+    const groups = part.split(":");
+    const last = groups.at(-1);
+    if (last?.includes(".")) {
+      const bytes = last.split(".").map(Number);
+      if (bytes.length !== 4 || bytes.some((byte) => !Number.isInteger(byte) || byte < 0 || byte > 255)) return null;
+      groups.splice(-1, 1, ((bytes[0] ?? 0) * 256 + (bytes[1] ?? 0)).toString(16), ((bytes[2] ?? 0) * 256 + (bytes[3] ?? 0)).toString(16));
+    }
+    if (groups.some((group) => !/^[0-9a-f]{1,4}$/i.test(group))) return null;
+    return groups.map((group) => Number.parseInt(group, 16));
+  };
+  const left = parse(pieces[0] ?? "");
+  const right = parse(pieces[1] ?? "");
+  if (!left || !right) return null;
+  const missing = 8 - left.length - right.length;
+  if ((pieces.length === 1 && missing !== 0) || (pieces.length === 2 && missing < 1)) return null;
+  return [...left, ...Array.from({ length: missing }, () => 0), ...right];
 }
 
 /**

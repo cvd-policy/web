@@ -36,7 +36,7 @@ export const de: Dict = {
 
   "home.title": "Sagen Sie, wie Sie mit Schwachstellenmeldungen umgehen.",
   "home.lead":
-    "Das CVD Policy Format ist eine kleine JSON-Datei an einem festgelegten Ort. Darin steht, ob Sicherheitsforschung erwünscht ist, woran, unter welchen Bedingungen und wie gemeldet werden soll. Tools können die Datei auswerten, Menschen können sie lesen.",
+    "Das CVD Policy Format ist eine kleine JSON-Datei an einer ausdrücklich angekündigten HTTPS-URI. Darin steht, ob Sicherheitsforschung erwünscht ist, woran, unter welchen Bedingungen und wie gemeldet werden soll. Tools können die Datei auswerten, Menschen können sie lesen.",
   "home.what_title": "Kurz erklärt",
   "home.what_body":
     "Die security.txt nennt eine Kontaktadresse. Ob Tests erlaubt sind, welche Systeme überhaupt Ihnen gehören und was nach einer Meldung passiert, kann sie nicht ausdrücken. Diese Angaben stehen heute — wenn überhaupt — als Fließtext auf einer Webseite. Das CVD Policy Format bringt sie in eine Datei, die ein Tool auswerten kann, bevor die erste Anfrage gestellt wird.",
@@ -50,10 +50,10 @@ export const de: Dict = {
   "home.example_caption":
     "Ein vollständiges Dokument: eine Organisation, die Meldungen annimmt, aber nicht zu Tests einlädt.",
   "home.steps_title": "Drei Schritte",
-  "home.step_1": "Ein paar Fragen beantworten und cvd.json herunterladen.",
+  "home.step_1": "Das V1-Policy-Dokument erstellen und herunterladen.",
   "home.step_2":
-    "Die Datei unter /.well-known/cvd.json auf Ihrer Domain ablegen.",
-  "home.step_3": "Eine Zeile in die security.txt eintragen.",
+    "Die Datei an der gewählten exakten HTTPS-URI veröffentlichen.",
+  "home.step_3": "Diese URI mit genau einem CVD-Policy-Feld in /.well-known/security.txt ankündigen.",
   "home.not_title": "Abgrenzung",
   "home.not_1":
     "Kein Ersatz für die security.txt, sondern eine Ergänzung um ein Feld.",
@@ -289,7 +289,7 @@ export const de: Dict = {
     "Datei einfügen, hineinziehen oder ein Beispiel laden. Hochgeladen wird nichts.",
   "validate.paste": "Einfügen",
   "validate.examples": "Beispiele",
-  "validate.drop_hint": "cvd.json hierher ziehen oder Datei auswählen",
+  "validate.drop_hint": "Policy-JSON hierher ziehen oder Datei auswählen",
   "validate.result_valid": "Gültig",
   "validate.result_invalid": "Ungültig",
   "validate.count_errors_one": "{n} Fehler",
@@ -582,9 +582,9 @@ export const de: Dict = {
     "Exit-Codes: 0 gültig, 1 Fehler, 2 nur Warnungen, 3 nicht erreichbar. Damit läuft die Prüfung in jeder CI.",
   "tools.securitytxt": "security.txt",
   "tools.securitytxt_body":
-    "Die Bibliothek schreibt und ergänzt auch die security.txt, damit ein Tool RFC 9116 nicht selbst nachbauen muss. Beim Ergänzen einer vorhandenen Datei bleiben Kommentare, Reihenfolge, Leerzeilen und Zeilenenden unangetastet; zurückgemeldet wird, ob das Feld ergänzt, ersetzt oder bereits richtig war.",
+    "Die V1-Bibliothek erzeugt eine vollständige security.txt oder liefert einen zusammengeführten Text zurück. Kommentare, Reihenfolge, Leerzeilen, Zeilenenden und alle Felder außer vorherigen CVD-Policy-Einträgen bleiben erhalten.",
   "tools.securitytxt_signed":
-    "Eine im Klartext signierte Datei lässt sich nicht ändern, ohne die Signatur zu zerstören. Beide Funktionen melden das, statt es zu verschweigen — so kann Ihr Tool denjenigen benachrichtigen, der erneut signieren muss.",
+    "Beim Zusammenführen einer im Klartext signierten Datei wird ein Fehler ausgelöst, statt die Signatur still zu zerstören. Das Ergebnis muss separat erzeugt und erneut signiert werden.",
   "tools.third_party": "Implementierungen Dritter",
   "tools.third_party_empty":
     "Diese Liste ist offen. Pull Requests sind willkommen.",
@@ -598,7 +598,7 @@ export const de: Dict = {
     "Nein. Die security.txt bleibt, wie sie ist, und behält ihre Aufgabe. Dieses Format ergänzt sie um ein einziges Feld, CVD-Policy, das auf eine Datei verweist — mit den Antworten, für die in der security.txt keine Felder vorgesehen sind.",
   "faq.q_securitytxt_write": "Schreibt das auch meine security.txt?",
   "faq.a_securitytxt_write":
-    "Ja. Haben Sie noch keine, erzeugt der Generator aus denselben Angaben eine vollständige Datei: Kontakt, Gültigkeitsdatum, Sprachen, den Link zu Ihrem Schlüssel, die Zeile CVD-Policy, die auf Ihre cvd.json verweist, und eine Zeile Policy, die auf die lesbare Seite verweist, die daneben entsteht. Haben Sie schon eine, ziehen Sie sie im ersten Schritt hinein — Sie erhalten Ihre eigene Datei zurück, ergänzt um genau diese beiden Zeilen, sonst unverändert, samt Kommentaren und Reihenfolge. Gelesen wird sie in Ihrem Browser, hochgeladen wird sie nie.",
+    "Ja. Ohne vorhandene Datei erzeugt der V1-Generator Contact, Expires, Canonical, Policy und genau ein CVD-Policy-Feld mit der ausdrücklich gewählten HTTPS-Policy-URI. Bei einer vorhandenen Datei bleiben Kommentare und alle anderen Felder erhalten; alte CVD-Policy-Felder werden entfernt und der konfigurierte Wert genau einmal eingesetzt. Die Datei bleibt im Browser und wird nie hochgeladen.",
   "faq.q_signed": "Ich signiere meine security.txt. Was passiert dann?",
   "faq.a_signed":
     "RFC 9116 erlaubt eine im Klartext signierte security.txt, und jede Änderung an einer solchen Datei zerstört ihre Signatur. Ein Feld zu ergänzen und die Signatur zu behalten, ist nicht möglich — hier nicht und anderswo auch nicht. Diese Seite sagt das, statt es zu umgehen: Trägt die übergebene Datei eine Signatur, erfahren Sie es in dem Moment und beim Ergebnis noch einmal. Die geänderte Datei ist richtig, die noch daran hängende Signatur nicht mehr. Signieren Sie sie vor der Veröffentlichung erneut, mit demselben Schlüssel.",
@@ -609,9 +609,9 @@ export const de: Dict = {
   "faq.a_legal":
     "Nein. Ein Policy-Dokument ist eine einseitige Erklärung: kein Vertrag, keine Einwilligung im strafrechtlichen Sinn, kein Haftungsausschluss. Wer sich darauf verlässt, trägt das Risiko selbst. Umgekehrt gilt dasselbe: Wer eines veröffentlicht, erwirbt daraus keinen Anspruch gegen Forschende. Wenn die Rechtslage für Ihre Entscheidung wichtig ist, fragen Sie eine Anwältin oder einen Anwalt, kein Dateiformat.",
   "faq.q_machine": "Lassen sich eingehende Meldungen maschinell verarbeiten?",
-  "faq.a_machine": "Seit Version 0.2 ja. Eine Policy kann einen Endpunkt nennen, der strukturierte Meldungen annimmt, dazu das Schema, das dieser Endpunkt erwartet, und ob anonyme Meldungen angenommen werden. Wie eine Meldung aufgebaut ist, steht in einem eigenen Profil namens report-0.1: drei Pflichtfelder — Titel, betroffenes Ziel, Beschreibung — und alles Weitere freiwillig, denn Reproduktion und Auswirkung liegen nicht immer vor, und ein fehlendes Feld darf niemanden davon abhalten, überhaupt zu melden. Was kein Tool darf: eine Meldung von sich aus abschicken. In einer Meldung stehen die Einzelheiten einer offenen Schwachstelle; wohin sie gehen, entscheidet ein Mensch. Die Spezifikation schreibt das ausdrücklich vor.",
-  "faq.q_versions": "Was hat sich in 0.2 geändert, und muss ich meine Datei neu erstellen?",
-  "faq.a_versions": "Nein. Eine veröffentlichte Version ändert sich nie, und 0.1-Dokumente bleiben gültig und lesbar — Tools, die 0.2 beherrschen, müssen sie weiterhin verstehen. Version 0.2 ergänzt genau ein freiwilliges Feld, für den maschinenlesbaren Meldeweg aus der vorigen Frage. Wer ihn nicht braucht, hat nichts zu tun. Der Generator schreibt 0.2, weil das die aktuelle Version ist; inhaltlich steht in der Datei dasselbe wie vorher, plus dem, was Sie zusätzlich ausgefüllt haben.",
+  "faq.a_machine": "V1 beschreibt gewünschte Meldefelder, veröffentlicht aber absichtlich keine Report-API und keinen Transport-Endpunkt. Meldungen gehen nur an einen vom Herausgeber gewählten öffentlichen Contact-Kanal.",
+  "faq.q_versions": "Was passiert mit vorhandenen Dokumenten der Versionen 0.1 und 0.2?",
+  "faq.a_versions": "Sie bleiben gültige Legacy-Formate und werden nicht stillschweigend umgewandelt. Dieser Generator schreibt das inkompatible V1-Entwurfsformat; für vorhandene Dokumente muss die Legacy-Validierung ausdrücklich gewählt werden.",
   "faq.q_who": "Wer betreibt diese Seite und wovon?",
   "faq.a_who":
     "Die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld — Produkte, die Sie bei uns kaufen können und für dieses Format nicht brauchen. Im Generator steht ein freies Feld für eine beliebige Meldeadresse, ohne Vorbelegung und ohne Auswahlliste. Sollte sich das je ändern, ist diese Seite nicht mehr neutral, und dann gehört das öffentlich gesagt.",
@@ -621,7 +621,7 @@ export const de: Dict = {
     "Die lösen eine andere Aufgabe, und zwar gut: ein Programm betreiben, Forschende bezahlen, viele Meldungen sichten. Sie setzen voraus, dass Sie ein solches Programm überhaupt wollen. Die meisten Organisationen wollen das nicht und haben deshalb bislang gar nichts Maschinenlesbares anzubieten. Dieses Format setzt eine Ebene darunter an: eine Erklärung Ihrer Bedingungen, von Ihnen selbst abgelegt, ohne Konto lesbar.",
   "faq.q_official": "Ist das offiziell oder standardisiert?",
   "faq.a_official":
-    "Nein. Es ist ein Entwurf, Version 0.2, veröffentlicht unter CC0; 0.1 bleibt veröffentlicht und gültig. Das Feld in der security.txt ist bei der IANA nicht registriert; ein Antrag lohnt sich erst, wenn es echte Nutzung gibt. Bis dahin: ein Vorschlag, den Sie übernehmen, abwandeln oder liegen lassen können.",
+    "Nein. V1 ist eine experimentelle Implementierung von draft-behring-cvd-policy-00. Das vorgeschlagene security.txt-Feld und der Medientyp sind nicht registriert und können sich ändern; 0.1 und 0.2 bleiben veröffentlichte Legacy-Formate.",
   "faq.q_without": "Kann ich das ohne euch nutzen?",
   "faq.a_without":
     "Ja, darum geht es. Spezifikation und Schema stehen unter CC0: kopieren, selbst hosten, verändern. Bibliothek und Seite stehen unter Apache-2.0. Jedes Dokument aus dem Generator kommt ohne jeden Hinweis auf einen Anbieter aus, und die Datei liegt auf Ihrer eigenen Domain. Einen Rückkanal zu uns gibt es nicht.",

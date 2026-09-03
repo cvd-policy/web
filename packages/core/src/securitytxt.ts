@@ -244,7 +244,7 @@ export interface SecurityTxtMerge {
   signed: boolean;
 }
 
-function upsertSecurityTxtField(
+export function upsertSecurityTxtField(
   raw: string,
   name: string,
   value: string,

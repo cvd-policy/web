@@ -33,9 +33,9 @@ export const en = {
   "footer.licence": "Specification and schema: CC0-1.0. Library and site: Apache-2.0.",
 
   "home.title": "State how you handle vulnerability reports.",
-  "home.lead": "The CVD Policy Format is a small JSON file at a known location. It says whether security research is welcome, on what, under which conditions, and how to report. Where an organisation can process reports automatically, it also says where a structured report may be sent. Machines can read it. So can people.",
+  "home.lead": "The CVD Policy Format is a small JSON file at an explicitly advertised HTTPS URI. It says whether security research is welcome, on what, under which conditions, and how to report. Machines can read it. So can people.",
   "home.what_title": "In sixty seconds",
-  "home.what_body": "security.txt names a contact. It cannot say whether testing is allowed, which systems are yours, or what happens after a report arrives. Today that answer is prose on a web page, if it exists at all. This format puts it in one file that a tool can check before it sends a single request — and, since version 0.2, lets you state where a structured report goes, so incoming reports need not be parsed out of an email.",
+  "home.what_body": "security.txt names a contact. It cannot say whether testing is allowed, which systems are yours, or what happens after a report arrives. Today that answer is prose on a web page, if it exists at all. This format puts it in one file that a tool can check before it sends a single request.",
   "home.privacy_title": "Nothing leaves your device",
   "home.privacy_body":
     "The generator, the validator and the explainer run entirely in your browser. There is no backend, no upload and no request to any other domain. Open your network tab and check.",
@@ -45,9 +45,9 @@ export const en = {
   "home.example_title": "What it looks like",
   "home.example_caption": "A complete document for an organisation that accepts reports but does not invite testing.",
   "home.steps_title": "Three steps",
-  "home.step_1": "Answer a handful of questions and download cvd.json.",
-  "home.step_2": "Put the file at /.well-known/cvd.json on your domain.",
-  "home.step_3": "Add one line to your security.txt.",
+  "home.step_1": "Create and download the V1 policy document.",
+  "home.step_2": "Publish it at the exact HTTPS URI you selected.",
+  "home.step_3": "Advertise that URI with one CVD-Policy field in /.well-known/security.txt.",
   "home.not_title": "What this is not",
   "home.not_1": "Not a replacement for security.txt — it adds one field to it.",
   "home.not_2": "Not proof of regulatory conformity, including under the CRA.",
@@ -267,7 +267,7 @@ export const en = {
   "validate.lead": "Paste a file, drop it in, or load an example. Nothing is uploaded.",
   "validate.paste": "Paste",
   "validate.examples": "Examples",
-  "validate.drop_hint": "Drop a cvd.json here, or choose a file",
+  "validate.drop_hint": "Drop a policy JSON here, or choose a file",
   "validate.result_valid": "Valid",
   "validate.result_invalid": "Invalid",
   "validate.count_errors_one": "{n} error",
@@ -501,9 +501,9 @@ export const en = {
   "tools.cli_body": "Exit codes: 0 valid, 1 errors, 2 warnings only, 3 not reachable. That makes it usable in CI.",
   "tools.securitytxt": "security.txt",
   "tools.securitytxt_body":
-    "The library writes and updates the security.txt too, so an implementer does not have to rebuild RFC 9116 by hand. Updating an existing file leaves comments, field order, blank lines and line endings untouched, and reports whether the field was added, replaced, or already correct.",
+    "The V1 library creates a complete security.txt or returns a merged string that preserves comments, field order, blank lines, line endings and every field except prior CVD-Policy entries.",
   "tools.securitytxt_signed":
-    "A clear-signed file cannot be changed without breaking its signature. Both functions report that instead of hiding it, so your tool can tell whoever has to sign the file again.",
+    "Merging a clear-signed file throws instead of silently breaking its signature. Create the unsigned result separately and sign it again.",
   "tools.third_party": "Third-party implementations",
   "tools.third_party_empty": "This list is open. Pull requests welcome.",
 
@@ -516,7 +516,7 @@ export const en = {
     "No. security.txt stays where it is and keeps doing its job. This format adds one field to it, CVD-Policy, pointing at a file that answers the questions security.txt has no fields for.",
   "faq.q_securitytxt_write": "Can it write my security.txt as well?",
   "faq.a_securitytxt_write":
-    "Yes. If you have none, the generator writes a complete one from the same answers: the contact, the expiry date, the languages, the link to your key, the CVD-Policy line pointing at your cvd.json, and a Policy line pointing at the readable page it builds alongside. If you already have one, drop it in at the first step — you get your own file back with those two lines added and everything else exactly as it was, comments and field order included. It is read in your browser and never uploaded.",
+    "Yes. If you have none, the V1 generator writes Contact, Expires, Canonical, Policy and exactly one CVD-Policy field pointing at the explicit HTTPS policy URI you chose. If you already have one, it preserves comments and every existing field, removes all old CVD-Policy fields and inserts the configured value once. It is read in your browser and never uploaded.",
   "faq.q_signed": "I sign my security.txt. What happens?",
   "faq.a_signed":
     "RFC 9116 allows a clear-signed security.txt, and any change to such a file breaks its signature. Adding a field and keeping the signature is not possible — not here, not anywhere. This site says so rather than working around it: when the file you hand over carries a signature, you are told at that moment, and again with the result. The changed file is correct; the signature still attached to it is not. Sign it again with the same key before you publish it.",
@@ -527,9 +527,9 @@ export const en = {
   "faq.a_legal":
     "No. A policy document is a unilateral statement. It is not a contract, not consent in the criminal-law sense, and not a waiver of liability. Anyone relying on it does so at their own risk, and the same applies in reverse: publishing one gives you no claim against a researcher. If the legal position matters to your decision, ask a lawyer, not a file format.",
   "faq.q_machine": "Can incoming reports be processed automatically?",
-  "faq.a_machine": "Since version 0.2, yes. A policy can name an endpoint that accepts a structured report, the schema that endpoint expects, and whether anonymous reports are accepted. The shape itself is a separate profile, report-0.1: three required fields — title, affected target, description — and everything else optional, because steps to reproduce and impact are not always available and a missing field must never stop someone from reporting. What no tool may do is send a report on its own. A report contains the details of an unfixed vulnerability; where that goes is a decision a person makes, and the specification says so in as many words.",
-  "faq.q_versions": "What changed in 0.2, and do I have to redo my file?",
-  "faq.a_versions": "No. A released version never changes, and 0.1 documents stay valid and readable — tools that understand 0.2 must keep reading them. Version 0.2 adds exactly one optional field, for the machine-readable intake described above. If you do not need it, there is nothing to do. The generator writes 0.2 because that is the current version; the resulting file says the same as before, plus whatever you filled in.",
+  "faq.a_machine": "V1 describes which report fields are requested, but deliberately does not publish a report API or transport endpoint. Send reports only through a public Contact channel chosen by the publisher.",
+  "faq.q_versions": "What happens to existing 0.1 and 0.2 documents?",
+  "faq.a_versions": "They remain valid legacy formats and are not silently converted. This generator writes the incompatible V1 draft format; use legacy validation explicitly for existing documents.",
   "faq.q_who": "Who runs this site, and on what money?",
   "faq.a_who":
     "Skalvar Technologies UG (haftungsbeschränkt) in Wismar, Germany, runs it. The company earns its money developing IT security software — products you can buy from us and do not need in order to use this format. The generator has a field for any intake URL, with nothing pre-filled and no list to pick from. If that ever changes, this site has stopped being neutral and you should say so publicly.",
@@ -538,7 +538,7 @@ export const en = {
     "Those solve a different problem well: running a programme, paying researchers, handling reports in volume. They assume you want a programme. Most organisations do not, and have nothing machine-readable to say instead. This format is the smaller layer underneath: a statement of terms, hosted by you, readable without an account.",
   "faq.q_official": "Is this official or standardised?",
   "faq.a_official":
-    "No. It is a draft, version 0.2, published under CC0; 0.1 stays published and valid. The security.txt field is not registered with IANA, and applying for that only makes sense once real use exists. Until then, treat this as a proposal you can adopt, fork or ignore.",
+    "No. V1 is an experimental implementation of draft-behring-cvd-policy-00. The proposed security.txt field and media type are not registered and may change; 0.1 and 0.2 remain published legacy formats.",
   "faq.q_without": "Can I use this without you?",
   "faq.a_without":
     "Yes, and that is the point. The specification and schema are CC0: copy them, host them, change them. The library and this site are Apache-2.0. Every document the generator produces works without any reference to a provider, and the file lives on your own domain. Nothing here reports back to us.",

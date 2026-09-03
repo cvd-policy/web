@@ -14,8 +14,21 @@ const issue = (code: ReasonCode, path = ""): ValidationIssue => ({
   message: code,
 });
 
-function parseHttpsUri(value: string): URL | null {
+const uriCharacters = /^[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*$/;
+
+function validUriCharacters(value: string): boolean {
+  if (!uriCharacters.test(value)) return false;
+  if (!value.includes("[") && !value.includes("]")) return true;
+  return /^[A-Za-z][A-Za-z0-9+.-]*:\/\/\[[A-Za-z0-9.:%-]+\](?::\d+)?[^\[\]]*$/.test(value);
+}
+
+export function parseHttpsUri(value: string): URL | null {
   try {
+    if (
+      !validUriCharacters(value) ||
+      !/^https:\/\/[^/\\\s?#]+(?:[/?][^\\\s#]*)?$/i.test(value) ||
+      /%(?![0-9a-f]{2})/i.test(value)
+    ) return null;
     const uri = new URL(value);
     if (uri.protocol !== "https:" || uri.username || uri.password || value.includes("#")) return null;
     return uri;
@@ -24,23 +37,75 @@ function parseHttpsUri(value: string): URL | null {
   }
 }
 
+const leapSecondDates = new Set([
+  "1972-06-30", "1972-12-31", "1973-12-31", "1974-12-31", "1975-12-31", "1976-12-31",
+  "1977-12-31", "1978-12-31", "1979-12-31", "1981-06-30", "1982-06-30", "1983-06-30",
+  "1985-06-30", "1987-12-31", "1989-12-31", "1990-12-31", "1992-06-30", "1993-06-30",
+  "1994-06-30", "1995-12-31", "1997-06-30", "1998-12-31", "2005-12-31", "2008-12-31",
+  "2012-06-30", "2015-06-30", "2016-12-31",
+]);
+
+function rfc3339Timestamp(value: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?([Zz]|[+-]\d{2}:\d{2})$/.exec(value);
+  if (!match) return null;
+  const [, yearText = "", monthText = "", dayText = "", hourText = "", minuteText = "", secondText = "", fraction = "", zone = "Z"] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (
+    month < 1 || month > 12 || day < 1 || day > (days[month - 1] ?? 0) ||
+    hour > 23 || minute > 59 || second > 60
+  ) return null;
+
+  let offsetMinutes = 0;
+  if (zone.toUpperCase() !== "Z") {
+    const sign = zone[0] === "+" ? 1 : -1;
+    const offsetHour = Number(zone.slice(1, 3));
+    const offsetMinute = Number(zone.slice(4, 6));
+    if (offsetHour > 23 || offsetMinute > 59) return null;
+    offsetMinutes = sign * (offsetHour * 60 + offsetMinute);
+  }
+
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  date.setUTCHours(hour, minute, Math.min(second, 59), Number(`${fraction}000`.slice(0, 3)));
+  const timestamp = date.getTime() - offsetMinutes * 60_000;
+  if (second !== 60) return timestamp;
+  const utc = new Date(timestamp);
+  const utcDate = `${utc.getUTCFullYear()}-${String(utc.getUTCMonth() + 1).padStart(2, "0")}-${String(utc.getUTCDate()).padStart(2, "0")}`;
+  if (utc.getUTCHours() !== 23 || utc.getUTCMinutes() !== 59 || !leapSecondDates.has(utcDate)) return null;
+  return timestamp + 1_000;
+}
+
 function validContact(value: string): boolean {
   try {
+    if (
+      !validUriCharacters(value) ||
+      /%(?![0-9a-f]{2})/i.test(value)
+    ) return false;
     const uri = new URL(value);
     if (uri.protocol === "https:") return parseHttpsUri(value) !== null;
-    return (uri.protocol === "mailto:" || uri.protocol === "tel:") && uri.pathname.length > 0;
+    return uri.protocol.length > 1;
   } catch {
     return false;
   }
 }
 
 function cleartext(text: string): { text: string; signed: boolean } {
-  if (!text.startsWith("-----BEGIN PGP SIGNED MESSAGE-----")) return { text, signed: false };
-  const start = text.indexOf("\n\n");
-  const end = text.indexOf("\n-----BEGIN PGP SIGNATURE-----");
+  const normalized = text.replaceAll("\r\n", "\n");
+  if (!normalized.startsWith("-----BEGIN PGP SIGNED MESSAGE-----")) {
+    return { text: normalized, signed: false };
+  }
+  const start = normalized.indexOf("\n\n");
+  const end = normalized.indexOf("\n-----BEGIN PGP SIGNATURE-----");
   if (start < 0 || end < 0 || end <= start) throw new SyntaxError("invalid cleartext signature envelope");
   return {
-    text: text.slice(start + 2, end).replace(/^- /gm, ""),
+    text: normalized.slice(start + 2, end).replace(/^- /gm, ""),
     signed: true,
   };
 }
@@ -98,11 +163,16 @@ export function assessSecurityTxtAuthority(
   if (policyValues.length === 0) return failure("security_txt_cvd_policy_missing", signed, humanPolicyUris);
   if (policyValues.length > 1) return failure("security_txt_cvd_policy_duplicate", signed, humanPolicyUris);
 
-  const expires = Date.parse(expiresValues[0] ?? "");
-  if (!Number.isFinite(expires)) {
+  const expiresValue = expiresValues[0] ?? "";
+  const expires = rfc3339Timestamp(expiresValue);
+  if (expires === null) {
     return failure("security_txt_expires_invalid", signed, humanPolicyUris);
   }
-  if (expires <= context.retrievedAt.getTime()) {
+  const retrievedAt = context.retrievedAt.getTime();
+  if (!Number.isFinite(retrievedAt)) {
+    return failure("security_txt_expires_invalid", signed, humanPolicyUris);
+  }
+  if (expires <= retrievedAt) {
     return failure("security_txt_expired", signed, humanPolicyUris);
   }
   const policyUri = parseHttpsUri(policyValues[0] ?? "");
@@ -115,6 +185,7 @@ export function assessSecurityTxtAuthority(
   const redirects = context.redirectChain.map(parseHttpsUri);
   if (
     requested === null ||
+    !/^[hH][tT][tT][pP][sS]:\/\/(?:\[[^\]]+\](?::\d+)?|[^/?#]+)\/\.well-known\/security\.txt$/.test(context.requestedUri) ||
     final === null ||
     redirects.some((uri) => uri === null) ||
     redirects.length > 5 ||
@@ -138,7 +209,7 @@ export function assessSecurityTxtAuthority(
     established: true,
     discoveryHost: requestedHost,
     securityTxtUri: final.href,
-    cvdPolicyUri: policyUri.href,
+    cvdPolicyUri: policyValues[0] ?? "",
     securityTxtExpires: expiresValues[0] ?? "",
   };
   return { established: true, evidence, issues: [], signed, humanPolicyUris };

@@ -14,7 +14,7 @@ export function downloadText(
 ): void {
   downloadUrl(
     filename,
-    URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` })),
+    URL.createObjectURL(new Blob([text], { type: mime === "application/cvd-policy+json" ? mime : `${mime};charset=utf-8` })),
   );
 }
 
@@ -48,10 +48,7 @@ export async function copyText(text: string): Promise<boolean> {
 
 /** Reads a dropped or chosen file as text. */
 export function readFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
+  return file.arrayBuffer().then((bytes) =>
+    new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+  );
 }

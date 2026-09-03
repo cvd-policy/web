@@ -24,15 +24,32 @@ describe("isPrivateAddress", () => {
   });
 
   it("knows the IPv6 forms, bracketed or not", () => {
-    for (const host of ["::1", "::", "fe80::1", "fc00::1", "fd12:3456::1", "[fd00::1]"]) {
+    for (const host of [
+      "::1",
+      "::",
+      "fe80::1",
+      "fe90::1",
+      "fc00::1",
+      "fd12:3456::1",
+      "ff02::1",
+      "fec0::1",
+      "64:ff9b:1::7f00:1",
+      "64:ff9b::7f00:1",
+      "::7f00:1",
+      "100::1",
+      "2001:db8::1",
+      "[fd00::1]",
+    ]) {
       expect(isPrivateAddress(host), host).toBe(true);
     }
   });
 
   it("sees through an IPv4 address wearing an IPv6 coat", () => {
     expect(isPrivateAddress("::ffff:127.0.0.1")).toBe(true);
+    expect(isPrivateAddress("::ffff:7f00:1")).toBe(true);
     expect(isPrivateAddress("::ffff:169.254.169.254")).toBe(true);
     expect(isPrivateAddress("::ffff:8.8.8.8")).toBe(false);
+    expect(isPrivateAddress("64:ff9b::8.8.8.8")).toBe(false);
   });
 
   it("does not read a domain name as an address", () => {

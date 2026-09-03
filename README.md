@@ -2,11 +2,14 @@
 
 An open format for stating how an organisation handles vulnerability reports:
 whether security research is welcome, on what, under which conditions, how to
-report, and how disclosure is handled. One JSON file at
-`/.well-known/cvd.json`, plus one field in `security.txt`.
+report, and how disclosure is handled. Version 1 is an experimental
+implementation of
+[`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00).
+Its proposed `CVD-Policy` field and `application/cvd-policy+json` media type may
+change before standardization.
 
-Since format version 0.2, a policy can also name an endpoint that accepts a
-**structured report**, so incoming reports need not be parsed out of an email.
+V1 discovery starts at `/.well-known/security.txt`; its `CVD-Policy` field names
+the exact policy URI. There is no standard default path for the JSON document.
 
 **Funding:** This site is run by Skalvar Technologies UG (haftungsbeschränkt) in
 Wismar, Germany, which earns its money developing IT security software. The
@@ -42,11 +45,11 @@ from there.
 
 ## Working with the specification
 
-The site renders the published 0.x `SPEC.md`, serves its schemas and loads its
-examples. It is intentionally not migrated to the Version 1 pre-standard
-candidate. The library embeds every schema so it never needs the network. Those
-artefacts are **copied into this repository and committed**, so builds and
-runtime validation do not require a specification checkout.
+The site supports V1 generation and local validation and retains published 0.x
+documents as explicitly marked legacy input. The library embeds every schema so
+it never needs the network. Those artefacts are **copied into this repository
+and committed**, so builds and runtime validation do not require a specification
+checkout.
 
 Every published format version is kept: `0.1` and `0.2` are compiled separately,
 and a document is validated against the version it declares. A released version
@@ -80,22 +83,22 @@ the wording. See [packages/core/README.md](packages/core/README.md).
 On the command line:
 
 ```bash
-npx @cvd-policy/cli validate cvd.json
-npx @cvd-policy/cli check https://example.com
-npx @cvd-policy/cli report incoming.json
+npx @cvd-policy/cli@0.5.0-rc.1 validate cvd-policy.json
+npx @cvd-policy/cli@0.5.0-rc.1 check example.com
+npx @cvd-policy/cli@0.5.0-rc.1 validate old-cvd.json --legacy
 ```
 
 ## Two rules that outrank convenience
 
-**A document speaks only for hosts it has authority over** — the host it is
-published on and anything under it, plus any host that pointed at it from its
-own `security.txt`. Anyone can list someone else's domain in a policy; that is a
-claim, never permission.
+**V1 authority comes from exact discovery.** The target host must publish its
+own `/.well-known/security.txt`, and exactly one `CVD-Policy` field identifies
+the policy URI. The policy's storage host and parent/subdomain relationships do
+not transfer authority. Anyone can list someone else's domain in a policy; that
+is a claim, never permission.
 
 **No tool submits a report on its own.** A report carries the details of an
-unfixed vulnerability. `intake` says where such a report may go; deciding to
-send it is a judgement a person makes. The specification requires the receiving
-host to be shown first, and forbids attaching files automatically.
+unfixed vulnerability. V1 intentionally defines no report transport or intake
+API; deciding where and whether to send a report remains a human action.
 
 ## Principles
 
@@ -121,15 +124,14 @@ These take precedence over any feature decision.
 
 ## Status
 
-Format version 0.2, draft; 0.1 remains published and valid. Version 1 is an
-opt-in pre-standard candidate exposed only as `@cvd-policy/core/v1`; the CLI and
-website remain on the published 0.x line.
+Format versions 0.1 and 0.2 remain published and valid for legacy documents.
+Version 1 is the current experimental generator and discovery implementation of
+`draft-behring-cvd-policy-00`.
 
 Packages are versioned independently of the format. They tracked it up to
 `0.2.0`, and no longer do: `@cvd-policy/core` and `@cvd-policy/cli` are at
-`0.4.0` while the format stays at 0.2. A package version says what changed in
+`0.5.0-rc.1` while the V1 document format says `cvd_policy: 1`. A package version says what changed in
 the package; `cvd_policy` inside a document says which rules the document was
 written for. Reading either as the other will mislead.
 
-The `CVD-Policy` field is not registered with IANA; that application only makes
-sense once real use exists.
+The proposed `CVD-Policy` field and media type are not registered with IANA.

@@ -18,6 +18,7 @@
   <div class="prose">
     <h1>{t("spec.title")}</h1>
     <p class="lead">{t("spec.lead")}</p>
+    <p class="notice">V1 is an experimental implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. The text below documents the stable legacy formats.</p>
     {#if i18n.lang !== "en"}
       <p class="notice">{t("spec.translated_notice")}</p>
     {/if}

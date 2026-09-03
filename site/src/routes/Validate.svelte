@@ -1,118 +1,37 @@
 <script lang="ts">
-  import { answersFrom, validateText } from "@cvd-policy/core";
-  import type { CvdPolicyDocument } from "@cvd-policy/core";
-  import CodeBlock from "../components/CodeBlock.svelte";
+  import { validateText as validateLegacyText } from "@cvd-policy/core";
+  import { parsePolicyText } from "@cvd-policy/core/v1";
   import FileDrop from "../components/FileDrop.svelte";
-  import IssueList from "../components/IssueList.svelte";
-  import { examples } from "../lib/examples.js";
-  import { plural, t } from "../lib/i18n.svelte.js";
-  import { router } from "../lib/router.svelte.js";
-  import { wizard } from "../lib/wizard.svelte.js";
-  import { encodeDraft } from "../lib/share.js";
 
   let raw = $state("");
   let filename = $state("");
-
-  const result = $derived(raw.trim() === "" ? null : validateText(raw));
-  const counts = $derived({
-    errors: result?.issues.filter((issue) => issue.level === "error").length ?? 0,
-    warnings: result?.issues.filter((issue) => issue.level === "warning").length ?? 0,
-    infos: result?.issues.filter((issue) => issue.level === "info").length ?? 0,
-  });
-
-  const checkCommand =
-    "curl -s https://example.com/.well-known/cvd.json | npx @cvd-policy/cli validate -";
-
-  function load(text: string, name = "") {
-    raw = text;
-    filename = name;
-  }
-
-  function openInGenerator() {
-    try {
-      wizard.replace(answersFrom(JSON.parse(raw) as Partial<CvdPolicyDocument>));
-      wizard.save();
-      router.navigate("/generate");
-    } catch {
-      // Unparsable input cannot be carried over; the error list already says so.
-    }
-  }
-
-  async function openInExplain() {
-    router.navigate("/explain", { fragment: await encodeDraft(JSON.parse(raw)) });
-  }
+  let legacy = $state(false);
+  const result = $derived(raw.trim() ? (legacy ? validateLegacyText(raw) : parsePolicyText(raw)) : null);
 </script>
 
 <div class="stack">
   <div class="prose">
-    <h1>{t("validate.title")}</h1>
-    <p class="lead">{t("validate.lead")}</p>
+    <h1>Validate a CVD Policy</h1>
+    <p class="lead">Paste or upload JSON. Validation runs locally in your browser.</p>
+    <div class="notice">V1 is an experimental implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>.</div>
   </div>
-
   <div class="split">
     <div class="stack">
-      <div class="field">
-        <label for="policy-input">{t("validate.paste")}</label>
-        <textarea id="policy-input" bind:value={raw} spellcheck="false" placeholder={"{"}></textarea>
-      </div>
-
-      <FileDrop onload={load} />
-
-      <div class="card card-tight">
-        <p class="section-title small mute">{t("validate.examples")}</p>
-        <div class="row">
-          {#each examples as example (example.name)}
-            <button
-              type="button"
-              class="btn btn-sm"
-              onclick={() => load(JSON.stringify(example.doc, null, 2), example.name)}
-            >
-              {example.name}
-            </button>
-          {/each}
-        </div>
-      </div>
+      <label class="choice"><input type="checkbox" bind:checked={legacy} /><span><span class="choice-title">Legacy 0.x validation</span><br /><span class="choice-body">Opt in only for existing 0.1/0.2 documents.</span></span></label>
+      <div class="field"><label for="policy-input">Policy JSON</label><textarea id="policy-input" bind:value={raw} spellcheck="false" placeholder={"{"}></textarea></div>
+      <FileDrop onload={(text, name) => { raw = text; filename = name; }} accept="application/cvd-policy+json,application/json,.json" />
     </div>
-
     <div class="stack">
       {#if result}
         <div class="card">
-          <p class="row">
-            <span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">
-              {result.valid ? t("validate.result_valid") : t("validate.result_invalid")}
-            </span>
-            <span class="mute small">
-              {plural("validate.count_errors", counts.errors)} ·
-              {plural("validate.count_warnings", counts.warnings)} ·
-              {plural("validate.count_notes", counts.infos)}
-            </span>
-          </p>
-          {#if filename}<p class="small mute">{filename}</p>{/if}
-
-          {#if result.issues.length === 0}
-            <p>{t("validate.no_issues")}</p>
-          {:else}
-            <IssueList issues={result.issues} onfix={openInGenerator} />
-          {/if}
-
-          <div class="row">
-            <button type="button" class="btn" onclick={openInGenerator}>
-              {t("validate.fix_in_generator")}
-            </button>
-            {#if result.valid}
-              <button type="button" class="btn" onclick={openInExplain}>
-                {t("validate.explain_this")}
-              </button>
-            {/if}
-          </div>
+          <p class="row"><span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">{result.valid ? "Valid" : "Invalid"}</span>{#if filename}<span class="small mute">{filename}</span>{/if}</p>
+          {#if result.issues.length === 0}<p>No issues found.</p>{/if}
+          {#each result.issues as issue (issue.code + issue.path)}
+            <div class="issue {issue.level}"><p class="issue-path">{issue.path || "/"}</p><p>{issue.message}</p></div>
+          {/each}
         </div>
       {/if}
-
-      <div class="card">
-        <h2 class="u-mt0">{t("validate.url_title")}</h2>
-        <p class="small">{t("validate.url_body")}</p>
-        <CodeBlock code={checkCommand} />
-      </div>
+      <div class="card"><h2 class="u-mt0">Check a deployed policy</h2><code>npx @cvd-policy/cli@0.5.0-rc.1 check example.com</code><p class="help">The CLI follows /.well-known/security.txt to its announced CVD-Policy URI. The browser validator does not perform network discovery.</p></div>
     </div>
   </div>
 </div>

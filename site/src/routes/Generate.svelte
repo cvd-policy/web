@@ -1,208 +1,146 @@
 <script lang="ts">
-  import { generate, humanPolicyUrl, securityTxt, validate } from "@cvd-policy/core";
-  import type { ValidationIssue } from "@cvd-policy/core";
-  import { tick } from "svelte";
+  import { assessSecurityTxtAuthority, mergeSecurityTxt, parsePolicyText, securityTxt } from "@cvd-policy/core/v1";
   import CodeBlock from "../components/CodeBlock.svelte";
-  import IssueList from "../components/IssueList.svelte";
-  import { t } from "../lib/i18n.svelte.js";
-  import { issueTarget } from "../lib/issueTarget.js";
-  import { wizard } from "../lib/wizard.svelte.js";
-  import StepOrganization from "./generate/StepOrganization.svelte";
-  import StepPosture from "./generate/StepPosture.svelte";
-  import StepContact from "./generate/StepContact.svelte";
-  import StepScope from "./generate/StepScope.svelte";
-  import StepTesting from "./generate/StepTesting.svelte";
-  import StepReport from "./generate/StepReport.svelte";
-  import StepIntake from "./generate/StepIntake.svelte";
-  import StepDisclosure from "./generate/StepDisclosure.svelte";
-  import StepValidity from "./generate/StepValidity.svelte";
-  import StepResult from "./generate/StepResult.svelte";
+  import FileDrop from "../components/FileDrop.svelte";
+  import { downloadBytes, downloadText } from "../lib/download.js";
+  import { policyHtml } from "../lib/policyHtml.js";
+  import { humanPolicyFilename, policyFilename, policyZip } from "../lib/policyZip.js";
 
-  const ALL_STEPS = [
-    { key: "org", labelKey: "generate.step_org", component: StepOrganization, quick: true },
-    { key: "posture", labelKey: "generate.step_posture", component: StepPosture, quick: true },
-    { key: "contact", labelKey: "generate.step_contact", component: StepContact, quick: true },
-    { key: "scope", labelKey: "generate.step_scope", component: StepScope, quick: false },
-    { key: "testing", labelKey: "generate.step_testing", component: StepTesting, quick: false },
-    { key: "report", labelKey: "generate.step_report", component: StepReport, quick: false },
-    { key: "intake", labelKey: "generate.step_intake", component: StepIntake, quick: false },
-    { key: "disclosure", labelKey: "generate.step_disclosure", component: StepDisclosure, quick: false },
-    { key: "validity", labelKey: "generate.step_validity", component: StepValidity, quick: true },
-    { key: "result", labelKey: "generate.step_result", component: StepResult, quick: true },
-  ];
-
-  let index = $state(0);
-
-  // Both files at once made the preview column twice the height of the form
-  // beside it. One at a time, chosen here.
-  const PREVIEW_FILES = ["cvd.json", "security.txt"] as const;
-  let shown = $state<(typeof PREVIEW_FILES)[number]>("cvd.json");
-
-  // Fixed reference time, so a relative `expires` does not drift while typing.
   const now = new Date();
+  const expires = new Date(now);
+  expires.setUTCMonth(expires.getUTCMonth() + 6);
+  const initialPolicy = {
+    cvd_policy: 1,
+    last_updated: now.toISOString(),
+    expires: expires.toISOString(),
+    organization: { name: "Example Organization", uri: "https://example.com" },
+    contact: { channels: ["mailto:security@example.com"], preferred_languages: ["en"] },
+    research: { posture: "report_only" },
+    reporting_scope: {
+      web: [{ id: "main-web", state: "in", host: "example.com", schemes: ["https"], path_prefix: "/", include_subdomains: false }],
+    },
+    reporting: { requested_fields: ["affected_asset", "description"], proof_of_exploitation: "not_requested" },
+  };
 
-  const steps = $derived(wizard.mode === "quick" ? ALL_STEPS.filter((step) => step.quick) : ALL_STEPS);
-  const step = $derived(steps[Math.min(index, steps.length - 1)]);
-  const doc = $derived(generate(wizard.answers, { now }));
-  const result = $derived(validate(doc));
-  const json = $derived(JSON.stringify(doc, null, 2));
-  // The generator hands over cvd.html alongside, so the Policy field it
-  // writes points at a page the publisher actually has.
-  const txt = $derived(securityTxt(doc, { policy: humanPolicyUrl(doc) }));
+  let raw = $state(JSON.stringify(initialPolicy, null, 2));
+  let policyUri = $state("https://example.com/cvd-policy.json");
+  let securityTxtUri = $state("https://example.com/.well-known/security.txt");
+  let humanPolicyUri = $state("https://example.com/security/cvd-policy.html");
+  let existingSecurityTxt = $state("");
 
-  // Answers live in this tab only; a reload should not lose them.
-  $effect(() => {
-    JSON.stringify(wizard.answers);
-    wizard.securityTxt;
-    wizard.save();
+  const result = $derived(parsePolicyText(raw));
+  const document = $derived(result.policy);
+  const publication = $derived.by(() => {
+    if (!document) return { securityTxt: "", html: "", error: "", archive: null };
+    try {
+      const discovery = new URL(securityTxtUri);
+      if (
+        discovery.protocol !== "https:" || discovery.username || discovery.password ||
+        discovery.pathname !== "/.well-known/security.txt" || discovery.search || discovery.hash
+      ) throw new Error("security.txt URI must be an exact HTTPS /.well-known/security.txt URL");
+      const generated = securityTxt(document, { policyUri, securityTxtUri, humanPolicyUris: [humanPolicyUri] });
+      const merged = existingSecurityTxt.trim() ? mergeSecurityTxt(existingSecurityTxt, policyUri) : generated;
+      const authority = assessSecurityTxtAuthority(merged, {
+        requestedUri: discovery.href,
+        finalUri: discovery.href,
+        redirectChain: [],
+        retrievedAt: new Date(),
+      });
+      if (!authority.established) throw new Error(authority.issues.map((issue) => issue.code).join(", "));
+      const html = policyHtml(document);
+      return {
+        securityTxt: merged,
+        html,
+        error: "",
+        archive: policyZip({ policyJson: raw, policyHtml: html, securityTxt: merged, policyUri, securityTxtUri, humanPolicyUri }),
+      };
+    } catch (error) {
+      return { securityTxt: "", html: "", error: error instanceof Error ? error.message : String(error), archive: null };
+    }
   });
 
-  function go(next: number) {
-    index = Math.max(0, Math.min(next, steps.length - 1));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  /**
-   * Opens the step an issue came from and puts the cursor in the field.
-   *
-   * A quick-mode wizard hides most steps, so an issue in one of them would have
-   * nowhere to go: the mode is widened first rather than the click doing
-   * nothing. The flash is what makes the jump legible when the field is one of
-   * several on screen.
-   */
-  async function showIssue(issue: ValidationIssue) {
-    const target = issueTarget(issue.path);
-    if (!target) return;
-
-    if (!steps.some((entry) => entry.key === target.step)) wizard.setMode("full");
-    await tick();
-
-    const position = steps.findIndex((entry) => entry.key === target.step);
-    if (position === -1) return;
-    index = position;
-    await tick();
-
-    const field = target.field ? document.getElementById(target.field) : null;
-    if (!field) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    field.scrollIntoView({ behavior: "smooth", block: "center" });
-    field.focus({ preventScroll: true });
-
-    const box = field.closest(".field") ?? field;
-    box.classList.remove("field-flash");
-    // Reading offsetWidth restarts the animation when the same field is
-    // clicked twice: without it the class is re-added in the same frame.
-    void (box as HTMLElement).offsetWidth;
-    box.classList.add("field-flash");
-  }
-
-  function setMode(mode: "quick" | "full") {
-    const currentKey = step.key;
-    wizard.setMode(mode);
-    const nextSteps = mode === "quick" ? ALL_STEPS.filter((entry) => entry.quick) : ALL_STEPS;
-    const found = nextSteps.findIndex((entry) => entry.key === currentKey);
-    index = found === -1 ? 0 : found;
+  function downloadArchive() {
+    if (publication.archive) downloadBytes("cvd-policy.zip", publication.archive, "application/zip");
   }
 </script>
 
 <div class="stack">
   <div class="prose">
-    <h1>{t("generate.title")}</h1>
-    <p class="lead">{t("generate.lead")}</p>
-  </div>
-
-  <div class="row no-print">
-    {#each [{ id: "quick", labelKey: "generate.mode_quick", helpKey: "generate.mode_quick_help" }, { id: "full", labelKey: "generate.mode_full", helpKey: "generate.mode_full_help" }] as option (option.id)}
-      <button
-        type="button"
-        class="btn {wizard.mode === option.id ? 'btn-primary' : ''}"
-        aria-pressed={wizard.mode === option.id}
-        onclick={() => setMode(option.id as "quick" | "full")}
-        title={t(option.helpKey)}
-      >
-        {t(option.labelKey)}
-      </button>
-    {/each}
-    <span class="mute small">{t(`generate.mode_${wizard.mode}_help`)}</span>
+    <h1>Generate a V1 CVD Policy</h1>
+    <p class="lead">Edit or upload a policy, validate it locally, and prepare files for the exact locations you control.</p>
+    <div class="notice">
+      Experimental implementation of
+      <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>.
+      The proposed field name and media type may change.
+    </div>
   </div>
 
   <div class="split">
-    <div class="stack wizard-form">
-      <ol class="steps">
-        {#each steps as entry, position (entry.key)}
-          <li>
-            <button
-              type="button"
-              class:done={position < index}
-              aria-current={entry.key === step.key ? "step" : undefined}
-              onclick={() => go(position)}
-            >
-              {position + 1}. {t(entry.labelKey)}
-            </button>
-          </li>
-        {/each}
-      </ol>
-
-      <div class="card">
-        {#key step.key}
-          {@const StepComponent = step.component}
-          {#if StepComponent === StepValidity}
-            <StepValidity {doc} />
-          {:else if StepComponent === StepResult}
-            <StepResult {doc} {result} />
-          {:else}
-            {@const FormStep = StepComponent as typeof StepOrganization}
-            <FormStep />
-          {/if}
-        {/key}
-
-        <div class="row u-mt6">
-          <button type="button" class="btn" onclick={() => go(index - 1)} disabled={index === 0}>
-            {t("common.back")}
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            onclick={() => go(index + 1)}
-            disabled={index === steps.length - 1}
-          >
-            {t("common.next")}
-          </button>
-          <span class="mute small">{index + 1} {t("common.of")} {steps.length}</span>
-        </div>
+    <div class="stack">
+      <div class="field">
+        <label for="policy-uri">Policy URI</label>
+        <input id="policy-uri" type="url" bind:value={policyUri} />
+        <p class="help">Required, explicit HTTPS URI. There is no standardized default JSON path.</p>
       </div>
-
-      <p class="small mute">{t("generate.unsaved_warning")}</p>
+      <div class="field">
+        <label for="security-txt-uri">security.txt URI</label>
+        <input id="security-txt-uri" type="url" bind:value={securityTxtUri} />
+      </div>
+      <div class="field">
+        <label for="human-policy-uri">Human-readable Policy URI</label>
+        <input id="human-policy-uri" type="url" bind:value={humanPolicyUri} />
+      </div>
+      <div class="field">
+        <label for="policy-json">V1 policy JSON</label>
+        <textarea id="policy-json" bind:value={raw} spellcheck="false"></textarea>
+      </div>
+      <FileDrop onload={(text) => (raw = text)} accept="application/cvd-policy+json,application/json,.json" />
+      <details>
+        <summary>Merge into an existing security.txt</summary>
+        <p class="help">Comments and existing fields are preserved. Every old CVD-Policy field is replaced by exactly one value. Clearsigned files are refused.</p>
+        <textarea bind:value={existingSecurityTxt} spellcheck="false" placeholder="Contact: mailto:security@example.com"></textarea>
+        <FileDrop onload={(text) => (existingSecurityTxt = text)} accept="text/plain,.txt" />
+      </details>
     </div>
 
-    <div class="stack preview no-print">
+    <div class="stack">
       <div class="row">
-        <h2 class="u-m0">{t("generate.preview")}</h2>
-        <span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">
-          {result.valid ? t("validate.result_valid") : t("validate.result_invalid")}
-        </span>
+        <h2 class="u-m0">Local validation</h2>
+        <span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">{result.valid ? "Valid V1" : "Invalid"}</span>
       </div>
-      <p class="small mute">{t("generate.preview_note")}</p>
-      <div class="row">
-        {#each PREVIEW_FILES as file (file)}
-          <button
-            type="button"
-            class="btn btn-sm {shown === file ? 'btn-primary' : ''}"
-            aria-pressed={shown === file}
-            onclick={() => (shown = file)}
-          >
-            {file}
-          </button>
+      {#if result.issues.length}
+        {#each result.issues as issue (issue.code + issue.path)}
+          <div class="issue error"><p class="issue-path">{issue.path || "/"}</p><p>{issue.message}</p></div>
         {/each}
-      </div>
-      <CodeBlock code={shown === "cvd.json" ? json : txt} title={shown} />
-      {#if result.issues.length > 0}
-        <div class="card card-tight">
-          <IssueList issues={result.issues} onselect={showIssue} />
+      {/if}
+      {#if publication.error}<div class="notice">{publication.error}</div>{/if}
+
+      {#if document && !publication.error}
+        <div class="card card-tight stack">
+          <div class="row">
+            <code class="u-grow">{policyFilename(policyUri)}</code>
+            <button class="btn btn-sm" onclick={() => downloadText(policyFilename(policyUri), raw, "application/cvd-policy+json")}>Download</button>
+          </div>
+          <div class="row">
+            <code class="u-grow">security.txt</code>
+            <button class="btn btn-sm" onclick={() => downloadText("security.txt", publication.securityTxt, "text/plain")}>Download</button>
+          </div>
+          <div class="row">
+            <code class="u-grow">{humanPolicyFilename(humanPolicyUri)}</code>
+            <button class="btn btn-sm" onclick={() => downloadText(humanPolicyFilename(humanPolicyUri), publication.html, "text/html")}>Download</button>
+          </div>
+          {#if publication.archive}
+            <div class="row">
+              <code class="u-grow">cvd-policy.zip</code>
+              <button class="btn btn-sm btn-primary" onclick={downloadArchive}>Download exact web-root layout</button>
+            </div>
+          {:else}
+            <p class="help">No ZIP: all three safe paths must share one HTTPS origin and contain no query, fragment, credentials, or parent segments.</p>
+          {/if}
         </div>
+        <CodeBlock code={publication.securityTxt} title="security.txt" />
+        <CodeBlock code={`npx @cvd-policy/cli@0.5.0-rc.1 check ${new URL(securityTxtUri).host}`} title="Network check after deployment" />
+        <p class="help">This browser performs local validation only. Remote discovery belongs to the CLI or a backend because CORS may block browser requests.</p>
       {/if}
     </div>
   </div>

@@ -8,14 +8,19 @@ Format versions 0.1 and 0.2 are both supported: a document is validated against
 the version it declares, because a released version never changes. Their API
 remains at the package root.
 
-The isolated Version 1 pre-standard candidate is opt-in. It does not change the
-0.x API, CLI, website, package version, or report/intake behavior:
+The Version 1 API is an experimental implementation of
+[`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00).
+The proposed field and media type may change. It is isolated from the immutable
+0.x API under this export:
 
 ```typescript
 import {
   assessSecurityTxtAuthority,
   evaluatePolicy,
+  generatePolicy,
+  mergeSecurityTxt,
   parsePolicyText,
+  securityTxt,
 } from "@cvd-policy/core/v1";
 
 const parsed = parsePolicyText(raw, { now: new Date() });
@@ -54,7 +59,7 @@ V1 has no report intake or submission API. `requested_fields` is advisory and
 never authorizes collecting third-party data or unsafe proof of exploitation.
 
 ```bash
-npm i @cvd-policy/core
+npm i @cvd-policy/core@0.5.0-rc.1
 ```
 
 ```typescript
@@ -88,7 +93,7 @@ const report = validateReport(JSON.parse(incoming));
 | `securityTxtCanonical` | Where the `security.txt` belongs, from `canonical`               |
 | `parseSecurityTxt`   | Parses a `security.txt` into fields                                |
 
-## Authority: which hosts a document may speak for
+## Legacy 0.x authority
 
 Anyone can list someone else's host in `scope` or in a rule's
 `conditions.targets`, so a claim is not permission. A document has authority
@@ -114,7 +119,7 @@ where you fetched the target's own policy and it agrees.
 `validate` applies the same rule, so its `SCOPE_FOREIGN_HOST` and
 `TESTING_TARGET_FOREIGN` warnings predict what evaluators will do.
 
-## Incoming reports
+## Legacy 0.x incoming reports
 
 Since format version 0.2 a policy may carry `report_requirements.intake`: an
 endpoint that accepts a structured report, the schema it expects, and whether

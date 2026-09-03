@@ -17,10 +17,11 @@
 /security/*
   Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 
-# Both files are meant to be fetched by other people's tools.
-/.well-known/cvd.json
-  Content-Type: application/json
+# The concrete URI below belongs to this site; V1 defines no default JSON path.
+/cvd-policy.json
+  Content-Type: application/cvd-policy+json
   Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
 
 # Every published version and the report profiles, not just one of them: a
 # rule naming a single file went stale the moment 0.2 shipped.

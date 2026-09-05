@@ -248,14 +248,14 @@ textarea {
   padding: var(--sp-4);
 
   @media (min-width: 40rem) {
-    padding: var(--sp-5);
+    padding: var(--sp-6);
   }
 }
 
 .editor-section-heading {
   display: grid;
   gap: var(--sp-2);
-  margin-bottom: var(--sp-5);
+  margin-bottom: var(--sp-6);
 
   @media (min-width: 44rem) {
     grid-template-columns: minmax(0, 1fr) minmax(12rem, 1fr);

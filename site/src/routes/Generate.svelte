@@ -1,37 +1,33 @@
 <script lang="ts">
+  import type { CvdPolicyDocument } from "@cvd-policy/core/v1";
   import { assessSecurityTxtAuthority, mergeSecurityTxt, parsePolicyText, securityTxt } from "@cvd-policy/core/v1";
   import CodeBlock from "../components/CodeBlock.svelte";
   import FileDrop from "../components/FileDrop.svelte";
+  import V1PolicyEditor from "../components/V1PolicyEditor.svelte";
   import { downloadBytes, downloadText } from "../lib/download.js";
   import { policyHtml } from "../lib/policyHtml.js";
   import { humanPolicyFilename, policyFilename, policyZip } from "../lib/policyZip.js";
   import { t } from "../lib/i18n.svelte.js";
+  import { createInitialV1Policy } from "../lib/v1Editor.js";
 
-  const now = new Date();
-  const expires = new Date(now);
-  expires.setUTCMonth(expires.getUTCMonth() + 6);
-  const initialPolicy = {
-    cvd_policy: 1,
-    last_updated: now.toISOString(),
-    expires: expires.toISOString(),
-    organization: { name: "Example Organization", uri: "https://example.com" },
-    contact: { channels: ["mailto:security@example.com"], preferred_languages: ["en"] },
-    research: { posture: "report_only" },
-    reporting_scope: {
-      web: [{ id: "main-web", state: "in", host: "example.com", schemes: ["https"], path_prefix: "/", include_subdomains: false }],
-    },
-    reporting: { requested_fields: ["affected_asset", "description"], proof_of_exploitation: "not_requested" },
-  };
-
+  const initialPolicy = createInitialV1Policy();
+  let policy = $state<CvdPolicyDocument>(initialPolicy);
   let raw = $state(JSON.stringify(initialPolicy, null, 2));
+  let editorMode = $state<"guided" | "json">("guided");
+  let editorRevision = $state(0);
+  let editorValid = $state(true);
+  const guidedRaw = $derived(JSON.stringify(policy, null, 2));
+  const activeRaw = $derived(editorMode === "guided" ? guidedRaw : raw);
+  const editorReady = $derived(editorValid);
   let policyUri = $state("https://example.com/cvd-policy.json");
   let securityTxtUri = $state("https://example.com/.well-known/security.txt");
   let humanPolicyUri = $state("https://example.com/security/cvd-policy.html");
   let existingSecurityTxt = $state("");
 
-  const result = $derived(parsePolicyText(raw));
+  const result = $derived(parsePolicyText(activeRaw));
   const document = $derived(result.policy);
   const publication = $derived.by(() => {
+    if (!editorReady) return { securityTxt: "", html: "", error: t("generate.editor_invalid"), archive: null };
     if (!document) return { securityTxt: "", html: "", error: "", archive: null };
     try {
       const discovery = new URL(securityTxtUri);
@@ -54,7 +50,7 @@
         securityTxt: merged,
         html,
         error: "",
-        archive: policyZip({ policyJson: raw, policyHtml: html, securityTxt: merged, policyUri, securityTxtUri, humanPolicyUri }),
+        archive: policyZip({ policyJson: activeRaw, policyHtml: html, securityTxt: merged, policyUri, securityTxtUri, humanPolicyUri }),
       };
     } catch (error) {
       return { securityTxt: "", html: "", error: error instanceof Error ? error.message : String(error), archive: null };
@@ -63,6 +59,23 @@
 
   function downloadArchive() {
     if (publication.archive) downloadBytes("cvd-policy.zip", publication.archive, "application/zip");
+  }
+
+  function showJson() {
+    if (!editorValid) return;
+    raw = guidedRaw;
+    editorMode = "json";
+  }
+
+  function showGuided() {
+    if (!result.policy) return;
+    const nextPolicy = structuredClone(result.policy);
+    if (JSON.stringify(nextPolicy, null, 2) !== guidedRaw) {
+      policy = nextPolicy;
+      editorRevision += 1;
+    }
+    editorValid = true;
+    editorMode = "guided";
   }
 </script>
 
@@ -94,11 +107,22 @@
         <p class="help">{t("generate.human_policy_uri_help")}</p>
         {#if existingSecurityTxt.trim()}<p class="notice">{t("generate.human_policy_merge_note")}</p>{/if}
       </div>
-      <div class="field">
-        <label for="policy-json">{t("generate.v1_policy_json")}</label>
-        <textarea id="policy-json" bind:value={raw} spellcheck="false"></textarea>
+      <div class="editor-tabs" role="group" aria-label={t("generate.editor_mode")}>
+        <button class="btn {editorMode === 'guided' ? 'btn-primary' : ''}" type="button" onclick={showGuided} disabled={editorMode === "json" && !result.policy} aria-pressed={editorMode === "guided"}>{t("generate.editor_guided")}</button>
+        <button class="btn {editorMode === 'json' ? 'btn-primary' : ''}" type="button" onclick={showJson} disabled={editorMode === "guided" && !editorValid} aria-pressed={editorMode === "json"}>{t("generate.editor_json")}</button>
       </div>
-      <FileDrop onload={(text) => (raw = text)} accept="application/cvd-policy+json,application/json,.json" />
+      <div hidden={editorMode !== "guided"}>
+        {#key editorRevision}<V1PolicyEditor bind:policy bind:valid={editorValid} />{/key}
+      </div>
+      {#if editorMode === "json"}
+        <div class="field">
+          <label for="policy-json">{t("generate.v1_policy_json")}</label>
+          <textarea id="policy-json" bind:value={raw} spellcheck="false"></textarea>
+          <p class="help">{t("generate.editor_json_help")}</p>
+        </div>
+        <FileDrop onload={(text) => (raw = text)} accept="application/cvd-policy+json,application/json,.json" />
+        <button class="btn" type="button" onclick={showGuided} disabled={!result.policy}>{t("generate.editor_apply_json")}</button>
+      {/if}
       <details>
         <summary>{t("generate.merge_existing")}</summary>
         <p class="help">{t("generate.merge_existing_help")}</p>
@@ -110,7 +134,7 @@
     <div class="stack">
       <div class="row">
         <h2 class="u-m0">{t("generate.local_validation")}</h2>
-        <span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">{result.valid ? t("generate.valid_v1") : t("validate.result_invalid")}</span>
+        <span class="badge {result.valid && editorReady ? 'badge-ok' : 'badge-err'}">{result.valid && editorReady ? t("generate.valid_v1") : t("validate.result_invalid")}</span>
       </div>
       <p class="help">{t("generate.local_scope")}</p>
       {#if result.issues.length}
@@ -124,7 +148,7 @@
         <div class="card card-tight stack">
           <div class="row">
             <code class="u-grow">{policyFilename(policyUri)}</code>
-            <button class="btn btn-sm" onclick={() => downloadText(policyFilename(policyUri), raw, "application/cvd-policy+json")}>{t("common.download")}</button>
+            <button class="btn btn-sm" onclick={() => downloadText(policyFilename(policyUri), activeRaw, "application/cvd-policy+json")}>{t("common.download")}</button>
           </div>
           <div class="row">
             <code class="u-grow">security.txt</code>

@@ -219,6 +219,8 @@ input[type="url"],
 input[type="email"],
 input[type="number"],
 input[type="date"],
+input[type="datetime-local"],
+input:not([type]),
 select,
 textarea {
   width: 100%;
@@ -230,6 +232,78 @@ textarea {
   min-height: 2.75rem;
   // 16px keeps iOS from zooming the whole page on focus.
   font-size: max(1rem, 16px);
+}
+
+.editor-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.editor-section {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+
+  @media (min-width: 40rem) {
+    padding: var(--sp-5);
+  }
+}
+
+.editor-section-heading {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+
+  @media (min-width: 44rem) {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 1fr);
+    align-items: start;
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  .help {
+    margin: 0;
+  }
+}
+
+.editor-kicker {
+  color: var(--c-accent);
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  margin: 0 0 var(--sp-1);
+}
+
+.form-grid,
+.check-grid {
+  display: grid;
+  gap: var(--sp-3) var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+}
+
+.editor-entry {
+  background: var(--c-surface-mute);
+  margin-top: var(--sp-4);
+}
+
+.inline-check {
+  align-items: flex-start;
+  display: flex;
+  font-weight: 400;
+  gap: var(--sp-2);
+  margin: 0;
+  padding-block: var(--sp-1);
+
+  input {
+    flex: none;
+    margin-top: 0.25rem;
+  }
 }
 
 textarea {

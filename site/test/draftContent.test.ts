@@ -64,6 +64,32 @@ describe("Draft 00 website content", () => {
     expect(merged).not.toContain(humanUri);
   });
 
+  it("offers every V1 policy section in the guided editor without legacy transport fields", () => {
+    const route = read("src", "routes", "Generate.svelte");
+    const editor = read("src", "components", "V1PolicyEditor.svelte");
+
+    expect(route).toContain("<V1PolicyEditor bind:policy bind:valid={editorValid} />");
+    expect(route).toContain('hidden={editorMode !== "guided"}');
+    expect(route).toContain("JSON.stringify(nextPolicy, null, 2) !== guidedRaw");
+    for (const field of [
+      "organization",
+      "contact",
+      "research",
+      "reporting_scope",
+      "testing",
+      "reporting",
+      "response_targets",
+      "disclosure",
+      "critical_extensions",
+      "extensions",
+    ]) expect(editor).toContain(`policy.${field}`);
+    expect(editor).toContain("savedConditions");
+    expect(editor).toContain("valid = false");
+    expect(editor).toContain('throw new Error("missing extension URI")');
+    expect(editor).not.toContain("report_requirements");
+    expect(editor).not.toContain("intake");
+  });
+
   it("serves discovery and policy files with explicit matching media types", () => {
     const headers = read("public", "_headers");
     const caddy = readFileSync(join(web, "ops", "Caddyfile"), "utf8");

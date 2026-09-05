@@ -16,6 +16,8 @@ describe("the policy this site publishes about itself", () => {
     expect(securityTxt.match(/^CVD-Policy:/gm)).toHaveLength(1);
     expect(securityTxt).toContain("CVD-Policy: https://cvd-policy.eu/cvd-policy.json");
     expect(securityTxt).toContain(`Expires: ${doc.expires}`);
+    expect(doc.research.statement).toContain("specification content published at cvd-policy.eu");
+    expect(doc.research.statement).not.toContain("reference implementation");
   });
 
   it("has a readable page built from this document", async () => {

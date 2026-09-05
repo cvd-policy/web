@@ -83,7 +83,7 @@ function syncTree(source, target) {
   }
 }
 
-// The two documents the site renders, and the schema it serves.
+// Frozen 0.x documents and artefacts remain available as legacy resources.
 mkdirSync(join(vendor, "examples"), { recursive: true });
 mkdirSync(join(vendor, "schema"), { recursive: true });
 
@@ -126,6 +126,22 @@ if (!check) {
     if (!examples.includes(file)) rmSync(join(vendor, "examples", file));
   }
 }
+
+// The site presents V1 first, separately from the frozen 0.x material.
+const siteV1 = join(vendor, "v1");
+const siteMarkdown = (path) => readFileSync(path, "utf8").replace(/[ \t]+$/gm, "");
+write(
+  join(siteV1, "SPEC.md"),
+  siteMarkdown(join(specDir, "v1", "SPEC.md")),
+);
+write(
+  join(siteV1, "SPEC.de.md"),
+  siteMarkdown(join(specDir, "v1", "SPEC.de.md")),
+);
+syncTree(
+  join(specDir, "tests", "v1", "policy", "valid"),
+  join(siteV1, "examples"),
+);
 
 // The library embeds every schema, so it never needs the network at runtime.
 // A published version is frozen, so an old document keeps being judged by the

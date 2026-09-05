@@ -21,7 +21,7 @@
       onload(await readFile(file), file.name);
       error = "";
     } catch {
-      error = "The selected file is not valid UTF-8.";
+      error = t("common.invalid_utf8");
     }
   }
 </script>

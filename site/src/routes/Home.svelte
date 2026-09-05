@@ -17,7 +17,7 @@
   <section class="prose">
     <h1>{t("home.title")}</h1>
     <p class="lead">{t("home.lead")}</p>
-    <p class="notice">Experimental V1 implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. The proposed field and media type may change.</p>
+    <p class="notice">{t("home.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. {t("home.v1_notice_change")}</p>
     <div class="row actions-primary">
       <a class="btn btn-primary" href="/generate">{t("home.cta_generate")}</a>
       <a class="btn" href="/validate">{t("home.cta_validate")}</a>

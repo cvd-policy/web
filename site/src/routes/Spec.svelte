@@ -7,8 +7,8 @@
     const [{ marked }, source] = await Promise.all([
       import("marked"),
       i18n.lang === "de"
-        ? import("../../vendor/spec/SPEC.de.md?raw")
-        : import("../../vendor/spec/SPEC.md?raw"),
+        ? import("../../vendor/spec/v1/SPEC.de.md?raw")
+        : import("../../vendor/spec/v1/SPEC.md?raw"),
     ]);
     return marked.parse(source.default, { async: false });
   });
@@ -18,17 +18,24 @@
   <div class="prose">
     <h1>{t("spec.title")}</h1>
     <p class="lead">{t("spec.lead")}</p>
-    <p class="notice">V1 is an experimental implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. The text below documents the stable legacy formats.</p>
-    {#if i18n.lang !== "en"}
-      <p class="notice">{t("spec.translated_notice")}</p>
-    {/if}
+    <p class="notice">{t("spec.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. {t("spec.v1_notice_change")}</p>
+    {#if i18n.lang === "de"}<p class="notice">{t("spec.translation_notice")}</p>{/if}
     <p class="row small">
-      <a href="/schema/0.2/cvd-policy.schema.json">{t("spec.schema")} 0.2</a>
-      <a href="/schema/0.1/cvd-policy.schema.json">0.1</a>
-      <a href="/schema/profiles/report-0.1.schema.json">{t("tools.report_profile")}</a>
+      <a href="/schema/cvd-policy-1.schema.json">{t("spec.schema")} V1</a>
+      <a href="/spec/v1.md">English Markdown</a>
+      <a href="/spec/v1.de.md">Deutsch (informativ)</a>
     </p>
-    <p class="small mute">{t("spec.versions_note")}</p>
     <p class="small mute">{t("spec.package_versions_note")}</p>
+
+    <h2>{t("spec.legacy_title")}</h2>
+    <p>{t("spec.legacy_body")}</p>
+    <p class="row small">
+      <a href="/spec/0.2.md">0.2 English</a>
+      <a href="/spec/0.2.de.md">0.2 Deutsch</a>
+      <a href="/schema/0.2/cvd-policy.schema.json">{t("spec.schema")} 0.2</a>
+      <a href="/schema/0.1/cvd-policy.schema.json">{t("spec.schema")} 0.1</a>
+      <a href="/schema/profiles/report-0.1.schema.json">report-0.1</a>
+    </p>
   </div>
 
   {#await rendered then html}

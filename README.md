@@ -1,15 +1,18 @@
 # CVD Policy Format — library, CLI and website
 
-An open format for stating how an organisation handles vulnerability reports:
-whether security research is welcome, on what, under which conditions, how to
-report, and how disclosure is handled. Version 1 is an experimental
+An open format for publishing a machine-readable statement about reportable
+assets, testing rules, reporting preferences and disclosure coordination. It
+does not prove ownership or grant legal authorization. Version 1 is an experimental
 implementation of
 [`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00).
 Its proposed `CVD-Policy` field and `application/cvd-policy+json` media type may
 change before standardization.
 
-V1 discovery starts at `/.well-known/security.txt`; its `CVD-Policy` field names
-the exact policy URI. There is no standard default path for the JSON document.
+V1 discovery starts at `/.well-known/security.txt`; exactly one `CVD-Policy`
+field names the exact policy URI. That field alone is not authority: assessment
+also requires valid `Contact`, exactly one future `Expires`, valid HTTPS
+retrieval and redirects, and `Canonical` consistency when applicable. There is
+no standard default path for the JSON document.
 
 **Funding:** This site is run by Skalvar Technologies UG (haftungsbeschränkt) in
 Wismar, Germany, which earns its money developing IT security software. The
@@ -21,7 +24,7 @@ format, the library and this site work without our products and without us.
 packages/core/     @cvd-policy/core — validation, generation, evaluation, reports
 packages/cli/      @cvd-policy/cli — command line tool
 site/              cvd-policy.eu — Vite + Svelte 5 + SCSS, static build
-site/vendor/spec/  Specification artefacts, copied in (see below)
+site/vendor/spec/  V1 site text plus frozen legacy 0.x artefacts
 ```
 
 The specification lives in its own repository, **cvd-policy/spec**, under CC0:
@@ -62,23 +65,37 @@ npm run sync:spec           # refresh site/vendor/spec and the embedded schema
 npm run sync:spec:check     # fail if the copies have drifted (used by CI)
 ```
 
-Set `CVD_SPEC_DIR` if the specification sits elsewhere. Published 0.x
-conformance tests can run against that repository directly. The isolated V1
-schema and corpus are vendored under `packages/core/vendor/spec-v1/` with the
+Set `CVD_SPEC_DIR` if the specification sits elsewhere. `site/vendor/spec/v1/`
+contains the V1 documents and examples rendered by the site;
+`site/vendor/spec/` retains the legacy material. The isolated Core V1 schema and
+corpus are separately vendored under `packages/core/vendor/spec-v1/` with the
 exact source commit and run without a neighboring checkout.
 
-## What the library does
+## V1 library flow
 
 ```typescript
-import { validate, validateReport, generate, evaluate, explain } from "@cvd-policy/core";
+import {
+  assessSecurityTxtAuthority,
+  evaluatePolicy,
+  parsePolicyText,
+} from "@cvd-policy/core/v1";
 
-validate(doc);          // schema for the declared version, plus semantic rules
-validateReport(report);  // an incoming report against the report-0.1 profile
-evaluate(doc, "automated_scanning", "api.example.com");
+const parsed = parsePolicyText(policyText, { now });
+const authority = assessSecurityTxtAuthority(securityTxtText, securityTxtRetrieval);
+if (!parsed.policy) throw new Error("invalid policy");
+const decision = evaluatePolicy(parsed.policy, {
+  activity: "automated_scanning",
+  target: "https://api.example.com/",
+  policyRetrieval,
+}, authority.established ? authority.evidence : null);
 ```
 
 Issues are stable codes with JSON Pointers, never finished prose, so the UI owns
 the wording. See [packages/core/README.md](packages/core/README.md).
+
+The package-root `validate`, `generate`, `evaluate`, `validateReport` and
+`explain` APIs remain the Legacy 0.x interface. `report-0.1` is not a V1 report
+transport.
 
 On the command line:
 

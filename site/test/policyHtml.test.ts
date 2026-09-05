@@ -20,6 +20,9 @@ describe("policyHtml", () => {
     expect(html).not.toMatch(/<script/i);
     expect(html).toContain("draft-behring-cvd-policy-00");
     expect(html).toContain("CVD Policy Format 1");
+    expect(html).toContain("does not prove ownership or control");
+    expect(html).toContain("do not provide legal authorization");
+    expect(html).toContain("Response targets are not guarantees");
   });
 
   it("escapes publisher data", () => {

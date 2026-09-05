@@ -36,6 +36,7 @@
   <div class="prose no-print">
     <h1>{t("explain.title")}</h1>
     <p class="lead">{t("explain.lead")}</p>
+    <p class="notice">{t("explain.legacy_notice")}</p>
   </div>
 
   {#if parsed}
@@ -52,16 +53,13 @@
         <button type="button" class="btn btn-sm" onclick={() => (showRaw = !showRaw)}>
           {showRaw ? t("explain.hide_raw") : t("explain.show_raw")}
         </button>
-        <button type="button" class="btn btn-sm" onclick={() => router.navigate("/validate")}>
-          {t("explain.open_in_validator")}
-        </button>
         <button type="button" class="btn btn-sm" onclick={() => window.print()}>
           {t("common.print")}
         </button>
       </div>
 
       {#if showRaw}
-        <CodeBlock code={raw} title="cvd.json" />
+        <CodeBlock code={raw} title="legacy-cvd.json" />
       {/if}
     </div>
   {:else}

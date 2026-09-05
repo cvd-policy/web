@@ -55,6 +55,8 @@ cvd-policy.eu, www.cvd-policy.eu {
 
 	@documents path /.well-known/* /schema/* /examples/* /sitemap.xml /robots.txt
 	header @documents Cache-Control "public, max-age=3600"
+	@securitytxt path /.well-known/security.txt
+	header @securitytxt Content-Type "text/plain"
 
 	# Each route is prerendered to its own directory, so a real path resolves to
 	# a real file. Anything left over is a 404 and is answered as one, rather

@@ -64,7 +64,7 @@
   <header class="site-header no-print">
     <div class="container">
       <a class="brand" href="/">CVD Policy Format</a>
-      <nav class="nav" aria-label="Main">
+      <nav class="nav" aria-label={t("nav.main")}>
         {#each NAV as route (route)}
           <a href={route} aria-current={router.path === route ? "page" : undefined}>
             {labelFor(route)}

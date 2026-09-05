@@ -35,6 +35,9 @@ export function policyHtml(doc: CvdPolicyDocument): string {
       dt, dd { padding: 0.6rem 0; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
       dt { color: var(--muted); padding-right: 1.5rem; }
       dd { margin: 0; }
+      .semantics { margin-top: 2rem; padding: 1rem 1.25rem; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+      .semantics h2 { margin-top: 0; font-size: 1.1rem; }
+      .semantics p { margin-bottom: 0; }
       footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
       @media (max-width: 36rem) { dl { grid-template-columns: 1fr; } dt { border: 0; padding-bottom: 0; } dd { padding-top: 0; } }
     </style>
@@ -47,6 +50,10 @@ export function policyHtml(doc: CvdPolicyDocument): string {
     <dl>
 ${rows(doc)}
     </dl>
+    <section class="semantics">
+      <h2>How to read this statement</h2>
+      <p>Reporting scope identifies assets for which reports are accepted; it does not prove ownership or control. Testing rules, if present, are publisher statements and do not provide legal authorization or guaranteed safe harbor. Response targets are not guarantees, and disclosure periods are coordination preferences rather than automatic permission to disclose.</p>
+    </section>
     <footer>Experimental implementation of draft-behring-cvd-policy-00. CVD Policy Format ${doc.cvd_policy}.</footer>
   </body>
 </html>

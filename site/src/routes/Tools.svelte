@@ -1,11 +1,12 @@
 <script lang="ts">
   import CodeBlock from "../components/CodeBlock.svelte";
-  import { examples } from "../lib/examples.js";
+  import { legacyExamples, v1Examples } from "../lib/examples.js";
   import { t } from "../lib/i18n.svelte.js";
 
   const cli = `npx @cvd-policy/cli@0.5.0-rc.1 validate cvd-policy.json
 npx @cvd-policy/cli@0.5.0-rc.1 validate -
 npx @cvd-policy/cli@0.5.0-rc.1 check example.com
+npx @cvd-policy/cli@0.5.0-rc.1 check example.com --allow-application-json
 npx @cvd-policy/cli@0.5.0-rc.1 validate --legacy old-cvd.json`;
 
   const action = `- name: Check the deployed CVD policy
@@ -27,7 +28,7 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
   <div class="prose">
     <h1>{t("tools.title")}</h1>
     <p class="lead">{t("tools.lead")}</p>
-    <p class="notice">Experimental implementation of <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. Install the exact release candidate, not the floating <code>next</code> tag.</p>
+    <p class="notice">{t("tools.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. {t("tools.v1_notice_release")}</p>
   </div>
 
   <section class="card">
@@ -46,7 +47,7 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
           </td>
         </tr>
         <tr>
-          <th scope="row">{t("tools.report_profile")}</th>
+          <th scope="row">{t("tools.legacy_report_profile")}</th>
           <td>
             <a href="/schema/profiles/report-0.1.schema.json">report-0.1</a>
             <span class="mute small"> — {t("tools.report_profile_note")}</span>
@@ -75,7 +76,16 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
         <tr>
           <th scope="row">{t("tools.examples")}</th>
           <td>
-            {#each examples as example, index (example.name)}
+            {#each v1Examples as example, index (example.name)}
+              {#if index > 0}<span aria-hidden="true"> · </span>{/if}
+              <a href={`/examples/v1/${example.name}`}>{example.name}</a>
+            {/each}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">{t("tools.legacy_examples")}</th>
+          <td>
+            {#each legacyExamples as example, index (example.name)}
               {#if index > 0}<span aria-hidden="true"> · </span>{/if}
               <a href={`/examples/${example.name}`}>{example.name}</a>
             {/each}
@@ -85,10 +95,10 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
           <th scope="row">{t("tools.corpus")}</th>
           <td>
             <a
-              href="https://github.com/cvd-policy/spec/tree/main/tests"
+              href="https://github.com/cvd-policy/spec/tree/main/tests/v1"
               rel="noopener noreferrer"
             >
-              github.com/cvd-policy/spec/tree/main/tests
+              github.com/cvd-policy/spec/tree/main/tests/v1
             </a>
           </td>
         </tr>

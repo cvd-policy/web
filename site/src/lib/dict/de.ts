@@ -7,11 +7,12 @@ export const de: Dict = {
   "nav.spec": "Spezifikation",
   "nav.generate": "Erzeugen",
   "nav.validate": "Prüfen",
-  "nav.explain": "Erklären",
+  "nav.explain": "Legacy-Erklärung",
   "nav.tools": "Tools",
   "nav.faq": "Fragen",
   "nav.imprint": "Impressum",
   "nav.skip": "Zum Inhalt springen",
+  "nav.main": "Hauptnavigation",
 
   "common.copy": "Kopieren",
   "common.copied": "Kopiert",
@@ -26,6 +27,7 @@ export const de: Dict = {
   "generate.languages_none": "Keine ausgewählt",
   "common.hint_label": "Was in dieses Feld gehört",
   "common.hint_example": "Beispiel:",
+  "common.invalid_utf8": "Die ausgewählte Datei ist kein gültiges UTF-8.",
 
   "footer.funding":
     "Diese Seite betreibt die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld. Format, Bibliothek und Seite lassen sich ohne unsere Produkte und ohne uns verwenden.",
@@ -36,10 +38,10 @@ export const de: Dict = {
 
   "home.title": "Sagen Sie, wie Sie mit Schwachstellenmeldungen umgehen.",
   "home.lead":
-    "Das CVD Policy Format ist eine kleine JSON-Datei an einer ausdrücklich angekündigten HTTPS-URI. Darin steht, ob Sicherheitsforschung erwünscht ist, woran, unter welchen Bedingungen und wie gemeldet werden soll. Tools können die Datei auswerten, Menschen können sie lesen.",
+    "Das CVD-Policy-Format ist eine kleine JSON-Datei an einer ausdrücklich angekündigten HTTPS-URI. Sie benennt meldefähige Assets, die vom Herausgeber erklärten Testregeln und den Meldeweg. Tools können die Datei auswerten, Menschen können sie lesen.",
   "home.what_title": "Kurz erklärt",
   "home.what_body":
-    "Die security.txt nennt eine Kontaktadresse. Ob Tests erlaubt sind, welche Systeme überhaupt Ihnen gehören und was nach einer Meldung passiert, kann sie nicht ausdrücken. Diese Angaben stehen heute — wenn überhaupt — als Fließtext auf einer Webseite. Das CVD Policy Format bringt sie in eine Datei, die ein Tool auswerten kann, bevor die erste Anfrage gestellt wird.",
+    "Die security.txt nennt eine Kontaktadresse. V1 ergänzt eine Erklärung des Herausgebers zu meldefähigen Assets, Testregeln, Meldepräferenzen und dem weiteren Ablauf. Sie beweist weder Eigentum noch Kontrolle, erteilt keine rechtliche Erlaubnis und garantiert keinen Safe Harbor. Ein Tool kann diese Erklärung vor der ersten Anfrage auswerten.",
   "home.privacy_title": "Nichts verlässt Ihr Gerät",
   "home.privacy_body":
     "Generator, Prüfung und Erklärung laufen vollständig im Browser. Kein Backend, kein Upload, keine Anfrage an fremde Domains. Wer das nicht glaubt, öffnet die Entwicklertools und schaut im Netzwerk-Tab nach.",
@@ -60,19 +62,24 @@ export const de: Dict = {
   "home.not_2":
     "Kein Nachweis regulatorischer Anforderungen, auch nicht für den CRA.",
   "home.not_3":
-    "Kein Rechtsschutz. Festgehalten wird eine Erklärung, mehr nicht.",
+    "Keine rechtliche Erlaubnis und kein Eigentumsnachweis. Festgehalten wird eine Erklärung des Herausgebers, mehr nicht.",
   "home.not_4":
     "Keine Bewertung: keine Punktzahl, kein Reifegrad, kein Vergleich.",
+  "home.v1_notice_intro": "Experimentelle V1-Implementierung von",
+  "home.v1_notice_change": "Das vorgeschlagene Feld und der Medientyp können sich ändern.",
 
   "spec.title": "Spezifikation",
   "spec.lead":
-    "Version 0.2, Entwurf. Veröffentlicht unter CC0-1.0 — kopieren, zitieren und umsetzen ausdrücklich erlaubt.",
-  "spec.translated_notice":
-    "Diese Übersetzung soll das Verständnis erleichtern. Verbindlich ist die englische Fassung.",
-  "spec.versions_note": "Version 0.1 bleibt veröffentlicht und gültig: Eine veröffentlichte Version ändert sich nie. 0.2 ergänzt ein freiwilliges Feld.",
+    "Kandidat für Version 1 — das Format, das der aktuelle Generator und Validator umsetzen. Veröffentlicht unter CC0-1.0.",
+  "spec.versions_note": "Die Versionen 0.1 und 0.2 bleiben als eingefrorene Legacy-Formate verfügbar.",
   "spec.package_versions_note":
-    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.4 setzt Format 0.2 um: Die Paketversion sagt, was sich am Paket geändert hat, cvd_policy im Dokument sagt, nach welchen Regeln dieses Dokument geschrieben wurde.",
+    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.5.0-rc.1 setzt das experimentelle Format V1 um; cvd_policy im Dokument wählt die Dokumentregeln.",
   "spec.schema": "JSON Schema",
+  "spec.v1_notice_intro": "Dies ist der experimentelle V1-Kandidat zu",
+  "spec.v1_notice_change": "Er ist weder RFC noch IETF-Konsens und kann sich ändern.",
+  "spec.translation_notice": "Die englische Spezifikation ist normativ. Diese deutsche Übersetzung ist informativ.",
+  "spec.legacy_title": "Legacy 0.x",
+  "spec.legacy_body": "Bestehende Dokumente der Versionen 0.1 und 0.2 behalten ihre eingefrorenen Spezifikationen und Schemas. Auch das Profil report-0.1 ist Legacy und kein V1-Meldetransport.",
 
   "notfound.title": "Seite nicht gefunden",
   "notfound.lead":
@@ -107,7 +114,7 @@ export const de: Dict = {
   "generate.role_other": "Anderes",
   "generate.domain": "Ihre Domain",
   "generate.domain_help":
-    "Die Datei gehört später nach https://<Ihre Domain>/.well-known/cvd.json.",
+    "Nur Legacy 0.x: Der historische Standardpfad war https://<Ihre Domain>/.well-known/cvd.json.",
   "generate.canonical": "Ort der Datei",
   "generate.posture_question": "Wie gehen Sie mit Sicherheitsforschung um?",
   "generate.statement": "In Ihren eigenen Worten",
@@ -283,6 +290,27 @@ export const de: Dict = {
     "Ihre Antworten liegen nur in diesem Tab. Schließen Sie ihn, sind sie weg.",
   "generate.unsaved_warning":
     "Ihre Eingaben werden nirgends gespeichert. Verlassen Sie die Seite, sind sie verloren.",
+  "generate.v1_title": "V1-CVD-Policy erzeugen",
+  "generate.v1_lead": "Bearbeiten oder laden Sie eine Policy hoch, prüfen Sie sie lokal und bereiten Sie die Dateien für die von Ihnen kontrollierten Zielorte vor.",
+  "generate.v1_notice_intro": "Experimentelle Implementierung von",
+  "generate.v1_notice_change": "Der vorgeschlagene Feldname und der Medientyp können sich ändern.",
+  "generate.policy_uri": "Policy-URI",
+  "generate.policy_uri_help": "Erforderliche, ausdrücklich angegebene HTTPS-URI. Es gibt keinen standardisierten Standardpfad für die JSON-Datei.",
+  "generate.security_txt_uri": "security.txt-URI",
+  "generate.human_policy_uri": "URI der menschenlesbaren Policy",
+  "generate.human_policy_uri_help": "Eine neu erzeugte security.txt verlinkt diese URI über ihr Policy-Feld.",
+  "generate.human_policy_merge_note": "Beim Zusammenführen bleiben vorhandene Policy-Felder unverändert. Der Generator ergänzt oder ersetzt für diese HTML-Datei kein Policy-Feld.",
+  "generate.v1_policy_json": "V1-Policy-JSON",
+  "generate.merge_existing": "In eine bestehende security.txt einfügen",
+  "generate.merge_existing_help": "Kommentare und bestehende Felder bleiben erhalten. Jedes alte CVD-Policy-Feld wird durch genau einen Wert ersetzt. Signierte Dateien werden abgelehnt.",
+  "generate.local_validation": "Lokale Prüfung",
+  "generate.valid_v1": "Lokal gültiges V1-Dokument",
+  "generate.local_scope": "Die lokale Prüfung betrifft das Dokument, nicht Authority, Veröffentlichung, Eigentum, rechtliche Erlaubnis oder Testerlaubnis für ein Ziel.",
+  "generate.download_layout": "Exakte Webroot-Struktur herunterladen",
+  "generate.zip_unavailable": "Kein ZIP: Alle drei sicheren Pfade müssen denselben HTTPS-Ursprung haben und dürfen keine Abfrage, kein Fragment, keine Zugangsdaten und keine übergeordneten Segmente enthalten.",
+  "generate.network_check": "Netzwerkprüfung nach der Veröffentlichung",
+  "generate.local_only": "Dieser Browser prüft nur das lokale Dokument. Die CLI prüft Discovery, Authority, Redirects, Medientyp und die veröffentlichte Policy, da CORS Browseranfragen blockieren kann.",
+  "generate.security_txt_uri_error": "Die security.txt-URI muss eine exakte HTTPS-URL auf /.well-known/security.txt sein",
 
   "validate.title": "Policy prüfen",
   "validate.lead":
@@ -291,6 +319,7 @@ export const de: Dict = {
   "validate.examples": "Beispiele",
   "validate.drop_hint": "Policy-JSON hierher ziehen oder Datei auswählen",
   "validate.result_valid": "Gültig",
+  "validate.result_valid_local_v1": "Lokal gültiges V1-Dokument",
   "validate.result_invalid": "Ungültig",
   "validate.count_errors_one": "{n} Fehler",
   "validate.count_errors_other": "{n} Fehler",
@@ -308,12 +337,23 @@ export const de: Dict = {
   "validate.url_title": "Eine URL prüfen",
   "validate.url_body":
     "Ein Browser darf die Datei einer fremden Domain nur abrufen, wenn diese es erlaubt. Der Umweg über einen eigenen Server hätte einen Preis: Er würde mitlesen, welche Policies Sie prüfen. Und er wäre ein Backend, das es hier nicht gibt. Nehmen Sie deshalb den Befehl unten.",
+  "validate.v1_title": "CVD-Policy prüfen",
+  "validate.v1_lead": "Fügen Sie JSON ein oder laden Sie es hoch. Die Prüfung läuft lokal in Ihrem Browser.",
+  "validate.v1_notice": "V1 ist eine experimentelle Implementierung von",
+  "validate.legacy_title": "Prüfung bisheriger 0.x-Versionen",
+  "validate.legacy_body": "Nur für bestehende Dokumente der Versionen 0.1 und 0.2 einschalten.",
+  "validate.policy_json": "Policy-JSON",
+  "validate.v1_no_issues": "Keine Probleme gefunden.",
+  "validate.local_scope": "Dieses Ergebnis belegt weder Authority noch korrekte Veröffentlichung, Eigentum, rechtliche Erlaubnis oder Testerlaubnis für ein Ziel.",
+  "validate.deployed_title": "Veröffentlichte Policy prüfen",
+  "validate.deployed_help": "Die CLI folgt /.well-known/security.txt zur dort angekündigten CVD-Policy-URI. Der Browser-Validator ermittelt sie nicht über das Netzwerk.",
 
   "explain.page_subtitle": "Richtlinie zur koordinierten Offenlegung von Schwachstellen",
   "explain.page_expires": "Diese Richtlinie gilt erklärtermaßen bis",
-  "explain.title": "Policy erklären",
+  "explain.title": "Legacy-0.x-Policy erklären",
   "explain.lead":
-    "Dieselbe Datei, ausgeschrieben für alle, die kein JSON lesen.",
+    "Ein eingefrorenes Dokument der Version 0.1 oder 0.2, ausgeschrieben für alle, die kein JSON lesen.",
+  "explain.legacy_notice": "Dieser Erklärer unterstützt V1 nicht. Nutzen Sie Prüfen für die lokale Prüfung eines V1-Dokuments.",
   "explain.paste_hint":
     "Dokument einfügen, Datei hineinziehen oder ein Beispiel laden.",
   "explain.show_raw": "Rohdaten anzeigen",
@@ -434,7 +474,7 @@ export const de: Dict = {
     "Erlaubt sind: open, limited, report_only, prohibited.",
   "issue.canonical_not_https": "canonical muss eine absolute https-URL sein.",
   "issue.canonical_not_https.hint":
-    "Beispiel: https://example.com/.well-known/cvd.json",
+    "Legacy-0.x-Beispiel: https://example.com/.well-known/cvd.json",
   "issue.pattern_invalid": "Dieser Wert hat nicht die erwartete Form.",
   "issue.format_invalid": "Dieser Wert ist kein gültiges {format}.",
   "issue.type_invalid": "Hier wird {expected} erwartet.",
@@ -564,9 +604,9 @@ export const de: Dict = {
   "issue.contact_missing_encryption.hint":
     "Erwägen Sie einen PGP-Schlüssel oder ein S/MIME-Zertifikat.",
 
-  "tools.schema_frozen": "eine veröffentlichte Version ändert sich nie",
+  "tools.schema_frozen": "0.1 und 0.2 sind eingefrorene Legacy-Formate; V1 kann sich ändern",
   "tools.report_profile": "Meldeprofil",
-  "tools.report_profile_note": "wie eine eingehende Meldung aufgebaut ist",
+  "tools.report_profile_note": "nur Legacy 0.x; V1 definiert keinen Meldetransport",
   "tools.title": "Tools",
   "tools.lead":
     "Alles, was zur Umsetzung des Formats nötig ist — und alles, was nötig ist, um es ohne diese Seite zu nutzen.",
@@ -575,11 +615,13 @@ export const de: Dict = {
   "tools.library": "Bibliothek",
   "tools.cli": "Kommandozeile",
   "tools.on_npm": "auf npm",
-  "tools.examples": "Beispiele",
+  "tools.examples": "V1-Beispiele",
+  "tools.legacy_examples": "Legacy-0.x-Beispiele",
+  "tools.legacy_report_profile": "Legacy-Meldeprofil",
   "tools.corpus": "Testkorpus",
   "tools.action": "GitHub Action",
   "tools.cli_body":
-    "Exit-Codes: 0 gültig, 1 Fehler, 2 nur Warnungen, 3 nicht erreichbar. Damit läuft die Prüfung in jeder CI.",
+    "Exit-Codes: 0 vollständiger V1-Erfolg, 1 Validierungsfehler, 2 ausdrückliche application/json-Kompatibilitätswarnung, 3 nicht erreichbar. application/json wird nur mit --allow-application-json akzeptiert.",
   "tools.securitytxt": "security.txt",
   "tools.securitytxt_body":
     "Die V1-Bibliothek erzeugt eine vollständige security.txt oder liefert einen zusammengeführten Text zurück. Kommentare, Reihenfolge, Leerzeilen, Zeilenenden und alle Felder außer vorherigen CVD-Policy-Einträgen bleiben erhalten.",
@@ -588,6 +630,8 @@ export const de: Dict = {
   "tools.third_party": "Implementierungen Dritter",
   "tools.third_party_empty":
     "Diese Liste ist offen. Pull Requests sind willkommen.",
+  "tools.v1_notice_intro": "Experimentelle Implementierung von",
+  "tools.v1_notice_release": "Installieren Sie genau den angegebenen Release Candidate, nicht das wechselnde Tag next.",
 
   "faq.title": "Fragen",
   "faq.q_prohibit": "Was, wenn ich Tests verbieten will?",
@@ -601,7 +645,7 @@ export const de: Dict = {
     "Ja. Ohne vorhandene Datei erzeugt der V1-Generator Contact, Expires, Canonical, Policy und genau ein CVD-Policy-Feld mit der ausdrücklich gewählten HTTPS-Policy-URI. Bei einer vorhandenen Datei bleiben Kommentare und alle anderen Felder erhalten; alte CVD-Policy-Felder werden entfernt und der konfigurierte Wert genau einmal eingesetzt. Die Datei bleibt im Browser und wird nie hochgeladen.",
   "faq.q_signed": "Ich signiere meine security.txt. Was passiert dann?",
   "faq.a_signed":
-    "RFC 9116 erlaubt eine im Klartext signierte security.txt, und jede Änderung an einer solchen Datei zerstört ihre Signatur. Ein Feld zu ergänzen und die Signatur zu behalten, ist nicht möglich — hier nicht und anderswo auch nicht. Diese Seite sagt das, statt es zu umgehen: Trägt die übergebene Datei eine Signatur, erfahren Sie es in dem Moment und beim Ergebnis noch einmal. Die geänderte Datei ist richtig, die noch daran hängende Signatur nicht mehr. Signieren Sie sie vor der Veröffentlichung erneut, mit demselben Schlüssel.",
+    "RFC 9116 erlaubt eine im Klartext signierte security.txt, und jede Änderung zerstört ihre Signatur. Der Generator lehnt die Änderung deshalb ab und erzeugt keine geänderte Datei. Bereiten Sie eine unsignierte Fassung mit CVD-Policy vor und signieren Sie erst diese vollständige Datei erneut.",
   "faq.q_cra": "Ist das ein CRA-Nachweis?",
   "faq.a_cra":
     "Nein. Der Cyber Resilience Act verlangt Prozesse, keine JSON-Datei. Das Format kann festhalten, was Sie ohnehin entschieden haben: Kontaktstelle, unterstützte Versionen, Umgang mit der Offenlegung, und zwar so, dass ein Prüfer es lesen und ein Tool es testen kann. Das ist Dokumentation, keine Konformität.",
@@ -614,20 +658,20 @@ export const de: Dict = {
   "faq.a_versions": "Sie bleiben gültige Legacy-Formate und werden nicht stillschweigend umgewandelt. Dieser Generator schreibt das inkompatible V1-Entwurfsformat; für vorhandene Dokumente muss die Legacy-Validierung ausdrücklich gewählt werden.",
   "faq.q_who": "Wer betreibt diese Seite und wovon?",
   "faq.a_who":
-    "Die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld — Produkte, die Sie bei uns kaufen können und für dieses Format nicht brauchen. Im Generator steht ein freies Feld für eine beliebige Meldeadresse, ohne Vorbelegung und ohne Auswahlliste. Sollte sich das je ändern, ist diese Seite nicht mehr neutral, und dann gehört das öffentlich gesagt.",
+    "Die Skalvar Technologies UG (haftungsbeschränkt) aus Wismar. Wir entwickeln Software für IT-Sicherheit und verdienen damit unser Geld — Produkte, die Sie bei uns kaufen können und für dieses Format nicht brauchen. V1 definiert keine Intake-API und keine Anbieterauswahl; Herausgeber wählen ihre eigene öffentliche Contact-URI. Sollte sich das je ändern, ist diese Seite nicht mehr neutral, und dann gehört das öffentlich gesagt.",
   "faq.q_others":
     "Warum nicht disclose.io, Bugcrowd oder eine Bug-Bounty-Plattform?",
   "faq.a_others":
-    "Die lösen eine andere Aufgabe, und zwar gut: ein Programm betreiben, Forschende bezahlen, viele Meldungen sichten. Sie setzen voraus, dass Sie ein solches Programm überhaupt wollen. Die meisten Organisationen wollen das nicht und haben deshalb bislang gar nichts Maschinenlesbares anzubieten. Dieses Format setzt eine Ebene darunter an: eine Erklärung Ihrer Bedingungen, von Ihnen selbst abgelegt, ohne Konto lesbar.",
+    "Die lösen eine andere Aufgabe, und zwar gut: ein Programm betreiben, Forschende bezahlen, viele Meldungen sichten. Sie setzen voraus, dass Sie ein solches Programm überhaupt wollen. Die meisten Organisationen wollen das nicht und haben deshalb bislang gar nichts Maschinenlesbares anzubieten. Dieses Format setzt eine Ebene darunter an: eine Erklärung an der von Ihnen gewählten URI, ohne Konto lesbar.",
   "faq.q_official": "Ist das offiziell oder standardisiert?",
   "faq.a_official":
     "Nein. V1 ist eine experimentelle Implementierung von draft-behring-cvd-policy-00. Das vorgeschlagene security.txt-Feld und der Medientyp sind nicht registriert und können sich ändern; 0.1 und 0.2 bleiben veröffentlichte Legacy-Formate.",
   "faq.q_without": "Kann ich das ohne euch nutzen?",
   "faq.a_without":
-    "Ja, darum geht es. Spezifikation und Schema stehen unter CC0: kopieren, selbst hosten, verändern. Bibliothek und Seite stehen unter Apache-2.0. Jedes Dokument aus dem Generator kommt ohne jeden Hinweis auf einen Anbieter aus, und die Datei liegt auf Ihrer eigenen Domain. Einen Rückkanal zu uns gibt es nicht.",
+    "Ja, darum geht es. Spezifikation und Schema stehen unter CC0: kopieren, selbst hosten, verändern. Bibliothek und Seite stehen unter Apache-2.0. Jedes erzeugte Dokument kommt ohne Anbieter aus und darf an jeder ausdrücklich gewählten HTTPS-URI veröffentlicht werden, die Sie kontrollieren. Einen Rückkanal zu uns gibt es nicht.",
   "faq.q_data": "Was passiert mit den Daten, die ich eingebe?",
   "faq.a_data":
-    "Sie bleiben im Browser-Tab. Der Generator legt Ihre Antworten im Session Storage ab, damit ein Neuladen sie nicht verwirft; beim Schließen des Tabs verschwinden sie. Es gibt keinen Server, an den etwas gehen könnte.",
+    "Sie bleiben auf der aktuellen Seite. Der V1-Generator speichert die Policy nicht; beim Neuladen oder Verlassen der Seite geht sie verloren. Es gibt keinen Server, an den etwas gesendet wird.",
 
   "imprint.title": "Impressum und Datenschutz",
   "imprint.tmg": "Angaben gemäß § 5 TMG",
@@ -647,7 +691,7 @@ export const de: Dict = {
     "Bewusst als reiner Text. Diese Seite hat kein Kontaktformular.",
   "imprint.privacy_title": "Datenschutz",
   "imprint.privacy_body":
-    "Diese Seite setzt keine Cookies, lädt keine externen Ressourcen und wertet nichts aus. Was Sie in Generator, Prüfung oder Erklärung eingeben, verarbeitet allein Ihr Browser; übertragen wird nichts. Der Generator legt Ihre Antworten im Session Storage des Tabs ab, die gewählte Sprache im Local Storage. Beides lässt sich im Browser jederzeit löschen.",
+    "Diese Seite setzt keine Cookies, lädt keine externen Ressourcen und wertet nichts aus. Was Sie in Generator, Prüfung oder Erklärung eingeben, verarbeitet allein Ihr Browser; übertragen wird nichts. Der V1-Generator speichert keine Policy-Daten; nur die gewählte Sprache liegt im Local Storage und lässt sich im Browser löschen.",
   "imprint.hosting_title": "Hosting",
   "imprint.hosting_body":
     "Statisches Hosting in der EU. In den Server-Logs können die üblichen Zugriffsdaten anfallen; sie dienen dem Betrieb und der Absicherung der Seite.",

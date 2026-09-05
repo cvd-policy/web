@@ -5,6 +5,7 @@
   import { downloadBytes, downloadText } from "../lib/download.js";
   import { policyHtml } from "../lib/policyHtml.js";
   import { humanPolicyFilename, policyFilename, policyZip } from "../lib/policyZip.js";
+  import { t } from "../lib/i18n.svelte.js";
 
   const now = new Date();
   const expires = new Date(now);
@@ -37,9 +38,10 @@
       if (
         discovery.protocol !== "https:" || discovery.username || discovery.password ||
         discovery.pathname !== "/.well-known/security.txt" || discovery.search || discovery.hash
-      ) throw new Error("security.txt URI must be an exact HTTPS /.well-known/security.txt URL");
-      const generated = securityTxt(document, { policyUri, securityTxtUri, humanPolicyUris: [humanPolicyUri] });
-      const merged = existingSecurityTxt.trim() ? mergeSecurityTxt(existingSecurityTxt, policyUri) : generated;
+      ) throw new Error(t("generate.security_txt_uri_error"));
+      const merged = existingSecurityTxt.trim()
+        ? mergeSecurityTxt(existingSecurityTxt, policyUri)
+        : securityTxt(document, { policyUri, securityTxtUri, humanPolicyUris: [humanPolicyUri] });
       const authority = assessSecurityTxtAuthority(merged, {
         requestedUri: discovery.href,
         finalUri: discovery.href,
@@ -66,38 +68,40 @@
 
 <div class="stack">
   <div class="prose">
-    <h1>Generate a V1 CVD Policy</h1>
-    <p class="lead">Edit or upload a policy, validate it locally, and prepare files for the exact locations you control.</p>
+    <h1>{t("generate.v1_title")}</h1>
+    <p class="lead">{t("generate.v1_lead")}</p>
     <div class="notice">
-      Experimental implementation of
+      {t("generate.v1_notice_intro")}
       <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>.
-      The proposed field name and media type may change.
+      {t("generate.v1_notice_change")}
     </div>
   </div>
 
   <div class="split">
     <div class="stack">
       <div class="field">
-        <label for="policy-uri">Policy URI</label>
+        <label for="policy-uri">{t("generate.policy_uri")}</label>
         <input id="policy-uri" type="url" bind:value={policyUri} />
-        <p class="help">Required, explicit HTTPS URI. There is no standardized default JSON path.</p>
+        <p class="help">{t("generate.policy_uri_help")}</p>
       </div>
       <div class="field">
-        <label for="security-txt-uri">security.txt URI</label>
+        <label for="security-txt-uri">{t("generate.security_txt_uri")}</label>
         <input id="security-txt-uri" type="url" bind:value={securityTxtUri} />
       </div>
       <div class="field">
-        <label for="human-policy-uri">Human-readable Policy URI</label>
+        <label for="human-policy-uri">{t("generate.human_policy_uri")}</label>
         <input id="human-policy-uri" type="url" bind:value={humanPolicyUri} />
+        <p class="help">{t("generate.human_policy_uri_help")}</p>
+        {#if existingSecurityTxt.trim()}<p class="notice">{t("generate.human_policy_merge_note")}</p>{/if}
       </div>
       <div class="field">
-        <label for="policy-json">V1 policy JSON</label>
+        <label for="policy-json">{t("generate.v1_policy_json")}</label>
         <textarea id="policy-json" bind:value={raw} spellcheck="false"></textarea>
       </div>
       <FileDrop onload={(text) => (raw = text)} accept="application/cvd-policy+json,application/json,.json" />
       <details>
-        <summary>Merge into an existing security.txt</summary>
-        <p class="help">Comments and existing fields are preserved. Every old CVD-Policy field is replaced by exactly one value. Clearsigned files are refused.</p>
+        <summary>{t("generate.merge_existing")}</summary>
+        <p class="help">{t("generate.merge_existing_help")}</p>
         <textarea bind:value={existingSecurityTxt} spellcheck="false" placeholder="Contact: mailto:security@example.com"></textarea>
         <FileDrop onload={(text) => (existingSecurityTxt = text)} accept="text/plain,.txt" />
       </details>
@@ -105,12 +109,13 @@
 
     <div class="stack">
       <div class="row">
-        <h2 class="u-m0">Local validation</h2>
-        <span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">{result.valid ? "Valid V1" : "Invalid"}</span>
+        <h2 class="u-m0">{t("generate.local_validation")}</h2>
+        <span class="badge {result.valid ? 'badge-ok' : 'badge-err'}">{result.valid ? t("generate.valid_v1") : t("validate.result_invalid")}</span>
       </div>
+      <p class="help">{t("generate.local_scope")}</p>
       {#if result.issues.length}
         {#each result.issues as issue (issue.code + issue.path)}
-          <div class="issue error"><p class="issue-path">{issue.path || "/"}</p><p>{issue.message}</p></div>
+          <div class="issue error"><p class="issue-path"><code>{issue.code}</code> · {issue.path || "/"}</p><p>{issue.message}</p></div>
         {/each}
       {/if}
       {#if publication.error}<div class="notice">{publication.error}</div>{/if}
@@ -119,28 +124,28 @@
         <div class="card card-tight stack">
           <div class="row">
             <code class="u-grow">{policyFilename(policyUri)}</code>
-            <button class="btn btn-sm" onclick={() => downloadText(policyFilename(policyUri), raw, "application/cvd-policy+json")}>Download</button>
+            <button class="btn btn-sm" onclick={() => downloadText(policyFilename(policyUri), raw, "application/cvd-policy+json")}>{t("common.download")}</button>
           </div>
           <div class="row">
             <code class="u-grow">security.txt</code>
-            <button class="btn btn-sm" onclick={() => downloadText("security.txt", publication.securityTxt, "text/plain")}>Download</button>
+            <button class="btn btn-sm" onclick={() => downloadText("security.txt", publication.securityTxt, "text/plain")}>{t("common.download")}</button>
           </div>
           <div class="row">
             <code class="u-grow">{humanPolicyFilename(humanPolicyUri)}</code>
-            <button class="btn btn-sm" onclick={() => downloadText(humanPolicyFilename(humanPolicyUri), publication.html, "text/html")}>Download</button>
+            <button class="btn btn-sm" onclick={() => downloadText(humanPolicyFilename(humanPolicyUri), publication.html, "text/html")}>{t("common.download")}</button>
           </div>
           {#if publication.archive}
             <div class="row">
               <code class="u-grow">cvd-policy.zip</code>
-              <button class="btn btn-sm btn-primary" onclick={downloadArchive}>Download exact web-root layout</button>
+              <button class="btn btn-sm btn-primary" onclick={downloadArchive}>{t("generate.download_layout")}</button>
             </div>
           {:else}
-            <p class="help">No ZIP: all three safe paths must share one HTTPS origin and contain no query, fragment, credentials, or parent segments.</p>
+            <p class="help">{t("generate.zip_unavailable")}</p>
           {/if}
         </div>
         <CodeBlock code={publication.securityTxt} title="security.txt" />
-        <CodeBlock code={`npx @cvd-policy/cli@0.5.0-rc.1 check ${new URL(securityTxtUri).host}`} title="Network check after deployment" />
-        <p class="help">This browser performs local validation only. Remote discovery belongs to the CLI or a backend because CORS may block browser requests.</p>
+        <CodeBlock code={`npx @cvd-policy/cli@0.5.0-rc.1 check ${new URL(securityTxtUri).host}`} title={t("generate.network_check")} />
+        <p class="help">{t("generate.local_only")}</p>
       {/if}
     </div>
   </div>

@@ -21,7 +21,21 @@
   let {
     policy = $bindable(),
     valid = $bindable(true),
-  }: { policy: CvdPolicyDocument; valid?: boolean } = $props();
+    activeSection = $bindable(0),
+  }: { policy: CvdPolicyDocument; valid?: boolean; activeSection?: number } = $props();
+
+  const sections = [
+    "generate.editor_identity",
+    "generate.editor_contact",
+    "generate.editor_research",
+    "generate.editor_scope",
+    "generate.editor_testing",
+    "generate.editor_reporting",
+    "generate.editor_response",
+    "generate.editor_disclosure",
+    "generate.editor_extensions",
+  ] as const;
+  let editorRoot: HTMLDivElement;
 
   const requestedFields: RequestedField[] = [
     "affected_asset",
@@ -267,10 +281,30 @@
       valid = false;
     }
   }
+
+  function goSection(index: number) {
+    activeSection = Math.max(0, Math.min(index, sections.length - 1));
+    requestAnimationFrame(() => editorRoot.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
 </script>
 
-<div class="stack wizard-form">
-  <section class="editor-section">
+<div class="stack wizard-form" bind:this={editorRoot}>
+  <ol class="steps" aria-label={t("generate.editor_guided")}>
+    {#each sections as label, index (label)}
+      <li>
+        <button
+          type="button"
+          aria-current={index === activeSection ? "step" : undefined}
+          onclick={() => goSection(index)}
+        >
+          {index + 1}. {t(label)}
+        </button>
+      </li>
+    {/each}
+  </ol>
+
+  {#if activeSection === 0}
+  <section id="v1-editor-section-0" class="card editor-step">
     <div class="editor-section-heading">
       <div><p class="editor-kicker">01</p><h2>{t("generate.editor_identity")}</h2></div>
       <p class="help">{t("generate.editor_identity_help")}</p>
@@ -283,7 +317,8 @@
     </div>
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 1}
+  <section id="v1-editor-section-1" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">02</p><h2>{t("generate.editor_contact")}</h2></div><p class="help">{t("generate.editor_contact_help")}</p></div>
     <div class="field"><label for="contact-channels">{t("generate.editor_channels")}</label><textarea id="contact-channels" class="textarea-short" value={joinLines(policy.contact.channels)} oninput={(event) => policy.contact.channels = splitLines(event.currentTarget.value)}></textarea><p class="help">{t("generate.editor_channels_help")}</p></div>
     <div class="form-grid">
@@ -292,13 +327,15 @@
     </div>
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 2}
+  <section id="v1-editor-section-2" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">03</p><h2>{t("generate.editor_research")}</h2></div><p class="help">{t("generate.editor_research_help")}</p></div>
     <div class="field"><label for="posture">{t("generate.editor_posture")}</label><select id="posture" value={policy.research.posture} onchange={(event) => setResearchPosture(event.currentTarget.value)}><option value="open">{t("generate.editor_posture_open")}</option><option value="limited">{t("generate.editor_posture_limited")}</option><option value="report_only">{t("generate.editor_posture_report_only")}</option><option value="prohibited">{t("generate.editor_posture_prohibited")}</option></select></div>
     <div class="field"><label for="research-statement">{t("generate.editor_statement")} <span class="u-normal">({t("common.optional")})</span></label><textarea id="research-statement" class="textarea-prose" maxlength="2000" value={policy.research.statement ?? ""} oninput={(event) => event.currentTarget.value ? policy.research.statement = event.currentTarget.value : delete policy.research.statement}></textarea></div>
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 3}
+  <section id="v1-editor-section-3" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">04</p><h2>{t("generate.editor_scope")}</h2></div><p class="help">{t("generate.editor_scope_help")}</p></div>
     <div class="row"><h3 class="u-m0 u-grow">{t("generate.editor_web_scope")}</h3><button class="btn btn-sm" type="button" onclick={addWebScope}>{t("generate.editor_add_web")}</button></div>
     {#each policy.reporting_scope.web ?? [] as entry, index (`web-${index}`)}
@@ -317,14 +354,15 @@
     {/each}
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 4}
+  <section id="v1-editor-section-4" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">05</p><h2>{t("generate.editor_testing")}</h2></div><p class="help">{t("generate.editor_testing_help")}</p></div>
     <label class="inline-check"><input type="checkbox" checked={Boolean(policy.testing)} onchange={(event) => enableTesting(event.currentTarget.checked)} /> {t("generate.editor_testing_enable")}</label>
     {#if policy.testing}
       <div class="row u-mt6"><p class="help u-grow">{t("generate.editor_testing_notice")}</p><button class="btn btn-sm" type="button" onclick={addTestingRule}>{t("generate.editor_add_rule")}</button></div>
       {#each policy.testing.rules as rule, index (`rule-${index}`)}
         <fieldset class="editor-entry"><legend>{t("generate.editor_rule", { n: index + 1 })}</legend>
-          <div class="form-grid"><div class="field"><label for={`rule-id-${index}`}>{t("generate.editor_id")}</label><input id={`rule-id-${index}`} bind:value={rule.id} /></div><div class="field"><label for={`rule-activity-${index}`}>{t("generate.editor_activity")}</label><select id={`rule-activity-${index}`} value={isCoreActivity(rule.activity) ? rule.activity : "custom"} onchange={(event) => setRuleActivity(rule, event.currentTarget.value === "custom" ? "https://example.com/testing/custom" : event.currentTarget.value)}>{#each activities as activity}<option value={activity}>{t(`activity.${activity}`)}</option>{/each}<option value="custom">{t("generate.editor_activity_custom")}</option></select>{#if !isCoreActivity(rule.activity)}<input class="u-mt1" type="url" aria-label={t("generate.editor_activity_uri")} value={rule.activity} oninput={(event) => setRuleActivity(rule, event.currentTarget.value)} />{/if}</div><div class="field"><label for={`rule-state-${index}`}>{t("generate.editor_rule_state")}</label><select id={`rule-state-${index}`} value={rule.state} onchange={(event) => setRuleState(rule, event.currentTarget.value === "permitted" ? "permitted" : "prohibited")}><option value="prohibited">{t("generate.editor_prohibited")}</option><option value="permitted" disabled={!canPermitTesting()}>{t("generate.editor_permitted")}</option></select>{#if !canPermitTesting()}<p class="help">{t("generate.editor_permitted_unavailable")}</p>{/if}</div><fieldset class="field"><legend>{t("generate.editor_target_ids")} {#if rule.state === "prohibited"}<span class="u-normal">({t("common.optional")})</span>{/if}</legend>{#if testingTargetIds().length}<div class="check-grid">{#each testingTargetIds() as targetId}<label class="inline-check"><input type="checkbox" checked={rule.target_ids?.includes(targetId) ?? false} onchange={(event) => setRuleTarget(rule, targetId, event.currentTarget.checked)} /> {targetId}</label>{/each}</div>{:else}<p class="help">{t("generate.editor_no_testing_targets")}</p>{/if}</fieldset></div>
+           <div class="form-grid"><div class="field"><label for={`rule-id-${index}`}>{t("generate.editor_id")}</label><input id={`rule-id-${index}`} bind:value={rule.id} /></div><div class="field"><label for={`rule-activity-${index}`}>{t("generate.editor_activity")}</label><select id={`rule-activity-${index}`} value={isCoreActivity(rule.activity) ? rule.activity : "custom"} onchange={(event) => setRuleActivity(rule, event.currentTarget.value === "custom" ? "https://example.com/testing/custom" : event.currentTarget.value)}>{#each activities as activity}<option value={activity}>{t(`activity.${activity}`)}</option>{/each}<option value="custom">{t("generate.editor_activity_custom")}</option></select>{#if !isCoreActivity(rule.activity)}<input class="u-mt1" type="url" aria-label={t("generate.editor_activity_uri")} value={rule.activity} oninput={(event) => setRuleActivity(rule, event.currentTarget.value)} />{/if}</div><div class="field"><label for={`rule-state-${index}`}>{t("generate.editor_rule_state")}</label><select id={`rule-state-${index}`} value={rule.state} onchange={(event) => setRuleState(rule, event.currentTarget.value === "permitted" ? "permitted" : "prohibited")}><option value="prohibited">{t("generate.editor_prohibited")}</option><option value="permitted" disabled={!canPermitTesting()}>{t("generate.editor_permitted")}</option></select>{#if !canPermitTesting()}<p class="help">{t("generate.editor_permitted_unavailable")}</p>{/if}</div><fieldset class="field"><legend>{t("generate.editor_target_ids")} {#if rule.state === "prohibited"}<span class="u-normal">({t("common.optional")})</span>{/if}</legend>{#if testingTargetIds().length}<div class="check-grid">{#each testingTargetIds() as targetId, targetIndex}<label class="inline-check"><input id={`rule-target-${index}-${targetIndex}`} type="checkbox" checked={rule.target_ids?.includes(targetId) ?? false} onchange={(event) => setRuleTarget(rule, targetId, event.currentTarget.checked)} /> {targetId}</label>{/each}</div>{:else}<p class="help">{t("generate.editor_no_testing_targets")}</p>{/if}</fieldset></div>
           {#if rule.state === "permitted"}
             <label class="inline-check"><input type="checkbox" checked={Boolean(rule.conditions)} disabled={["automated_scanning", "fuzzing", "credential_testing"].includes(rule.activity)} onchange={(event) => enableConditions(rule, event.currentTarget.checked)} /> {t("generate.editor_conditions")}</label>
             {#if rule.conditions}
@@ -337,30 +375,41 @@
     {/if}
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 5}
+  <section id="v1-editor-section-5" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">06</p><h2>{t("generate.editor_reporting")}</h2></div><p class="help">{t("generate.editor_reporting_help")}</p></div>
-    <fieldset><legend>{t("generate.editor_requested_fields")}</legend><div class="check-grid">{#each requestedFields as field}<label class="inline-check"><input type="checkbox" checked={policy.reporting.requested_fields.includes(field)} onchange={(event) => setRequestedField(field, event.currentTarget.checked)} /> {t(`generate.editor_requested_${field}`)}</label>{/each}</div></fieldset>
+    <fieldset><legend>{t("generate.editor_requested_fields")}</legend><div class="check-grid">{#each requestedFields as field, index}<label class="inline-check"><input id={`requested-field-${index}`} type="checkbox" checked={policy.reporting.requested_fields.includes(field)} onchange={(event) => setRequestedField(field, event.currentTarget.checked)} /> {t(`generate.editor_requested_${field}`)}</label>{/each}</div></fieldset>
     <div class="field"><label for="proof">{t("generate.editor_proof")}</label><select id="proof" bind:value={policy.reporting.proof_of_exploitation}><option value="not_requested">{t("generate.editor_proof_not_requested")}</option><option value="requested_if_safe">{t("generate.editor_proof_requested")}</option><option value="prohibited">{t("generate.editor_proof_prohibited")}</option></select></div>
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 6}
+  <section id="v1-editor-section-6" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">07</p><h2>{t("generate.editor_response")}</h2></div><p class="help">{t("generate.editor_response_help")}</p></div>
     <label class="inline-check"><input type="checkbox" checked={Boolean(policy.response_targets)} onchange={(event) => enableResponseTargets(event.currentTarget.checked)} /> {t("generate.editor_response_enable")}</label>
     {#if policy.response_targets}<div class="form-grid u-mt6"><div class="field"><label for="ack-days">{t("generate.editor_ack_days")}</label><input id="ack-days" type="number" min="1" step="1" value={policy.response_targets.acknowledgement_days ?? ""} oninput={(event) => setResponseTarget("acknowledgement_days", positiveInteger(event.currentTarget.value))} /></div><div class="field"><label for="assessment-days">{t("generate.editor_assessment_days")}</label><input id="assessment-days" type="number" min="1" step="1" value={policy.response_targets.initial_assessment_days ?? ""} oninput={(event) => setResponseTarget("initial_assessment_days", positiveInteger(event.currentTarget.value))} /></div><div class="field"><label for="update-days">{t("generate.editor_update_days")}</label><input id="update-days" type="number" min="1" step="1" value={policy.response_targets.update_interval_days ?? ""} oninput={(event) => setResponseTarget("update_interval_days", positiveInteger(event.currentTarget.value))} /></div></div>{/if}
   </section>
 
-  <section class="editor-section">
+  {:else if activeSection === 7}
+  <section id="v1-editor-section-7" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">08</p><h2>{t("generate.editor_disclosure")}</h2></div><p class="help">{t("generate.editor_disclosure_help")}</p></div>
     <label class="inline-check"><input type="checkbox" checked={Boolean(policy.disclosure)} onchange={(event) => enableDisclosure(event.currentTarget.checked)} /> {t("generate.editor_disclosure_enable")}</label>
     {#if policy.disclosure}<div class="form-grid u-mt6"><div class="field"><label for="disclosure-approach">{t("generate.editor_approach")}</label><select id="disclosure-approach" bind:value={policy.disclosure.approach}><option value="coordinated">{t("generate.editor_approach_coordinated")}</option><option value="case_by_case">{t("generate.editor_approach_case")}</option><option value="no_preference">{t("generate.editor_approach_none")}</option></select></div><div class="field"><label for="disclosure-days">{t("generate.editor_default_days")} <span class="u-normal">({t("common.optional")})</span></label><input id="disclosure-days" type="number" min="1" step="1" value={policy.disclosure.default_days ?? ""} oninput={(event) => { const value = positiveInteger(event.currentTarget.value); if (value) policy.disclosure!.default_days = value; else delete policy.disclosure!.default_days; }} /></div></div><div class="field"><label for="disclosure-statement">{t("generate.editor_disclosure_statement")} <span class="u-normal">({t("common.optional")})</span></label><textarea id="disclosure-statement" class="textarea-prose" maxlength="2000" value={policy.disclosure.statement ?? ""} oninput={(event) => event.currentTarget.value ? policy.disclosure!.statement = event.currentTarget.value : delete policy.disclosure!.statement}></textarea></div>{/if}
   </section>
 
-  <section class="editor-section">
+  {:else}
+  <section id="v1-editor-section-8" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">09</p><h2>{t("generate.editor_extensions")}</h2></div><p class="help">{t("generate.editor_extensions_help")}</p></div>
     {#each extensionRows as row, index (`extension-${index}`)}
-      <fieldset class="editor-entry"><legend>{t("generate.editor_extension", { n: index + 1 })}</legend><div class="field"><label for={`extension-uri-${index}`}>{t("generate.editor_extension_uri")}</label><input id={`extension-uri-${index}`} type="url" value={row.uri} oninput={(event) => { row.uri = event.currentTarget.value; updateExtensions(); }} /></div><div class="field"><label for={`extension-value-${index}`}>{t("generate.editor_extension_value")}</label><textarea id={`extension-value-${index}`} class="textarea-short" value={row.value} oninput={(event) => { row.value = event.currentTarget.value; updateExtensions(); }}></textarea></div><label class="inline-check"><input type="checkbox" bind:checked={row.critical} onchange={updateExtensions} /> {t("generate.editor_extension_critical")}</label><button class="btn btn-sm btn-quiet" type="button" onclick={() => { extensionRows.splice(index, 1); updateExtensions(); }}>{t("common.remove")}</button></fieldset>
+      <fieldset class="editor-entry"><legend>{t("generate.editor_extension", { n: index + 1 })}</legend><div class="field"><label for={`extension-uri-${index}`}>{t("generate.editor_extension_uri")}</label><input id={`extension-uri-${index}`} type="url" value={row.uri} oninput={(event) => { row.uri = event.currentTarget.value; updateExtensions(); }} /></div><div class="field"><label for={`extension-value-${index}`}>{t("generate.editor_extension_value")}</label><textarea id={`extension-value-${index}`} class="textarea-short" value={row.value} oninput={(event) => { row.value = event.currentTarget.value; updateExtensions(); }}></textarea></div><label class="inline-check"><input id={`extension-critical-${index}`} type="checkbox" bind:checked={row.critical} onchange={updateExtensions} /> {t("generate.editor_extension_critical")}</label><button class="btn btn-sm btn-quiet" type="button" onclick={() => { extensionRows.splice(index, 1); updateExtensions(); }}>{t("common.remove")}</button></fieldset>
     {/each}
     {#if extensionError}<div class="issue error" role="alert" aria-live="polite"><p>{extensionError}</p></div>{/if}
     <button class="btn btn-sm" type="button" onclick={() => { extensionRows.push({ uri: `https://example.com/extensions/example-${extensionRows.length + 1}`, value: "{}", critical: false }); updateExtensions(); }}>{t("generate.editor_add_extension")}</button>
   </section>
+  {/if}
+
+  <div class="row">
+    <button class="btn" type="button" onclick={() => goSection(activeSection - 1)} disabled={activeSection === 0}>{t("common.back")}</button>
+    <button class="btn btn-primary" type="button" onclick={() => goSection(activeSection + 1)} disabled={activeSection === sections.length - 1}>{t("common.next")}</button>
+    <span class="small mute">{activeSection + 1} {t("common.of")} {sections.length}</span>
+  </div>
 </div>

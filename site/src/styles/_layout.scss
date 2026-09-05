@@ -157,6 +157,7 @@ main {
 // exactly when the window grows past the point the preview appears beside it.
 .wizard-form {
   container-type: inline-size;
+  scroll-margin-top: 5rem;
 }
 
 // Where the second column carries the example, it explains more than the prose

@@ -68,9 +68,15 @@ describe("Draft 00 website content", () => {
     const route = read("src", "routes", "Generate.svelte");
     const editor = read("src", "components", "V1PolicyEditor.svelte");
 
-    expect(route).toContain("<V1PolicyEditor bind:policy bind:valid={editorValid} />");
+    expect(route).toContain("<V1PolicyEditor bind:policy bind:valid={editorValid} bind:activeSection />");
     expect(route).toContain('hidden={editorMode !== "guided"}');
     expect(route).toContain("JSON.stringify(nextPolicy, null, 2) !== guidedRaw");
+    expect(route).toContain("sectionForIssue");
+    expect(route).toContain("showIssue(issue.path)");
+    expect(editor).toContain('class="steps"');
+    expect(editor).toContain('aria-current={index === activeSection ? "step" : undefined}');
+    expect(editor).toContain('t("common.back")');
+    expect(editor).toContain('t("common.next")');
     for (const field of [
       "organization",
       "contact",

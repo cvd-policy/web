@@ -241,43 +241,20 @@ textarea {
   border-bottom: 1px solid var(--c-border);
 }
 
-.editor-section {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
-  padding: var(--sp-4);
-
-  @media (min-width: 40rem) {
-    padding: var(--sp-6);
-  }
-}
-
 .editor-section-heading {
-  display: grid;
-  gap: var(--sp-2);
   margin-bottom: var(--sp-6);
-
-  @media (min-width: 44rem) {
-    grid-template-columns: minmax(0, 1fr) minmax(12rem, 1fr);
-    align-items: start;
-  }
 
   h2 {
     margin: 0;
   }
 
   .help {
-    margin: 0;
+    margin: var(--sp-2) 0 0;
   }
 }
 
-.editor-kicker {
-  color: var(--c-accent);
-  font-family: var(--f-mono);
-  font-size: 0.75rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  margin: 0 0 var(--sp-1);
+.editor-step .editor-kicker {
+  display: none;
 }
 
 .form-grid,

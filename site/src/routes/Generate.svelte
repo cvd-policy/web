@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CvdPolicyDocument } from "@cvd-policy/core/v1";
   import { assessSecurityTxtAuthority, mergeSecurityTxt, parsePolicyText, securityTxt } from "@cvd-policy/core/v1";
+  import { tick } from "svelte";
   import CodeBlock from "../components/CodeBlock.svelte";
   import FileDrop from "../components/FileDrop.svelte";
   import V1PolicyEditor from "../components/V1PolicyEditor.svelte";
@@ -16,6 +17,8 @@
   let editorMode = $state<"guided" | "json">("guided");
   let editorRevision = $state(0);
   let editorValid = $state(true);
+  let activeSection = $state(0);
+  let editorRoot: HTMLDivElement;
   const guidedRaw = $derived(JSON.stringify(policy, null, 2));
   const activeRaw = $derived(editorMode === "guided" ? guidedRaw : raw);
   const editorReady = $derived(editorValid);
@@ -77,6 +80,90 @@
     editorValid = true;
     editorMode = "guided";
   }
+
+  function sectionForIssue(path: string): number {
+    const field = path.split("/")[1];
+    if (field === "contact") return 1;
+    if (field === "research") return 2;
+    if (field === "reporting_scope") return 3;
+    if (field === "testing") return 4;
+    if (field === "reporting") return 5;
+    if (field === "response_targets") return 6;
+    if (field === "disclosure") return 7;
+    if (field === "extensions" || field === "critical_extensions") return 8;
+    return 0;
+  }
+
+  function fieldForIssue(path: string): string | undefined {
+    const direct: Record<string, string> = {
+      "/last_updated": "last-updated",
+      "/expires": "expires",
+      "/organization/name": "org-name",
+      "/organization/uri": "org-uri",
+      "/contact/channels": "contact-channels",
+      "/contact/preferred_languages": "languages",
+      "/contact/encryption": "encryption",
+      "/research/posture": "posture",
+      "/research/statement": "research-statement",
+      "/reporting/proof_of_exploitation": "proof",
+      "/response_targets/acknowledgement_days": "ack-days",
+      "/response_targets/initial_assessment_days": "assessment-days",
+      "/response_targets/update_interval_days": "update-days",
+      "/disclosure/approach": "disclosure-approach",
+      "/disclosure/default_days": "disclosure-days",
+      "/disclosure/statement": "disclosure-statement",
+    };
+    if (direct[path]) return direct[path];
+    if (path.startsWith("/contact/preferred_languages/")) return "languages";
+    if (path.startsWith("/contact/encryption/")) return "encryption";
+    if (path.startsWith("/reporting/requested_fields/")) return "requested-field-0";
+
+    const critical = path.match(/^\/critical_extensions\/(\d+)/);
+    if (critical) return `extension-critical-${critical[1]}`;
+
+    const indexed = path.match(/^\/(reporting_scope\/(web|products)|testing\/rules|extensions)\/(\d+)(?:\/(.*))?/);
+    if (!indexed) return undefined;
+    const [, group, , index, property = ""] = indexed;
+    if (group === "reporting_scope/web") {
+      const suffix = property === "state" ? "state" : property === "host" ? "host" : property === "path_prefix" ? "path" : property === "ports" ? "ports" : "id";
+      return `web-${suffix}-${index}`;
+    }
+    if (group === "reporting_scope/products") {
+      const suffix = property === "state" ? "state" : property === "name" ? "name" : property === "identifiers" ? "identifiers" : "id";
+      return `product-${suffix}-${index}`;
+    }
+    if (group === "testing/rules") {
+      if (property === "activity") return `rule-activity-${index}`;
+      if (property === "state") return `rule-state-${index}`;
+      const target = property.match(/^target_ids\/(\d+)/);
+      if (target) return `rule-target-${index}-${target[1]}`;
+      if (property.endsWith("max_requests_per_second")) return `rule-rps-${index}`;
+      if (property.endsWith("max_concurrent_requests")) return `rule-concurrency-${index}`;
+      if (property.endsWith("required_user_agent_token")) return `rule-agent-${index}`;
+      return `rule-id-${index}`;
+    }
+    if (group === "extensions") return `extension-${property === "" ? "uri" : "value"}-${index}`;
+    return undefined;
+  }
+
+  async function showIssue(path: string) {
+    if (editorMode === "json") {
+      if (!result.policy) return;
+      showGuided();
+    }
+    activeSection = sectionForIssue(path);
+    await tick();
+    const section = editorRoot.querySelector<HTMLElement>(`#v1-editor-section-${activeSection}`);
+    const fieldId = fieldForIssue(path);
+    const field = (fieldId ? section?.querySelector<HTMLElement>(`#${fieldId}`) : undefined)
+      ?? section?.querySelector<HTMLElement>("input:not(:disabled), select:not(:disabled), textarea:not(:disabled), button:not(:disabled)");
+    editorRoot.querySelector<HTMLElement>(".wizard-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    field?.focus({ preventScroll: true });
+    const box = field?.closest(".field") ?? field;
+    box?.classList.remove("field-flash");
+    if (box instanceof HTMLElement) void box.offsetWidth;
+    box?.classList.add("field-flash");
+  }
 </script>
 
 <div class="stack">
@@ -111,8 +198,8 @@
         <button class="btn {editorMode === 'guided' ? 'btn-primary' : ''}" type="button" onclick={showGuided} disabled={editorMode === "json" && !result.policy} aria-pressed={editorMode === "guided"}>{t("generate.editor_guided")}</button>
         <button class="btn {editorMode === 'json' ? 'btn-primary' : ''}" type="button" onclick={showJson} disabled={editorMode === "guided" && !editorValid} aria-pressed={editorMode === "json"}>{t("generate.editor_json")}</button>
       </div>
-      <div hidden={editorMode !== "guided"}>
-        {#key editorRevision}<V1PolicyEditor bind:policy bind:valid={editorValid} />{/key}
+      <div hidden={editorMode !== "guided"} bind:this={editorRoot}>
+        {#key editorRevision}<V1PolicyEditor bind:policy bind:valid={editorValid} bind:activeSection />{/key}
       </div>
       {#if editorMode === "json"}
         <div class="field">
@@ -131,7 +218,7 @@
       </details>
     </div>
 
-    <div class="stack">
+    <div class="stack preview">
       <div class="row">
         <h2 class="u-m0">{t("generate.local_validation")}</h2>
         <span class="badge {result.valid && editorReady ? 'badge-ok' : 'badge-err'}">{result.valid && editorReady ? t("generate.valid_v1") : t("validate.result_invalid")}</span>
@@ -139,7 +226,16 @@
       <p class="help">{t("generate.local_scope")}</p>
       {#if result.issues.length}
         {#each result.issues as issue (issue.code + issue.path)}
-          <div class="issue error"><p class="issue-path"><code>{issue.code}</code> · {issue.path || "/"}</p><p>{issue.message}</p></div>
+          <div class="issue error">
+            {#if editorMode === "guided" || result.policy}
+              <button class="issue-jump" type="button" onclick={() => showIssue(issue.path)}>
+                <span class="issue-path"><code>{issue.code}</code> · {issue.path || "/"}</span>
+                <span>{issue.message}</span>
+              </button>
+            {:else}
+              <p class="issue-path"><code>{issue.code}</code> · {issue.path || "/"}</p><p>{issue.message}</p>
+            {/if}
+          </div>
         {/each}
       {/if}
       {#if publication.error}<div class="notice">{publication.error}</div>{/if}

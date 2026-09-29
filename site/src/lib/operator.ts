@@ -8,6 +8,6 @@ export const operator = {
   email: "info@skalvar.de",
   phone: "+49 3841 7584130",
   court: "Amtsgericht Schwerin",
-  registerNumber: "HRB XXXXX",
-  vatId: "DE XXXXXXXXX",
+  registerNumber: "HRB 15664",
+  vatId: "DE 464624371",
 };

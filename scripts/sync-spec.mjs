@@ -83,6 +83,53 @@ function syncTree(source, target) {
   }
 }
 
+function syncFlatJson(sources, target) {
+  const files = new Map();
+  for (const source of sources) {
+    for (const entry of readdirSync(source, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+      const content = readFileSync(join(source, entry.name), "utf8");
+      if (files.has(entry.name) && files.get(entry.name) !== content) {
+        throw new Error(`Conflicting sync sources for ${entry.name}`);
+      }
+      files.set(entry.name, content);
+    }
+  }
+
+  if (!check) mkdirSync(target, { recursive: true });
+  const entries = existsSync(target)
+    ? readdirSync(target, { withFileTypes: true })
+    : [];
+  const directoryNames = new Set(
+    entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name),
+  );
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const dir = join(target, entry.name);
+    changed.push(dir.slice(root.length + 1).replace(/\\/g, "/"));
+    if (!check) rmSync(dir, { recursive: true, force: true });
+  }
+
+  for (const [name, content] of files) {
+    const targetFile = join(target, name);
+    if (check && directoryNames.has(name)) {
+      changed.push(targetFile.slice(root.length + 1).replace(/\\/g, "/"));
+      continue;
+    }
+    write(targetFile, content);
+  }
+
+  const currentEntries = existsSync(target)
+    ? readdirSync(target, { withFileTypes: true })
+    : [];
+  for (const entry of currentEntries) {
+    if (entry.isDirectory() || files.has(entry.name)) continue;
+    const targetFile = join(target, entry.name);
+    changed.push(targetFile.slice(root.length + 1).replace(/\\/g, "/"));
+    if (!check) rmSync(targetFile);
+  }
+}
+
 // Frozen 0.x documents and artefacts remain available as legacy resources.
 mkdirSync(join(vendor, "examples"), { recursive: true });
 mkdirSync(join(vendor, "schema"), { recursive: true });
@@ -138,9 +185,29 @@ write(
   join(siteV1, "SPEC.de.md"),
   siteMarkdown(join(specDir, "v1", "SPEC.de.md")),
 );
-syncTree(
-  join(specDir, "tests", "v1", "policy", "valid"),
+syncFlatJson(
+  [
+    join(specDir, "tests", "v1", "policy", "valid"),
+    join(specDir, "examples", "v1"),
+  ],
   join(siteV1, "examples"),
+);
+
+// The CSAF helper artifacts are shared inputs for the CLI/core and site.
+const csafExtensionName = "csaf-vulnerability-report-v1";
+const csafExtensionSource = join(specDir, "extensions", csafExtensionName);
+for (const file of [
+  "csaf-policy-extension.schema.json",
+  "csaf-policy-contract.json",
+  "csaf-policy-cases.json",
+]) {
+  if (!existsSync(join(csafExtensionSource, file))) {
+    throw new Error(`Missing shared CSAF artifact: ${join(csafExtensionSource, file)}`);
+  }
+}
+syncTree(
+  csafExtensionSource,
+  join(siteV1, "extensions", csafExtensionName),
 );
 
 // The library embeds every schema, so it never needs the network at runtime.
@@ -173,6 +240,10 @@ const v1Schema = load("cvd-policy-1.schema.json");
 const v1Source = join(specDir, "tests", "v1");
 const v1Vendor = join(root, "packages", "core", "vendor", "spec-v1");
 syncTree(v1Source, join(v1Vendor, "tests", "v1"));
+syncTree(
+  csafExtensionSource,
+  join(v1Vendor, "extensions", csafExtensionName),
+);
 write(
   join(v1Vendor, "schema", "cvd-policy-1.schema.json"),
   readFileSync(join(specDir, "schema", "cvd-policy-1.schema.json"), "utf8"),

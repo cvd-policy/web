@@ -9,7 +9,7 @@
   import { policyHtml } from "../lib/policyHtml.js";
   import { humanPolicyFilename, policyFilename, policyZip } from "../lib/policyZip.js";
   import { t } from "../lib/i18n.svelte.js";
-  import { createInitialV1Policy } from "../lib/v1Editor.js";
+  import { assessCsafCapabilityText, createInitialV1Policy, csafExportBlock } from "../lib/v1Editor.js";
 
   const initialPolicy = createInitialV1Policy();
   let policy = $state<CvdPolicyDocument>(initialPolicy);
@@ -29,9 +29,19 @@
 
   const result = $derived(parsePolicyText(activeRaw));
   const document = $derived(result.policy);
+  const csafCapability = $derived(editorReady && activeRaw.trim() ? assessCsafCapabilityText(activeRaw) : null);
   const publication = $derived.by(() => {
     if (!editorReady) return { securityTxt: "", html: "", error: t("generate.editor_invalid"), archive: null };
     if (!document) return { securityTxt: "", html: "", error: "", archive: null };
+    const csafBlock = csafExportBlock(csafCapability);
+    if (csafBlock) {
+      return {
+        securityTxt: "",
+        html: "",
+        error: t(csafBlock === "critical" ? "generate.csaf_critical_export" : "generate.csaf_invalid_export"),
+        archive: null,
+      };
+    }
     try {
       const discovery = new URL(securityTxtUri);
       if (
@@ -172,8 +182,8 @@
     <p class="lead">{t("generate.v1_lead")}</p>
     <div class="notice">
       {t("generate.v1_notice_intro")}
-      <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>.
-      {t("generate.v1_notice_change")}
+      <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">{t("draft.historical_00")}</a>.
+      {t("draft.local_01")}. {t("generate.v1_notice_change")}
     </div>
   </div>
 
@@ -224,6 +234,28 @@
         <span class="badge {result.valid && editorReady ? 'badge-ok' : 'badge-err'}">{result.valid && editorReady ? t("generate.valid_v1") : t("validate.result_invalid")}</span>
       </div>
       <p class="help">{t("generate.local_scope")}</p>
+      {#if csafCapability}
+        <section class="card card-tight csaf-capability" aria-live="polite">
+          <h3>{t("csaf.title")}</h3>
+          {#if !csafCapability.coreValid}
+            <p>{t("csaf.core_invalid")}</p>
+          {:else}
+            <p><strong>{t(`csaf.state.${csafCapability.state}`)}</strong></p>
+            <p>{t(`csaf.detail.${csafCapability.state}`)}</p>
+            <p class="help">{t("csaf.local_only")}</p>
+            {#if csafCapability.state === "advertised"}
+              <ul>
+                {#each csafCapability.channels as channel (channel.uri)}
+                  <li>{t("csaf.channel")}: <code>{channel.uri}</code> · {t("csaf.specification")}: <code>{channel.specification}</code></li>
+                {/each}
+              </ul>
+            {/if}
+            {#each csafCapability.issues as issue (issue.code + issue.path)}
+              <div class="issue error"><p class="issue-path"><code>{issue.code}</code> · {issue.path || "/"}</p><p>{issue.message}</p></div>
+            {/each}
+          {/if}
+        </section>
+      {/if}
       {#if result.issues.length}
         {#each result.issues as issue (issue.code + issue.path)}
           <div class="issue error">
@@ -238,7 +270,7 @@
           </div>
         {/each}
       {/if}
-      {#if publication.error}<div class="notice">{publication.error}</div>{/if}
+      {#if publication.error}<div class="notice" role="alert">{publication.error}</div>{/if}
 
       {#if document && !publication.error}
         <div class="card card-tight stack">

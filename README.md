@@ -4,7 +4,8 @@ An open format for publishing a machine-readable statement about reportable
 assets, testing rules, reporting preferences and disclosure coordination. It
 does not prove ownership or grant legal authorization. Version 1 is an experimental
 implementation of
-[`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00).
+`draft-behring-cvd-policy-01` (local, unpublished revision; see the vendored
+[V1 specification](site/vendor/spec/v1/SPEC.md)).
 Its proposed `CVD-Policy` field and `application/cvd-policy+json` media type may
 change before standardization.
 
@@ -61,8 +62,8 @@ for. The report profile `report-0.1` is embedded the same way.
 
 ```bash
 git clone https://github.com/cvd-policy/spec ../cvd-policy-spec
-npm run sync:spec           # refresh site/vendor/spec and the embedded schema
-npm run sync:spec:check     # fail if the copies have drifted (used by CI)
+CVD_SPEC_DIR="$(realpath ../cvd-policy-spec)" npm run sync:spec
+CVD_SPEC_DIR="$(realpath ../cvd-policy-spec)" npm run sync:spec:check
 ```
 
 Set `CVD_SPEC_DIR` if the specification sits elsewhere. `site/vendor/spec/v1/`
@@ -70,6 +71,27 @@ contains the V1 documents and examples rendered by the site;
 `site/vendor/spec/` retains the legacy material. The isolated Core V1 schema and
 corpus are separately vendored under `packages/core/vendor/spec-v1/` with the
 exact source commit and run without a neighboring checkout.
+
+The shared CSAF helper artifacts are canonical in the Spec checkout at
+`extensions/csaf-vulnerability-report-v1/`:
+`csaf-policy-extension.schema.json`, `csaf-policy-contract.json` and
+`csaf-policy-cases.json`. Sync copies them to
+`site/vendor/spec/v1/extensions/csaf-vulnerability-report-v1/` and
+`packages/core/vendor/spec-v1/extensions/csaf-vulnerability-report-v1/`.
+The schema checks structure and URI syntax; semantic checks enforce URI
+uniqueness, contact-channel references, supported specifications and assessment
+precedence. RFC 3986 absolute-URI syntax excludes a literal fragment. The AJV
+URI-format check has an empty-path limitation, handled separately by the CSAF
+assessment; see the vendored [V1 specification](site/vendor/spec/v1/SPEC.md).
+
+Local verification used `CVD_SPEC_DIR=/home/undef/Projects/skalvar/cvd/cvd_policy/spec` explicitly for synchronization, tests and build; sync reported up to date, not skipped. The
+Web tests passed (268 Core, 22 CLI and 49 site tests), as did the site
+dictionary/Svelte/type checks and production build. Browser review covered the
+four capability states, invalid Core input, contact-channel editing and blocked
+exports, plus JSON/HTML/ZIP downloads. Browser resources stayed on `127.0.0.1`;
+no specification or extension fetch was observed. The Spec gates, including
+five examples and 85 requirements, also passed. These are local verification
+results, not a release or independent interoperability claim.
 
 ## V1 library flow
 
@@ -90,8 +112,38 @@ const decision = evaluatePolicy(parsed.policy, {
 }, authority.established ? authority.evidence : null);
 ```
 
-Issues are stable codes with JSON Pointers, never finished prose, so the UI owns
-the wording. See [packages/core/README.md](packages/core/README.md).
+For existing validation and permission issues, use stable codes and JSON
+Pointers for program logic; their messages are translation keys for the UI.
+New CSAF capability issues also have stable codes and paths, but include
+human-readable English messages. See
+[packages/core/README.md](packages/core/README.md).
+
+### Declared CSAF report capability
+
+The isolated V1 API can assess a policy's declaration of channels for CSAF 2.1
+CSD04 Profile 9 (`csaf_vulnerability_report`). Capability assessment is separate
+from core policy validity and permission evaluation. It reports whether a
+declaration is absent, invalid, unsupported or advertised; it does not validate
+a CSAF report or verify that a host can process one. The host-specific assessment
+also requires current, valid policy and security.txt data together with valid
+authority and retrieval evidence. It does not require a testing permission.
+
+The declaration adds no submission endpoint or transport behavior. No tool sends
+a report, and a contact URL is not an HTTP POST endpoint. See the Core README for
+the API and its exact result contract.
+
+The published `0.5.0-rc.1` commands below are the existing baseline and do not
+include the new local CSAF capability behavior. In the local CLI changes,
+`validate` keeps its Core result and exit status unchanged for invalid or
+unsupported noncritical CSAF metadata, while reporting capability separately.
+`check` reports a host declaration as usable only when its current policy,
+security.txt, authority and retrieval gates pass. Both use the four literal
+states `not-advertised`, `invalid`, `unsupported` and `advertised`. No new
+machine-readable CLI output is specified.
+
+The local package changes remain unpublished and the package version remains
+`0.5.0-rc.1`; the versioned `npx` examples below show the published baseline
+only, not the capabilities described above.
 
 The package-root `validate`, `generate`, `evaluate`, `validateReport` and
 `explain` APIs remain the Legacy 0.x interface. `report-0.1` is not a V1 report
@@ -143,7 +195,10 @@ These take precedence over any feature decision.
 
 Format versions 0.1 and 0.2 remain published and valid for legacy documents.
 Version 1 is the current experimental generator and discovery implementation of
-`draft-behring-cvd-policy-00`.
+`draft-behring-cvd-policy-01` (local and unpublished; see
+[the vendored V1 specification](site/vendor/spec/v1/SPEC.md)), including a
+separate assessment of declared CSAF report capability. This revision has not
+been submitted to the IETF and does not describe a published package release.
 
 Packages are versioned independently of the format. They tracked it up to
 `0.2.0`, and no longer do: `@cvd-policy/core` and `@cvd-policy/cli` are at

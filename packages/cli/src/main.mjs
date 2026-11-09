@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { explain, SUPPORTED_VERSIONS, validateReport, validateText } from "@cvd-policy/core";
 import {
+  assessCsafCapability,
+  assessCsafHostDeclaration,
   assessSecurityTxtAuthority,
   parsePolicyText,
   policyRetrievalIssues,
@@ -48,6 +50,35 @@ function reportV1(issues, source) {
   return issues.length === 0 ? 0 : 1;
 }
 
+function reportCsafCapability(assessment) {
+  if (!assessment.coreValid) {
+    console.log("CSAF capability: unavailable (policy is not core-valid)");
+    for (const issue of assessment.issues) {
+      console.log(`  ${issue.code}${issue.path ? `  ${issue.path}` : ""}: ${issue.message}`);
+    }
+    return;
+  }
+
+  console.log(`CSAF capability: ${assessment.state} (declaration only; intake not tested)`);
+  if (assessment.state === "advertised") {
+    for (const channel of assessment.channels) {
+      console.log(`  ${channel.uri}  ${channel.specification}`);
+    }
+  }
+  for (const issue of assessment.issues) {
+    console.log(`  ${issue.code}${issue.path ? `  ${issue.path}` : ""}: ${issue.message}`);
+  }
+}
+
+function reportCsafHostDeclaration(assessment) {
+  console.log(
+    `CSAF host declaration: ${assessment.usable ? "usable" : "not usable"} (intake not tested)`,
+  );
+  for (const issue of assessment.issues) {
+    console.log(`  ${issue.code}${issue.path ? `  ${issue.path}` : ""}: ${issue.message}`);
+  }
+}
+
 function printRedirects(label, retrieval) {
   console.log(`${label}: ${retrieval.requestedUri}`);
   for (const uri of retrieval.redirectChain) console.log(`  -> ${uri}`);
@@ -61,9 +92,9 @@ function printExplain(raw) {
   }
 }
 
-async function checkV1(target, allowApplicationJson, fetcher) {
+async function checkV1(target, allowApplicationJson, fetcher, clock) {
   const security = await fetchSecurityTxt(target, { fetcher });
-  const securityRetrievedAt = new Date();
+  const securityRetrievedAt = clock();
   printRedirects("security.txt", security);
   if (security.statusCode !== 200) return reportV1([
     { code: "security_txt_parse_error", path: "", message: `HTTP ${security.statusCode}` },
@@ -82,7 +113,7 @@ async function checkV1(target, allowApplicationJson, fetcher) {
       ? "application/cvd-policy+json, application/json;q=0.5"
       : "application/cvd-policy+json",
   });
-  const policyRetrievedAt = new Date();
+  const policyRetrievedAt = clock();
   printRedirects("CVD policy", policy);
   const retrievalIssues = policyRetrievalIssues(
     policy,
@@ -92,6 +123,21 @@ async function checkV1(target, allowApplicationJson, fetcher) {
   const parsed = parsePolicyText(policy.body, { now: policyRetrievedAt });
   const issues = [...retrievalIssues, ...parsed.issues];
   const result = reportV1(issues, policy.finalUri);
+  const retrieval = {
+    requestedUri: policy.requestedUri,
+    finalUri: policy.finalUri,
+    redirectChain: policy.redirectChain,
+    statusCode: policy.statusCode,
+    mediaType: policy.mediaType,
+  };
+  const declaration = assessCsafHostDeclaration(
+    policy.body,
+    authority.evidence,
+    retrieval,
+    { now: policyRetrievedAt, allowApplicationJson },
+  );
+  reportCsafCapability(declaration.capability);
+  reportCsafHostDeclaration(declaration);
   if (result !== 0) return result;
 
   const mediaType = policy.mediaType.split(";", 1)[0]?.trim().toLowerCase();
@@ -102,7 +148,7 @@ async function checkV1(target, allowApplicationJson, fetcher) {
   return 0;
 }
 
-export async function run(argv, { fetcher = fetchResource } = {}) {
+export async function run(argv, { fetcher = fetchResource, now = () => new Date() } = {}) {
   const [command, ...args] = argv;
   const legacy = args.includes("--legacy");
   const allowApplicationJson = args.includes("--allow-application-json");
@@ -120,9 +166,13 @@ export async function run(argv, { fetcher = fetchResource } = {}) {
         return 1;
       }
       const raw = argument === "-" ? await readStdin() : readUtf8(argument);
-      return legacy
-        ? report(validateText(raw), argument === "-" ? "stdin" : argument)
-        : reportV1(parsePolicyText(raw).issues, argument === "-" ? "stdin" : argument);
+      const source = argument === "-" ? "stdin" : argument;
+      if (legacy) return report(validateText(raw), source);
+      const validationTime = now();
+      const parsed = parsePolicyText(raw, { now: validationTime });
+      const result = reportV1(parsed.issues, source);
+      reportCsafCapability(assessCsafCapability(raw, { now: validationTime }));
+      return result;
     }
 
     if (command === "check") {
@@ -130,7 +180,7 @@ export async function run(argv, { fetcher = fetchResource } = {}) {
         console.error("check needs a domain");
         return 1;
       }
-      if (!legacy) return await checkV1(argument, allowApplicationJson, fetcher);
+      if (!legacy) return await checkV1(argument, allowApplicationJson, fetcher, now);
       const { body, url, discoveredFor } = await fetchPolicy(argument, { fetcher });
       console.log(`discovered for ${discoveredFor}`);
       return report(validateText(body, { retrievedFrom: url }), url);

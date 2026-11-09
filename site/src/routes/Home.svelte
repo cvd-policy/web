@@ -17,7 +17,7 @@
   <section class="prose">
     <h1>{t("home.title")}</h1>
     <p class="lead">{t("home.lead")}</p>
-    <p class="notice">{t("home.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. {t("home.v1_notice_change")}</p>
+    <p class="notice">{t("home.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">{t("draft.historical_00")}</a>. {t("draft.local_01")}. {t("home.v1_notice_change")}</p>
     <div class="row actions-primary">
       <a class="btn btn-primary" href="/generate">{t("home.cta_generate")}</a>
       <a class="btn" href="/validate">{t("home.cta_validate")}</a>

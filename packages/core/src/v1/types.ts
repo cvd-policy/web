@@ -139,6 +139,9 @@ export type ReasonCode =
   | "security_txt_redirect_invalid"
   | "authority_evidence_missing"
   | "authority_host_mismatch"
+  | "csaf_declaration_invalid"
+  | "csaf_declaration_not_advertised"
+  | "csaf_declaration_unsupported"
   | "policy_retrieval_invalid"
   | "target_url_invalid"
   | "scope_target_not_covered"
@@ -162,6 +165,32 @@ export interface ValidationResult {
   valid: boolean;
   issues: ValidationIssue[];
   policy?: CvdPolicyDocument;
+}
+
+export interface CsafChannel {
+  uri: string;
+  specification: string;
+}
+
+export interface CsafCapabilityIssue {
+  code: string;
+  path: string;
+  message: string;
+}
+
+export type CsafCapabilityAssessment =
+  | { coreValid: false; issues: ValidationIssue[] }
+  | {
+      coreValid: true;
+      state: "not-advertised" | "invalid" | "unsupported" | "advertised";
+      channels: CsafChannel[];
+      issues: CsafCapabilityIssue[];
+    };
+
+export interface CsafHostDeclarationAssessment {
+  usable: boolean;
+  capability: CsafCapabilityAssessment;
+  issues: ValidationIssue[];
 }
 
 export interface ValidationOptions {

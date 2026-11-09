@@ -9,7 +9,8 @@ the version it declares, because a released version never changes. Their API
 remains at the package root.
 
 The Version 1 API is an experimental implementation of
-[`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00).
+`draft-behring-cvd-policy-01` (local, unpublished revision; see the vendored
+[V1 specification](vendor/spec-v1/v1/SPEC.md)).
 The proposed field and media type may change. It is isolated from the immutable
 0.x API under this export:
 
@@ -58,9 +59,72 @@ redirect chains ending in a `200 OK` JSON representation are accepted;
 V1 has no report intake or submission API. `requested_fields` is advisory and
 never authorizes collecting third-party data or unsafe proof of exploitation.
 
-```bash
-npm i @cvd-policy/core@0.5.0-rc.1
-```
+## CSAF capability declaration
+
+The V1 entry point also exports `CSAF_EXTENSION_ID`, `CSAF_SPECIFICATION`,
+`assessCsafCapability(input, options?)` and
+`assessCsafHostDeclaration(input, authority, retrieval, options?)`. These assess
+the policy's declaration of channels for CSAF 2.1 CSD04 Profile 9
+(`csaf_vulnerability_report`); they do not validate reports or prove that a
+host's intake works.
+
+`assessCsafCapability` returns a discriminated result. When `coreValid` is false,
+there is no capability state. When true, `state` is one of `not-advertised`,
+`invalid`, `unsupported` or `advertised`; supported channels are available only
+for the advertised result, alongside diagnostics. Its local declaration check
+always excludes expiry from its local core preconditions. The host-declaration
+gate checks expiry, so an expired policy is not currently usable.
+
+`assessCsafHostDeclaration` returns `{ usable, capability, issues }`. It requires
+currently valid policy and security.txt data and successful authority and
+retrieval checks, including rejection of unsupported critical policy behavior.
+It does not require a positive testing permission. Neither function performs
+network lookups of the extension identifier or specification, sends reports,
+or creates a submission endpoint. Malformed noncritical extension metadata does
+not change core validity or permission evaluation; critical use remains
+unsupported.
+
+The policy evaluator must recheck `securityTxtExpires` in supplied
+`established: true` authority evidence at evaluation time, preventing previously
+established but now stale evidence from being reused. This corrects the existing
+authority check; it is not a new CSAF permission rule. On the unchanged Web
+baseline `0221629e2bb6702ccc24ddb84fcaf5dc7df87c8d`, the shared case
+`expired-security-txt-blocks-host-use` used `now = 2026-11-08T12:00:00Z` and
+`securityTxtExpires = 2026-11-01T00:00:00Z`. `evaluatePolicy` returned
+`publisher-stated-permitted` (`testing_rule_permitted`) with no issues, although
+the fixture expects `authority-not-established`. The responsible layer is
+`evaluatePolicy`, which receives the authority evidence and must establish that
+it is still current. The expiry check preserves core-validation and earlier
+decision precedence. The host-declaration assessment applies the same current
+expiry gate. The regression case now passes in the current Core: it reports
+`security_txt_expired` and `authority-not-established`, matching the fixture.
+The current Core also passes all 42 shared cases. These results are local
+verification, not a published release or independent interoperability claim.
+
+The shared CSAF helper artifacts are canonical in the Spec repository at
+`extensions/csaf-vulnerability-report-v1/` (`csaf-policy-extension.schema.json`,
+`csaf-policy-contract.json` and `csaf-policy-cases.json`). Vendored copies are
+under `vendor/spec-v1/extensions/csaf-vulnerability-report-v1/`. The
+structural schema checks URI syntax without restricting the specification to a
+single value. Semantic assessment checks uniqueness, contact references and
+support. RFC 3986 absolute URIs exclude literal fragments; the CSAF check also
+handles the URI validator's empty-path limitation in AJV. See the vendored
+[V1 specification](vendor/spec-v1/v1/SPEC.md) for the contract and rationale.
+
+The synchronized sources come from Spec commit
+`955f01c67391c832c970661329c7da5fdbf011af`. The contract and 42 shared cases
+match their canonical files byte for byte; 17 additional URI-focused cases are
+kept separate. The schema's fragment-exclusion pattern corrects the RFC 3986
+absolute-URI requirement for literal fragments.
+
+The vendored `SPEC_COMMIT` provenance marker must identify a real commit that
+contains the synchronized source artifacts. For final provenance, first commit
+the Spec changes, then synchronize again with `CVD_SPEC_DIR` set to the absolute
+Spec checkout path. Do not use `HEAD` to imply provenance for uncommitted source
+changes, and do not invent a commit hash.
+
+The published `0.5.0-rc.1` package is the existing baseline and does not include
+the local, unpublished CSAF capability changes described here.
 
 ```typescript
 import { validate, validateReport, generate, evaluate, explain } from "@cvd-policy/core";
@@ -136,11 +200,14 @@ value so that an unticked box is never stored as a denial.
 deciding to send it is a judgement a person makes, and the specification
 requires the receiving host to be shown first.
 
-## Messages are codes, not text
+## Issue codes and messages
 
-Issues carry a stable `code` (`EXPIRES_PAST`, `POSTURE_CONTRADICTION`, …), a
-JSON Pointer `path` and a `message` that is a translation key. Rendering happens
-in the consuming application, so the library ships no localised strings.
+Existing validation and permission issues carry stable codes such as
+`EXPIRES_PAST` and `POSTURE_CONTRADICTION`, JSON Pointer paths, and messages that
+are translation keys. Callers should use `code` and `path` for program logic.
+New CSAF capability issues, including host-assessment issues, also have stable
+codes and paths, and may include human-readable English messages. This does not
+change the meaning of existing issues.
 
 ## Licence
 

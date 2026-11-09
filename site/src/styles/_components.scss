@@ -13,6 +13,10 @@
   padding: var(--sp-4);
 }
 
+.csaf-capability code {
+  overflow-wrap: anywhere;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

@@ -8,6 +8,18 @@ site is not published to the registry and carries no version of its own.
 
 ## Unreleased
 
+- Updates the local, unpublished experimental V1 implementation to
+  `draft-behring-cvd-policy-01`; the revision has not been submitted to the IETF.
+- Adds separate CSAF capability assessment for the declared CSAF 2.1 CSD04
+  Profile 9 reporting channels. This assesses policy metadata only; it does not
+  validate reports, verify intake, or submit them. Core and CLI changes remain
+  local and are not represented as a published package release. The published
+  `0.5.0-rc.1` baseline does not include these changes.
+- Local verification completed: Web tests (268 Core, 22 CLI, 49 site), site
+  checks/build and Spec gates passed with explicit Spec checkout synchronization.
+  Browser review covered local capability and export flows. No release or
+  publication was made.
+
 ## 0.5.0-rc.1
 
 Experimental implementation of

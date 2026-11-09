@@ -7,8 +7,12 @@
     TestingRule,
     WebReportingScope,
   } from "@cvd-policy/core/v1";
+  import { CSAF_EXTENSION_ID, CSAF_SPECIFICATION, parseJsonText } from "@cvd-policy/core/v1";
   import { t } from "../lib/i18n.svelte.js";
   import {
+    createCsafDeclaration,
+    csafChannelsFromDeclaration,
+    eligibleCsafChannels,
     isoDateTime,
     joinLines,
     localDateTime,
@@ -37,6 +41,15 @@
   ] as const;
   let editorRoot: HTMLDivElement;
 
+  const importedCsafChannels = csafChannelsFromDeclaration(
+    policy.extensions?.[CSAF_EXTENSION_ID],
+    policy.contact.channels,
+    policy.critical_extensions?.includes(CSAF_EXTENSION_ID) ?? false,
+  );
+  const hasImportedCsaf = Object.hasOwn(policy.extensions ?? {}, CSAF_EXTENSION_ID);
+  let csafManaged = $state(!hasImportedCsaf || importedCsafChannels !== null);
+  let csafSelected = $state(importedCsafChannels ?? []);
+
   const requestedFields: RequestedField[] = [
     "affected_asset",
     "vulnerability_type",
@@ -56,7 +69,7 @@
       uri,
       value: JSON.stringify(value, null, 2),
       critical: policy.critical_extensions?.includes(uri) ?? false,
-    })),
+    })).filter((row) => row.uri !== CSAF_EXTENSION_ID || importedCsafChannels === null),
   );
   let extensionError = $state("");
   const savedConditions = new WeakMap<TestingRule, TestingConditions>();
@@ -266,20 +279,85 @@
       const critical: string[] = [];
       for (const row of extensionRows) {
         if (!row.uri.trim()) throw new Error("missing extension URI");
+        if (row.uri.trim() === CSAF_EXTENSION_ID && row.critical) throw new Error("critical CSAF extension");
         if (Object.hasOwn(extensions, row.uri.trim())) throw new Error("duplicate extension URI");
-        extensions[row.uri.trim()] = JSON.parse(row.value);
+        extensions[row.uri.trim()] = parseJsonText(row.value);
         if (row.critical) critical.push(row.uri.trim());
+      }
+      if (csafManaged && csafSelected.length) {
+        if (Object.hasOwn(extensions, CSAF_EXTENSION_ID)) throw new Error("duplicate extension URI");
+        const eligible = eligibleCsafChannels(policy.contact.channels);
+        const ordered = [
+          ...eligible.filter((uri) => csafSelected.includes(uri)),
+          ...csafSelected.filter((uri) => !eligible.includes(uri)),
+        ];
+        extensions[CSAF_EXTENSION_ID] = createCsafDeclaration(ordered);
       }
       if (Object.keys(extensions).length) policy.extensions = extensions;
       else delete policy.extensions;
       if (critical.length) policy.critical_extensions = critical;
       else delete policy.critical_extensions;
+      if (csafManaged && !csafSelected.length && Object.hasOwn(extensions, CSAF_EXTENSION_ID)) {
+        csafManaged = false;
+      }
+      const recognizedCsaf = csafChannelsFromDeclaration(
+        extensions[CSAF_EXTENSION_ID],
+        policy.contact.channels,
+        critical.includes(CSAF_EXTENSION_ID),
+      );
+      if (!csafManaged && recognizedCsaf !== null) {
+        extensionRows = extensionRows.filter((row) => row.uri !== CSAF_EXTENSION_ID);
+        csafManaged = true;
+        csafSelected = recognizedCsaf;
+      }
       extensionError = "";
       valid = true;
-    } catch {
-      extensionError = t("generate.editor_extension_error");
+    } catch (error) {
+      extensionError = t(error instanceof Error && error.message === "critical CSAF extension"
+        ? "generate.csaf_critical_error"
+        : "generate.editor_extension_error");
       valid = false;
     }
+  }
+
+  function setCsafChannel(uri: string, checked: boolean) {
+    csafSelected = checked
+      ? [...new Set([...csafSelected, uri])]
+      : csafSelected.filter((value) => value !== uri);
+    updateExtensions();
+  }
+
+  function setContactChannels(value: string) {
+    policy.contact.channels = splitLines(value);
+    if (csafManaged) return;
+    const recognized = csafChannelsFromDeclaration(
+      policy.extensions?.[CSAF_EXTENSION_ID],
+      policy.contact.channels,
+      policy.critical_extensions?.includes(CSAF_EXTENSION_ID) ?? false,
+    );
+    if (recognized !== null) {
+      extensionRows = extensionRows.filter((row) => row.uri !== CSAF_EXTENSION_ID);
+      csafManaged = true;
+      csafSelected = recognized;
+    }
+  }
+
+  function replaceImportedCsaf() {
+    extensionRows = extensionRows.filter((row) => row.uri !== CSAF_EXTENSION_ID);
+    csafManaged = true;
+    csafSelected = [];
+    updateExtensions();
+  }
+
+  function missingCsafChannels(): string[] {
+    return csafSelected.filter((uri) => policy.contact.channels.filter((channel) => channel === uri).length !== 1);
+  }
+
+  function unavailableCsafChannels(): string[] {
+    const eligible = new Set(eligibleCsafChannels(policy.contact.channels));
+    return csafSelected.filter((uri) =>
+      policy.contact.channels.filter((channel) => channel === uri).length === 1 && !eligible.has(uri),
+    );
   }
 
   function goSection(index: number) {
@@ -320,7 +398,33 @@
   {:else if activeSection === 1}
   <section id="v1-editor-section-1" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">02</p><h2>{t("generate.editor_contact")}</h2></div><p class="help">{t("generate.editor_contact_help")}</p></div>
-    <div class="field"><label for="contact-channels">{t("generate.editor_channels")}</label><textarea id="contact-channels" class="textarea-short" value={joinLines(policy.contact.channels)} oninput={(event) => policy.contact.channels = splitLines(event.currentTarget.value)}></textarea><p class="help">{t("generate.editor_channels_help")}</p></div>
+    <div class="field"><label for="contact-channels">{t("generate.editor_channels")}</label><textarea id="contact-channels" class="textarea-short" value={joinLines(policy.contact.channels)} oninput={(event) => setContactChannels(event.currentTarget.value)}></textarea><p class="help">{t("generate.editor_channels_help")}</p></div>
+    <fieldset class="editor-entry">
+      <legend>{t("generate.csaf_title")}</legend>
+      <p class="help">{t("generate.csaf_help")}</p>
+      <p class="help">{t("generate.csaf_specification")} <code class="csaf-specification">{CSAF_SPECIFICATION}</code></p>
+      {#if !csafManaged}
+        <div class="notice" role="status"><p>{t("generate.csaf_preserved")}</p></div>
+        {#if !eligibleCsafChannels(policy.contact.channels).length}<p class="notice" role="status">{t("generate.csaf_no_channels")}</p>{/if}
+        <button class="btn btn-sm" type="button" onclick={replaceImportedCsaf} disabled={!eligibleCsafChannels(policy.contact.channels).length}>{t("generate.csaf_replace")}</button>
+      {:else}
+        <p class="help">{t("generate.csaf_host_limit")}</p>
+        {#each eligibleCsafChannels(policy.contact.channels) as channel (channel)}
+          <label class="inline-check"><input type="checkbox" checked={csafSelected.includes(channel)} onchange={(event) => setCsafChannel(channel, event.currentTarget.checked)} /> <code class="csaf-channel">{channel}</code></label>
+        {/each}
+        {#each unavailableCsafChannels() as channel (channel)}
+          <label class="inline-check"><input type="checkbox" checked={csafSelected.includes(channel)} onchange={(event) => setCsafChannel(channel, event.currentTarget.checked)} /> <span class="csaf-channel">{t("generate.csaf_unavailable_channel")} <code>{channel}</code></span></label>
+        {/each}
+        {#each missingCsafChannels() as channel (channel)}
+          <label class="inline-check"><input type="checkbox" checked={csafSelected.includes(channel)} onchange={(event) => setCsafChannel(channel, event.currentTarget.checked)} /> <span class="csaf-channel">{t("generate.csaf_missing_channel")} <code>{channel}</code></span></label>
+        {/each}
+        {#if !eligibleCsafChannels(policy.contact.channels).length && !csafSelected.length}
+          <p class="notice" role="status">{t("generate.csaf_no_channels")}</p>
+        {:else if !csafSelected.length}
+          <p class="help">{t("generate.csaf_not_selected")}</p>
+        {/if}
+      {/if}
+    </fieldset>
     <div class="form-grid">
       <div class="field"><label for="languages">{t("generate.editor_languages")} <span class="u-normal">({t("common.optional")})</span></label><textarea id="languages" class="textarea-short" value={joinLines(policy.contact.preferred_languages)} oninput={(event) => { const values = splitLines(event.currentTarget.value); if (values.length) policy.contact.preferred_languages = values; else delete policy.contact.preferred_languages; }}></textarea></div>
       <div class="field"><label for="encryption">{t("generate.editor_encryption")} <span class="u-normal">({t("common.optional")})</span></label><textarea id="encryption" class="textarea-short" value={joinLines(policy.contact.encryption)} oninput={(event) => { const values = splitLines(event.currentTarget.value); if (values.length) policy.contact.encryption = values; else delete policy.contact.encryption; }}></textarea></div>
@@ -400,7 +504,7 @@
   <section id="v1-editor-section-8" class="card editor-step">
     <div class="editor-section-heading"><div><p class="editor-kicker">09</p><h2>{t("generate.editor_extensions")}</h2></div><p class="help">{t("generate.editor_extensions_help")}</p></div>
     {#each extensionRows as row, index (`extension-${index}`)}
-      <fieldset class="editor-entry"><legend>{t("generate.editor_extension", { n: index + 1 })}</legend><div class="field"><label for={`extension-uri-${index}`}>{t("generate.editor_extension_uri")}</label><input id={`extension-uri-${index}`} type="url" value={row.uri} oninput={(event) => { row.uri = event.currentTarget.value; updateExtensions(); }} /></div><div class="field"><label for={`extension-value-${index}`}>{t("generate.editor_extension_value")}</label><textarea id={`extension-value-${index}`} class="textarea-short" value={row.value} oninput={(event) => { row.value = event.currentTarget.value; updateExtensions(); }}></textarea></div><label class="inline-check"><input id={`extension-critical-${index}`} type="checkbox" bind:checked={row.critical} onchange={updateExtensions} /> {t("generate.editor_extension_critical")}</label><button class="btn btn-sm btn-quiet" type="button" onclick={() => { extensionRows.splice(index, 1); updateExtensions(); }}>{t("common.remove")}</button></fieldset>
+      <fieldset class="editor-entry"><legend>{t("generate.editor_extension", { n: index + 1 })}</legend><div class="field"><label for={`extension-uri-${index}`}>{t("generate.editor_extension_uri")}</label><input id={`extension-uri-${index}`} type="url" value={row.uri} oninput={(event) => { row.uri = event.currentTarget.value; updateExtensions(); }} /></div><div class="field"><label for={`extension-value-${index}`}>{t("generate.editor_extension_value")}</label><textarea id={`extension-value-${index}`} class="textarea-short" value={row.value} oninput={(event) => { row.value = event.currentTarget.value; updateExtensions(); }}></textarea></div><label class="inline-check"><input id={`extension-critical-${index}`} type="checkbox" bind:checked={row.critical} disabled={row.uri.trim() === CSAF_EXTENSION_ID && !row.critical} onchange={updateExtensions} /> {t("generate.editor_extension_critical")}</label>{#if row.uri.trim() === CSAF_EXTENSION_ID && row.critical}<p class="help">{t("generate.csaf_critical_imported")}</p>{:else if row.uri.trim() === CSAF_EXTENSION_ID}<p class="help">{t("generate.csaf_critical_unavailable")}</p>{/if}<button class="btn btn-sm btn-quiet" type="button" onclick={() => { extensionRows.splice(index, 1); updateExtensions(); }}>{t("common.remove")}</button></fieldset>
     {/each}
     {#if extensionError}<div class="issue error" role="alert" aria-live="polite"><p>{extensionError}</p></div>{/if}
     <button class="btn btn-sm" type="button" onclick={() => { extensionRows.push({ uri: `https://example.com/extensions/example-${extensionRows.length + 1}`, value: "{}", critical: false }); updateExtensions(); }}>{t("generate.editor_add_extension")}</button>
@@ -413,3 +517,16 @@
     <span class="small mute">{activeSection + 1} {t("common.of")} {sections.length}</span>
   </div>
 </div>
+
+<style>
+  .csaf-specification {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .csaf-channel {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+</style>

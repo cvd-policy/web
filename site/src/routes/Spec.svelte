@@ -18,7 +18,7 @@
   <div class="prose">
     <h1>{t("spec.title")}</h1>
     <p class="lead">{t("spec.lead")}</p>
-    <p class="notice">{t("spec.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. {t("spec.v1_notice_change")}</p>
+    <p class="notice">{t("spec.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">{t("draft.historical_00")}</a>. {t("draft.local_01")}. {t("spec.v1_notice_change")}</p>
     {#if i18n.lang === "de"}<p class="notice">{t("spec.translation_notice")}</p>{/if}
     <p class="row small">
       <a href="/schema/cvd-policy-1.schema.json">{t("spec.schema")} V1</a>

@@ -1,4 +1,5 @@
 import type { CvdPolicyDocument } from "@cvd-policy/core/v1";
+import { assessCsafCapability } from "@cvd-policy/core/v1";
 
 const escape = (value: string) =>
   value.replace(/[&<>\"]/g, (character) => `&${{ "&": "amp", "<": "lt", ">": "gt", '\"': "quot" }[character]};`);
@@ -17,6 +18,22 @@ function rows(value: unknown, path = ""): string {
 
 /** Builds a standalone, script-free human rendering of a V1 policy. */
 export function policyHtml(doc: CvdPolicyDocument): string {
+  const capability = assessCsafCapability(doc);
+  const csafSection = !capability.coreValid
+    ? `<section class="semantics"><h2>CSAF capability</h2><p>Core policy validation failed; no CSAF capability state is assessed.</p></section>`
+    : capability.state === "not-advertised"
+      ? `<section class="semantics"><h2>CSAF capability: not advertised</h2><p>This policy contains no CSAF declaration. This local statement does not establish what a host accepts.</p></section>`
+      : capability.state === "invalid"
+        ? `<section class="semantics"><h2>CSAF capability: invalid</h2><p>The CSAF declaration is invalid. No channels are treated as usable.</p></section>`
+        : capability.state === "unsupported"
+          ? `<section class="semantics"><h2>CSAF capability: unsupported</h2><p>The declaration uses a critical marking or unsupported specification. No channels are treated as supported.</p></section>`
+          : `<section class="semantics">
+       <h2>CSAF Vulnerability Report declaration</h2>
+       <p>This policy declares acceptance of reports using CSAF 2.1 CSD04 Profile 9 (Vulnerability Report; <code>document.category</code> is <code>csaf_vulnerability_report</code>). This local policy metadata does not establish a current host-authorized declaration or prove that an intake works. It does not define a submission endpoint, HTTP upload method, or automatic sending.</p>
+       <ul>
+${capability.channels.map(({ uri, specification }) => `         <li>Declared contact channel: <code>${escape(uri)}</code><br />Specification: <code>${escape(specification)}</code></li>`).join("\n")}
+       </ul>
+     </section>`;
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -38,6 +55,8 @@ export function policyHtml(doc: CvdPolicyDocument): string {
       .semantics { margin-top: 2rem; padding: 1rem 1.25rem; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
       .semantics h2 { margin-top: 0; font-size: 1.1rem; }
       .semantics p { margin-bottom: 0; }
+      .semantics code { overflow-wrap: anywhere; }
+      .semantics li { margin-block: 0.6rem; }
       footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
       @media (max-width: 36rem) { dl { grid-template-columns: 1fr; } dt { border: 0; padding-bottom: 0; } dd { padding-top: 0; } }
     </style>
@@ -52,9 +71,10 @@ ${rows(doc)}
     </dl>
     <section class="semantics">
       <h2>How to read this statement</h2>
-      <p>Reporting scope identifies assets for which reports are accepted; it does not prove ownership or control. Testing rules, if present, are publisher statements and do not provide legal authorization or guaranteed safe harbor. Response targets are not guarantees, and disclosure periods are coordination preferences rather than automatic permission to disclose.</p>
+      <p>Reporting scope identifies assets for which reports are accepted; it does not prove ownership or control. Testing rules, if present, are publisher statements and do not provide legal authorization or guaranteed safe harbor. Response targets are not guarantees, and disclosure periods are coordination preferences rather than automatic permission to disclose. A policy is not a vulnerability report: its scope is not evidence of known affected products, its <code>organization</code> member is not automatically <code>document.publisher</code>, and its timestamps are not Report timestamps.</p>
     </section>
-    <footer>Experimental implementation of draft-behring-cvd-policy-00. CVD Policy Format ${doc.cvd_policy}.</footer>
+${csafSection}
+    <footer>Experimental implementation based on the locally supplied, unpublished manuscript revision -01 (not submitted or published). CVD Policy Format ${doc.cvd_policy}.</footer>
   </body>
 </html>
 `;

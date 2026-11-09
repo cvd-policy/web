@@ -1,5 +1,7 @@
 import { matchingScopeIds, normalizeHost, normalizeTarget } from "./scope.js";
 import { policyRetrievalIssues } from "./retrieval.js";
+import { authorityEvidenceIssues } from "./authority.js";
+import { CSAF_EXTENSION_ID } from "./csaf.js";
 import { parsePolicyText, validatePolicy } from "./validate.js";
 import type {
   AuthorityEvidence,
@@ -113,19 +115,29 @@ export function evaluatePolicy(
   }
   const policy = validation.policy;
   const understood = new Set(query.understoodExtensions ?? []);
-  if ((policy.critical_extensions ?? []).some((extension) => !understood.has(extension))) {
+  if ((policy.critical_extensions ?? []).some(
+    (extension) => extension === CSAF_EXTENSION_ID || !understood.has(extension),
+  )) {
     return result("unsupported-policy", "policy_critical_extension_unsupported");
   }
   if (!CORE_ACTIVITIES.has(query.activity) && !understood.has(query.activity)) {
     return result("unsupported-policy", "policy_activity_unsupported");
   }
   if (authority === null) return result("authority-not-established", "authority_evidence_missing");
-  if (policyRetrievalIssues(
+  const retrievalIssues = policyRetrievalIssues(
     query.policyRetrieval,
     authority,
     options.allowApplicationJson === true,
-  ).length > 0) {
+  );
+  if (retrievalIssues.length > 0) {
     return result("authority-not-established", "policy_retrieval_invalid");
+  }
+  const authorityIssues = authorityEvidenceIssues(authority, options.now ?? new Date());
+  if (authorityIssues.length > 0) {
+    return {
+      ...result("authority-not-established", authorityIssues[0]!.code),
+      issues: authorityIssues,
+    };
   }
 
   let discoveryHost;

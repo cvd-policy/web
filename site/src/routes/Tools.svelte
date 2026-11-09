@@ -28,7 +28,7 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
   <div class="prose">
     <h1>{t("tools.title")}</h1>
     <p class="lead">{t("tools.lead")}</p>
-    <p class="notice">{t("tools.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">draft-behring-cvd-policy-00</a>. {t("tools.v1_notice_release")}</p>
+    <p class="notice">{t("tools.v1_notice_intro")} <a href="https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00">{t("draft.historical_00")}</a>. {t("draft.local_01")}. {t("tools.v1_notice_release")}</p>
   </div>
 
   <section class="card">

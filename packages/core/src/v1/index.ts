@@ -1,5 +1,6 @@
 export { FORMAT_VERSION, schema } from "./schema.generated.js";
 export { assessSecurityTxtAuthority } from "./authority.js";
+export { assessCsafCapability, assessCsafHostDeclaration, CSAF_EXTENSION_ID, CSAF_SPECIFICATION } from "./csaf.js";
 export { evaluatePolicy } from "./evaluate.js";
 export { DuplicateMemberError, parseJsonText } from "./parse.js";
 export {

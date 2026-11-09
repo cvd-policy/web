@@ -82,6 +82,17 @@ function rfc3339Timestamp(value: string): number | null {
   return timestamp + 1_000;
 }
 
+export function authorityEvidenceIssues(
+  evidence: AuthorityEvidence,
+  now: Date,
+): ValidationIssue[] {
+  const expires = rfc3339Timestamp(evidence.securityTxtExpires);
+  if (expires === null || !Number.isFinite(now.getTime())) {
+    return [issue("security_txt_expires_invalid")];
+  }
+  return expires <= now.getTime() ? [issue("security_txt_expired")] : [];
+}
+
 function validContact(value: string): boolean {
   try {
     if (

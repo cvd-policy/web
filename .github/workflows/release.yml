@@ -1,0 +1,205 @@
+name: Release
+
+# Pushing a tag vX.Y.Z publishes @cvd-policy/core and @cvd-policy/cli at X.Y.Z
+# to npm through trusted publishing (OIDC, no stored token) and creates the
+# GitHub release. See docs/RELEASING.md.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  package:
+    name: Package verified tarballs
+    needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      dist_tag: ${{ steps.release.outputs.dist_tag }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify tag, versions and main ancestry
+        id: release
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          test "$REF_TYPE" = tag
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+          core="$(node -p 'require("./packages/core/package.json").version')"
+          cli="$(node -p 'require("./packages/cli/package.json").version')"
+          cli_core="$(node -p 'require("./packages/cli/package.json").dependencies["@cvd-policy/core"]')"
+          test "$RELEASE_TAG" = "v$core" || {
+            echo "tag $RELEASE_TAG does not match @cvd-policy/core version $core" >&2
+            exit 1
+          }
+          test "$cli" = "$core" || {
+            echo "@cvd-policy/cli version $cli differs from @cvd-policy/core $core" >&2
+            exit 1
+          }
+          test "$cli_core" = "$core" || {
+            echo "@cvd-policy/cli depends on core $cli_core, not exactly $core" >&2
+            exit 1
+          }
+          grep -qx "## $core" CHANGELOG.md || {
+            echo "CHANGELOG.md has no '## $core' section" >&2
+            exit 1
+          }
+          # Prereleases stay off the default install.
+          if [[ "$core" == *-* ]]; then dist_tag=next; else dist_tag=latest; fi
+          echo "version=$core" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$dist_tag" >> "$GITHUB_OUTPUT"
+
+      - run: npm ci
+
+      - name: Build and pack
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          npm run core:build
+          assets=release-assets
+          mkdir -p "$assets"
+          npm pack -w @cvd-policy/core -w @cvd-policy/cli --pack-destination "$assets"
+          test -f "$assets/cvd-policy-core-${RELEASE_VERSION}.tgz"
+          test -f "$assets/cvd-policy-cli-${RELEASE_VERSION}.tgz"
+          (cd "$assets" && sha256sum -- *.tgz > SHA256SUMS)
+          # Release notes: this version's CHANGELOG section, without its heading.
+          awk -v h="## ${RELEASE_VERSION}" '$0 == h {on=1; next} on && /^## / {exit} on' \
+            CHANGELOG.md > "$assets/RELEASE_NOTES.md"
+          test -s "$assets/RELEASE_NOTES.md"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cvd-policy-${{ steps.release.outputs.version }}-release-assets
+          path: release-assets/
+          if-no-files-found: error
+
+  publish-npm:
+    name: Publish to npm
+    needs: package
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@11.21.2
+
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: cvd-policy-${{ needs.package.outputs.version }}-release-assets
+          path: release-assets/
+
+      - name: Verify approved tarballs
+        run: (cd release-assets && sha256sum -c SHA256SUMS)
+
+      - name: Publish core, then CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.package.outputs.version }}
+          DIST_TAG: ${{ needs.package.outputs.dist_tag }}
+        run: |
+          set -euo pipefail
+          tag_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${RELEASE_TAG}" --jq .sha)"
+          test "$tag_sha" = "$GITHUB_SHA"
+          # The CLI pins the exact core version, so core goes first.
+          for pkg in core cli; do
+            name="@cvd-policy/$pkg"
+            tarball="release-assets/cvd-policy-${pkg}-${RELEASE_VERSION}.tgz"
+            integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | base64 -w0)"
+            published="$(npm view "$name@$RELEASE_VERSION" dist.integrity 2>/dev/null || true)"
+            if [ -n "$published" ]; then
+              # A re-run after a partial publish: only identical bytes may pass.
+              test "$published" = "$integrity" || {
+                echo "$name@$RELEASE_VERSION is already published with different content" >&2
+                exit 1
+              }
+              echo "$name@$RELEASE_VERSION already published with identical content"
+              continue
+            fi
+            npm publish "$tarball" --access public --tag "$DIST_TAG" --provenance
+          done
+
+      - name: Verify published tarball bytes
+        env:
+          RELEASE_VERSION: ${{ needs.package.outputs.version }}
+        run: |
+          set -euo pipefail
+          for pkg in core cli; do
+            name="@cvd-policy/$pkg"
+            tarball="release-assets/cvd-policy-${pkg}-${RELEASE_VERSION}.tgz"
+            integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | base64 -w0)"
+            for attempt in 1 2 3 4 5 6; do
+              published="$(npm view "$name@$RELEASE_VERSION" dist.integrity 2>/dev/null || true)"
+              [ -n "$published" ] && break
+              sleep 10
+            done
+            test "$published" = "$integrity" || {
+              echo "$name@$RELEASE_VERSION registry integrity '$published' != approved '$integrity'" >&2
+              exit 1
+            }
+          done
+
+  github-release:
+    name: Create GitHub release
+    needs: [package, publish-npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: cvd-policy-${{ needs.package.outputs.version }}-release-assets
+          path: release-assets/
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.package.outputs.version }}
+        run: |
+          set -euo pipefail
+          (cd release-assets && sha256sum -c SHA256SUMS)
+          tag_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${RELEASE_TAG}" --jq .sha)"
+          test "$tag_sha" = "$GITHUB_SHA"
+          release_flags=(--verify-tag --title "$RELEASE_TAG" --notes-file release-assets/RELEASE_NOTES.md)
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            "${release_flags[@]}" release-assets/*.tgz release-assets/SHA256SUMS

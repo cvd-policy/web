@@ -752,6 +752,11 @@ export const de: Dict = {
   "tools.library": "Bibliothek",
   "tools.cli": "Kommandozeile",
   "tools.on_npm": "auf npm",
+  "tools.rust_library": "Rust-Bibliothek",
+  "tools.on_crates": "auf crates.io",
+  "tools.source": "Quellcode",
+  "tools.rust_note":
+    "parst, validiert und bewertet V1-Policies und prüft security.txt-Nachweise und CSAF-Erklärungen, ohne selbst auf das Netzwerk zuzugreifen; ab Rust 1.88",
   "tools.examples": "V1-Beispiele",
   "tools.legacy_examples": "Legacy-0.x-Beispiele",
   "tools.legacy_report_profile": "Legacy-Meldeprofil",

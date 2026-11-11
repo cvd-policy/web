@@ -673,6 +673,11 @@ export const en = {
   "tools.library": "Library",
   "tools.cli": "Command line",
   "tools.on_npm": "on npm",
+  "tools.rust_library": "Rust library",
+  "tools.on_crates": "on crates.io",
+  "tools.source": "source",
+  "tools.rust_note":
+    "parses, validates and evaluates V1 policies and assesses security.txt evidence and CSAF declarations, with no network access of its own; Rust 1.88 or later",
   "tools.examples": "V1 examples",
   "tools.legacy_examples": "Legacy 0.x examples",
   "tools.legacy_report_profile": "Legacy report profile",

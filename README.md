@@ -32,6 +32,12 @@ The specification lives in its own repository, **cvd-policy/spec**, under CC0:
 it has to be quotable and versionable without depending on a website staying
 online, and without inheriting this repository's licence.
 
+A native Rust implementation of V1 lives in
+[**cvd-policy/cvd-policy-rs**](https://github.com/cvd-policy/cvd-policy-rs) and
+is published as [`cvd-policy`](https://crates.io/crates/cvd-policy) on
+crates.io. It parses, validates and evaluates policies and assesses
+security.txt evidence and CSAF declarations, with no network access of its own.
+
 ## Getting started
 
 ```bash

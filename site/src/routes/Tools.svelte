@@ -38,7 +38,7 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
         <tr>
           <th scope="row">{t("tools.schema")}</th>
           <td>
-            <a href="/schema/cvd-policy-1.schema.json">V1 draft-00</a>
+            <a href="/schema/cvd-policy-1.schema.json">V1 draft-01</a>
             <span aria-hidden="true"> · </span>
             <a href="/schema/0.2/cvd-policy.schema.json">0.2</a>
             <span aria-hidden="true"> · </span>
@@ -71,6 +71,21 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
             <a href="https://www.npmjs.com/package/@cvd-policy/cli" rel="noopener noreferrer">
               {t("tools.on_npm")}
             </a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">{t("tools.rust_library")}</th>
+          <td>
+            <code>cargo add cvd-policy@0.1.1</code>
+            <span aria-hidden="true"> · </span>
+            <a href="https://crates.io/crates/cvd-policy" rel="noopener noreferrer">
+              {t("tools.on_crates")}
+            </a>
+            <span aria-hidden="true"> · </span>
+            <a href="https://github.com/cvd-policy/cvd-policy-rs" rel="noopener noreferrer">
+              {t("tools.source")}
+            </a>
+            <span class="mute small"> — {t("tools.rust_note")}</span>
           </td>
         </tr>
         <tr>

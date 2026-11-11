@@ -140,7 +140,8 @@ jobs:
           # The CLI pins the exact core version, so core goes first.
           for pkg in core cli; do
             name="@cvd-policy/$pkg"
-            tarball="release-assets/cvd-policy-${pkg}-${RELEASE_VERSION}.tgz"
+            # The ./ matters: without it npm reads dir/file.tgz as a GitHub user/repo.
+            tarball="./release-assets/cvd-policy-${pkg}-${RELEASE_VERSION}.tgz"
             integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | base64 -w0)"
             published="$(npm view "$name@$RELEASE_VERSION" dist.integrity 2>/dev/null || true)"
             if [ -n "$published" ]; then

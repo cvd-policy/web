@@ -157,6 +157,7 @@ jobs:
           done
 
       - name: Verify published tarball bytes
+        timeout-minutes: 35
         env:
           RELEASE_VERSION: ${{ needs.package.outputs.version }}
         run: |
@@ -165,10 +166,14 @@ jobs:
             name="@cvd-policy/$pkg"
             tarball="release-assets/cvd-policy-${pkg}-${RELEASE_VERSION}.tgz"
             integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | base64 -w0)"
-            for attempt in 1 2 3 4 5 6; do
+            # npm's automated review can hold a new version for many minutes
+            # ("Validating"); the 0.6.0 core tarball took several.
+            published=""
+            for attempt in $(seq 60); do
               published="$(npm view "$name@$RELEASE_VERSION" dist.integrity 2>/dev/null || true)"
               [ -n "$published" ] && break
-              sleep 10
+              echo "$name@$RELEASE_VERSION not visible yet (attempt $attempt/60)"
+              sleep 30
             done
             test "$published" = "$integrity" || {
               echo "$name@$RELEASE_VERSION registry integrity '$published' != approved '$integrity'" >&2

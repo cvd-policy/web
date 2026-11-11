@@ -25,11 +25,19 @@ If a run fails after core was published, re-running it is safe: a version
 already on the registry with identical bytes is skipped; one with different
 bytes fails the run.
 
+npm may hold a new version in automated review ("Validating" on the package
+page) before it becomes installable; the integrity check waits up to 30
+minutes. While core is held, a CLI that is already live cannot be installed,
+because it pins that exact core version.
+
 ## One-time setup
 
 - On npmjs.com, for **both** `@cvd-policy/core` and `@cvd-policy/cli`:
   *Settings → Trusted publishing → GitHub Actions* with organization
   `cvd-policy`, repository `web`, workflow `release.yml`, environment `npm`.
+  The connection must allow **`npm publish`**: connections created since
+  September 2026 allow only `npm stage publish` by default, and a direct publish
+  then fails with `403 … OIDC permission denied for this action`.
 - In the GitHub repository, the environment `npm` (created on first use if
   absent). Restricting it to `v*` tags, or adding a required reviewer, is
   optional.

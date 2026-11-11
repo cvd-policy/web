@@ -296,7 +296,7 @@
           {/if}
         </div>
         <CodeBlock code={publication.securityTxt} title="security.txt" />
-        <CodeBlock code={`npx @cvd-policy/cli@0.5.0-rc.1 check ${new URL(securityTxtUri).host}`} title={t("generate.network_check")} />
+        <CodeBlock code={`npx @cvd-policy/cli@0.6.0 check ${new URL(securityTxtUri).host}`} title={t("generate.network_check")} />
         <p class="help">{t("generate.local_only")}</p>
       {/if}
     </div>

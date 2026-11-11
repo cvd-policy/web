@@ -6,19 +6,22 @@ versions: the stable root API implements `0.1` and `0.2`, while the isolated
 V1 API is an experimental implementation of the current Internet-Draft. The
 site is not published to the registry and carries no version of its own.
 
-## Unreleased
+## 0.6.0
 
-- Updates the local, unpublished experimental V1 implementation to
-  `draft-behring-cvd-policy-01`; the revision has not been submitted to the IETF.
+Experimental implementation of `draft-behring-cvd-policy-01`, built from Spec
+commit `955f01c67391c832c970661329c7da5fdbf011af`. The revision has not been
+submitted to the IETF; the proposed `CVD-Policy` field and
+`application/cvd-policy+json` media type may still change.
+
+- Updates the experimental V1 implementation to `draft-behring-cvd-policy-01`.
 - Adds separate CSAF capability assessment for the declared CSAF 2.1 CSD04
-  Profile 9 reporting channels. This assesses policy metadata only; it does not
-  validate reports, verify intake, or submit them. Core and CLI changes remain
-  local and are not represented as a published package release. The published
-  `0.5.0-rc.1` baseline does not include these changes.
-- Local verification completed: Web tests (268 Core, 22 CLI, 49 site), site
-  checks/build and Spec gates passed with explicit Spec checkout synchronization.
-  Browser review covered local capability and export flows. No release or
-  publication was made.
+  Profile 9 reporting channels, in Core (`assessCsafCapability`) and in CLI
+  `validate` and `check`. This assesses policy metadata only; it does not
+  validate reports, verify intake, or submit them. Core validity and CLI exit
+  status are unchanged by noncritical CSAF metadata.
+- First release published by the tag-triggered workflow, with npm provenance
+  attestations; earlier versions were published by hand without them.
+- Retains the root Core 0.x API and immutable 0.x formats for existing users.
 
 ## 0.5.0-rc.1
 

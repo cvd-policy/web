@@ -132,18 +132,13 @@ The declaration adds no submission endpoint or transport behavior. No tool sends
 a report, and a contact URL is not an HTTP POST endpoint. See the Core README for
 the API and its exact result contract.
 
-The published `0.5.0-rc.1` commands below are the existing baseline and do not
-include the new local CSAF capability behavior. In the local CLI changes,
-`validate` keeps its Core result and exit status unchanged for invalid or
-unsupported noncritical CSAF metadata, while reporting capability separately.
-`check` reports a host declaration as usable only when its current policy,
-security.txt, authority and retrieval gates pass. Both use the four literal
-states `not-advertised`, `invalid`, `unsupported` and `advertised`. No new
-machine-readable CLI output is specified.
-
-The local package changes remain unpublished and the package version remains
-`0.5.0-rc.1`; the versioned `npx` examples below show the published baseline
-only, not the capabilities described above.
+From `0.6.0`, the CLI reports CSAF capability. `validate` keeps its Core result
+and exit status unchanged for invalid or unsupported noncritical CSAF metadata,
+while reporting capability separately. `check` reports a host declaration as
+usable only when its current policy, security.txt, authority and retrieval gates
+pass. Both use the four literal states `not-advertised`, `invalid`,
+`unsupported` and `advertised`. No new machine-readable CLI output is specified.
+`0.5.0-rc.1` does not include this behavior.
 
 The package-root `validate`, `generate`, `evaluate`, `validateReport` and
 `explain` APIs remain the Legacy 0.x interface. `report-0.1` is not a V1 report
@@ -152,9 +147,9 @@ transport.
 On the command line:
 
 ```bash
-npx @cvd-policy/cli@0.5.0-rc.1 validate cvd-policy.json
-npx @cvd-policy/cli@0.5.0-rc.1 check example.com
-npx @cvd-policy/cli@0.5.0-rc.1 validate old-cvd.json --legacy
+npx @cvd-policy/cli@0.6.0 validate cvd-policy.json
+npx @cvd-policy/cli@0.6.0 check example.com
+npx @cvd-policy/cli@0.6.0 validate old-cvd.json --legacy
 ```
 
 ## Two rules that outrank convenience
@@ -198,11 +193,11 @@ Version 1 is the current experimental generator and discovery implementation of
 `draft-behring-cvd-policy-01` (local and unpublished; see
 [the vendored V1 specification](site/vendor/spec/v1/SPEC.md)), including a
 separate assessment of declared CSAF report capability. This revision has not
-been submitted to the IETF and does not describe a published package release.
+been submitted to the IETF; package `0.6.0` implements it as it stands.
 
 Packages are versioned independently of the format. They tracked it up to
 `0.2.0`, and no longer do: `@cvd-policy/core` and `@cvd-policy/cli` are at
-`0.5.0-rc.1` while the V1 document format says `cvd_policy: 1`. A package version says what changed in
+`0.6.0` while the V1 document format says `cvd_policy: 1`. A package version says what changed in
 the package; `cvd_policy` inside a document says which rules the document was
 written for. Reading either as the other will mislead.
 

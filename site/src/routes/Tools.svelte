@@ -3,14 +3,14 @@
   import { legacyExamples, v1Examples } from "../lib/examples.js";
   import { t } from "../lib/i18n.svelte.js";
 
-  const cli = `npx @cvd-policy/cli@0.5.0-rc.1 validate cvd-policy.json
-npx @cvd-policy/cli@0.5.0-rc.1 validate -
-npx @cvd-policy/cli@0.5.0-rc.1 check example.com
-npx @cvd-policy/cli@0.5.0-rc.1 check example.com --allow-application-json
-npx @cvd-policy/cli@0.5.0-rc.1 validate --legacy old-cvd.json`;
+  const cli = `npx @cvd-policy/cli@0.6.0 validate cvd-policy.json
+npx @cvd-policy/cli@0.6.0 validate -
+npx @cvd-policy/cli@0.6.0 check example.com
+npx @cvd-policy/cli@0.6.0 check example.com --allow-application-json
+npx @cvd-policy/cli@0.6.0 validate --legacy old-cvd.json`;
 
   const action = `- name: Check the deployed CVD policy
-  run: npx @cvd-policy/cli@0.5.0-rc.1 check example.com`;
+  run: npx @cvd-policy/cli@0.6.0 check example.com`;
 
   const securityTxtApi = `import { generatePolicy, mergeSecurityTxt, securityTxt } from "@cvd-policy/core/v1";
 
@@ -56,7 +56,7 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
         <tr>
           <th scope="row">{t("tools.library")}</th>
           <td>
-            <code>npm i @cvd-policy/core@0.5.0-rc.1</code>
+            <code>npm i @cvd-policy/core@0.6.0</code>
             <span aria-hidden="true"> · </span>
             <a href="https://www.npmjs.com/package/@cvd-policy/core" rel="noopener noreferrer">
               {t("tools.on_npm")}
@@ -66,7 +66,7 @@ const merged = mergeSecurityTxt(existing, policyUri); // throws for clearsigned 
         <tr>
           <th scope="row">{t("tools.cli")}</th>
           <td>
-            <code>npx @cvd-policy/cli@0.5.0-rc.1</code>
+            <code>npx @cvd-policy/cli@0.6.0</code>
             <span aria-hidden="true"> · </span>
             <a href="https://www.npmjs.com/package/@cvd-policy/cli" rel="noopener noreferrer">
               {t("tools.on_npm")}

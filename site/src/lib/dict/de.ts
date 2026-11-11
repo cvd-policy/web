@@ -75,7 +75,7 @@ export const de: Dict = {
     "Kandidat für Version 1 — das Format, das der aktuelle Generator und Validator umsetzen. Veröffentlicht unter CC0-1.0.",
   "spec.versions_note": "Die Versionen 0.1 und 0.2 bleiben als eingefrorene Legacy-Formate verfügbar.",
   "spec.package_versions_note":
-    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.5.0-rc.1 setzt das experimentelle Format V1 um; cvd_policy im Dokument wählt die Dokumentregeln.",
+    "Paketversionen sind keine Formatversionen. @cvd-policy/core 0.6.0 setzt das experimentelle Format V1 um; cvd_policy im Dokument wählt die Dokumentregeln.",
   "spec.schema": "JSON Schema",
   "spec.v1_notice_intro": "Dies ist das experimentelle V1-Implementierungsprofil. Historische öffentliche Draftrevision:",
   "spec.v1_notice_change": "Diese Seite ist nicht der vollständige normative Draft. Die lokale Revision -01 ist weder RFC noch IETF-Konsens und kann sich ändern.",
@@ -768,7 +768,7 @@ export const de: Dict = {
   "tools.third_party_empty":
     "Diese Liste ist offen. Pull Requests sind willkommen.",
   "tools.v1_notice_intro": "Experimentelle Implementierung; historische öffentliche Draftrevision:",
-  "tools.v1_notice_release": "Installieren Sie genau den angegebenen Release Candidate, nicht das wechselnde Tag next.",
+  "tools.v1_notice_release": "Pinnen Sie die genaue Version: Die experimentelle V1-API kann sich zwischen Releases ändern.",
 
   "faq.title": "Fragen",
   "faq.q_prohibit": "Was, wenn ich Tests verbieten will?",

@@ -64,7 +64,7 @@ export const en = {
   "spec.lead": "Version 1 candidate, the format implemented by the current generator and validator. Licensed CC0-1.0.",
   "spec.versions_note": "Versions 0.1 and 0.2 remain available as frozen legacy formats.",
   "spec.package_versions_note":
-    "Package versions are not format versions. @cvd-policy/core 0.5.0-rc.1 implements the experimental format V1; cvd_policy inside a document selects the document rules.",
+    "Package versions are not format versions. @cvd-policy/core 0.6.0 implements the experimental format V1; cvd_policy inside a document selects the document rules.",
   "spec.schema": "JSON Schema",
   "spec.v1_notice_intro": "This is the experimental V1 implementation profile. Historical public draft:",
   "spec.v1_notice_change": "This page is not the full normative draft. The local revision -01 is not an RFC or IETF consensus and may change.",
@@ -687,7 +687,7 @@ export const en = {
   "tools.third_party": "Third-party implementations",
   "tools.third_party_empty": "This list is open. Pull requests welcome.",
   "tools.v1_notice_intro": "Experimental implementation; historical public draft:",
-  "tools.v1_notice_release": "Install the exact release candidate, not the floating next tag.",
+  "tools.v1_notice_release": "Pin the exact version: the experimental V1 API may change between releases.",
 
   "faq.title": "Questions",
   "faq.q_prohibit": "What if I want to rule out testing?",

@@ -123,8 +123,8 @@ the Spec changes, then synchronize again with `CVD_SPEC_DIR` set to the absolute
 Spec checkout path. Do not use `HEAD` to imply provenance for uncommitted source
 changes, and do not invent a commit hash.
 
-The published `0.5.0-rc.1` package is the existing baseline and does not include
-the local, unpublished CSAF capability changes described here.
+CSAF capability assessment is part of the package from `0.6.0`; `0.5.0-rc.1`
+does not include it.
 
 ```typescript
 import { validate, validateReport, generate, evaluate, explain } from "@cvd-policy/core";

@@ -57,7 +57,7 @@
           {/each}
         </div>
       {/if}
-      <div class="card"><h2 class="u-mt0">{t("validate.deployed_title")}</h2><code>npx @cvd-policy/cli@0.5.0-rc.1 check example.com</code><p class="help">{t("validate.deployed_help")}</p></div>
+      <div class="card"><h2 class="u-mt0">{t("validate.deployed_title")}</h2><code>npx @cvd-policy/cli@0.6.0 check example.com</code><p class="help">{t("validate.deployed_help")}</p></div>
     </div>
   </div>
 </div>
